@@ -57,6 +57,12 @@ const int zm831_ui_w = 240, zm831_ui_h = 240;
 const int zm831_vi_w = 240, zm831_vi_h = 240;
 const int zm831_ai_w = 224, zm831_ai_h = 224;
 
+struct zm831_protocol
+{
+    uint8_t func;
+    std::string data;
+};
+
 typedef struct
 {
     // sys
@@ -66,6 +72,7 @@ typedef struct
     struct timeval timeout;
     int input_event0, dev_ttyS1;
     fd_set readfd;
+    std::list<zm831_protocol> protocol_list;
     // vi
     uint16_t vi_w, vi_h, ai_w, ai_h, ui_w, ui_h;
     libmaix_cam *vi, *ai;
@@ -97,6 +104,8 @@ typedef struct _zm831_home_app_
     void *userdata;
 } zm831_home_app;
 
-// typedef void (* _zm831_home_app_func_)(zm831_home_app*);
+typedef void (* _zm831_home_app_func_)(zm831_home_app*);
+
+typedef zm831_home_app (* _get_zm831_home_app_func_)();
 
 #endif /*_zm831_uv_*/

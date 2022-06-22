@@ -76,8 +76,8 @@ pc_init:
 	sudo apt-get install uuid-dev
 	wget https://github.com/sipeed/MaixPy3/releases/download/20210613/v83x_linux_x86_python3.8_toolchain.zip
 	unzip unzip v83x_linux_x86_python3.8_toolchain.zip
-	sudo mkdir /opt/V831
-	cp -r ./v83x_linux_x86_python3.8_toolchain/* /opt/v831
+	sudo mkdir /opt/v83x_linux_x86_python3.8_toolchain
+	cp -r ./v83x_linux_x86_python3.8_toolchain/* /opt/v83x_linux_x86_python3.8_toolchain
 	sed -i "7c \    \       default\ \"/opt/v831/toolchain-sunxi-musl/toolchain/bin/\"" ../../Kconfig
 	sed -i "11c \	\	default\ \"arm-openwrt-linux-muslgnueabi-\"" ../../Kconfig
 

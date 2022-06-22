@@ -10,7 +10,7 @@
 
 static int _get_baud(int baud)
 {
-    switch (baud) 
+    switch (baud)
     {
     case 9600:return B9600;
     case 19200:return B19200;
@@ -72,10 +72,10 @@ static void clear_custom_speed_flag(int _fd)
 
 /**
  * @brief 初始化uart
- * @note 
+ * @note
  * @param [in] dev    设备名
  * @param [in] param  参数
- * @retval 
+ * @retval
  */
 int linux_uart_init(char* dev, void* param)
 {
@@ -120,17 +120,17 @@ int linux_uart_init(char* dev, void* param)
     {
     case 'N':
     case 'n':
-        opt.c_iflag &= ~INPCK;     
-        opt.c_cflag &= ~PARENB;     
+        opt.c_iflag &= ~INPCK;
+        opt.c_cflag &= ~PARENB;
         break;
     case 'O':
     case 'o':
-        opt.c_iflag |= (INPCK | ISTRIP); 
+        opt.c_iflag |= (INPCK | ISTRIP);
         opt.c_cflag |= (PARODD | PARENB);
         break;
     case 'E':
     case 'e':
-        opt.c_iflag |= (INPCK | ISTRIP); 
+        opt.c_iflag |= (INPCK | ISTRIP);
         opt.c_cflag |= PARENB;
         opt.c_cflag &= ~PARODD;
         break;
@@ -159,7 +159,7 @@ int linux_uart_init(char* dev, void* param)
     /* 刷新串口，更新配置 */
     tcflush(fd, TCIOFLUSH);
     tcsetattr(fd, TCSANOW, &opt);
-   
+
     clear_custom_speed_flag(fd);
 
     return fd;
@@ -176,13 +176,4 @@ void linux_uart_deinit(int fd)
         fd = -1;
 }
 
-int linux_uart_read(int fd, int cnt, uint8_t* buf)
-{
-    return read(fd, buf, cnt);
-}
-
-int linux_uart_write(int fd, int cnt, uint8_t* buf)
-{
-    return write(fd, buf, cnt);
-}
 
