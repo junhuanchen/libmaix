@@ -15,9 +15,9 @@ extern "C"
     time_t now;
   } find_ball_blobs_app;
 
-  int find_ball_blobs_app_load(zm831_home_app *app);
-  int find_ball_blobs_app_loop(zm831_home_app *app);
-  int find_ball_blobs_app_exit(zm831_home_app *app);
+  // int find_ball_blobs_app_load(zm831_home_app *app);
+  // int find_ball_blobs_app_loop(zm831_home_app *app);
+  // int find_ball_blobs_app_exit(zm831_home_app *app);
 
   zm831_home_app get_find_ball_blobs_app()
   {
