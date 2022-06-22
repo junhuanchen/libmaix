@@ -183,7 +183,8 @@ static void apriltag_init()
             }
 
             td = apriltag_detector_create();
-            apriltag_detector_add_family(td, tf);
+            apriltag_detector_add_family_bits(td, tf, 1);
+            // apriltag_detector_add_family(td, tf);
             td->quad_decimate = 2.0; // "Decimate input image by this factor"
             td->quad_sigma = 0.0; // Apply low-pass blur to input
             td->nthreads = 1;
