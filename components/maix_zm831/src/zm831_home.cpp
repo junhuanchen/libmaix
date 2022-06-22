@@ -5,6 +5,8 @@ extern "C"
 {
   extern zm831_uv *zm831;
 
+// ==============================================================================================
+
   int zm831_home_app_load(zm831_home_app *app)
   {
     LIBMAIX_INFO_PRINTF("zm831_home_app_load");
@@ -32,10 +34,16 @@ extern "C"
     return 0;
   }
 
+  int zm831_home_app_load(zm831_home_app *app);
+  int zm831_home_app_loop(zm831_home_app *app);
+  int zm831_home_app_exit(zm831_home_app *app);
+
   zm831_home_app get_zm831_home_app()
   {
     return {zm831_home_app_load, zm831_home_app_loop, zm831_home_app_exit, NULL};
   }
+
+// ==============================================================================================
 
   zm831_home_app *app_bak, *app_run, app_old, app_new;
 
@@ -111,15 +119,11 @@ extern "C"
 
       /*Get the first child of the button which is the label and change its text*/
       lv_obj_t *label = lv_obj_get_child(btn, NULL);
-      lv_label_set_text_fmt(label, "nn: %d", cnt);
+      lv_label_set_text_fmt(label, "yolo: %d", cnt);
 
       // if (cnt > 9) {
       //     zm831->exit = 1;
       // }
-
-
-      // extern zm831_home_app get_qrcode_quirc_app();
-      // zm831_home_app_reload(get_qrcode_quirc_app());
 
       extern zm831_home_app get_nn_yolo_face_app();
       zm831_home_app_reload(get_nn_yolo_face_app());
@@ -154,7 +158,7 @@ extern "C"
       lv_obj_set_event_cb(btn, btn_event_def_cb); /*Assign a callback to the button*/
       static lv_style_t style_btn_red;
       lv_style_init(&style_btn_red);
-      lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0xff, 0x00, 0x00, 0x7f});
+      lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0x00, 0xff, 0x00, 0x7f});
       lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
       lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
       lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
@@ -164,13 +168,13 @@ extern "C"
       lv_label_set_text(label, "def");                         /*Set the labels text*/
     }
 
-    // zm831_home_app_reload(get_zm831_home_app());
+    zm831_home_app_reload(get_zm831_home_app());
 
     // extern zm831_home_app get_find_apriltag_app();
     // zm831_home_app_reload(get_find_apriltag_app());
 
-    extern zm831_home_app get_imlib_find_blobs_app();
-    zm831_home_app_reload(get_imlib_find_blobs_app());
+    // extern zm831_home_app get_imlib_find_blobs_app();
+    // zm831_home_app_reload(get_imlib_find_blobs_app());
 
     // int ret, stacksize = 204800; /*thread 堆栈设置为 20K */
     // pthread_attr_t attr;
