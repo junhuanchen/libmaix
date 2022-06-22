@@ -65,12 +65,29 @@ extern "C"
         img->is_data_alloc = NULL;
         img->pixfmt = PIXFORMAT_RGB888;
       }
+
+      rectangle_t roi = {.x = 0, .y = 0, .w = img->w, .h = img->h};
+
       {
-        rectangle_t roi;
-        roi.x = 0;
-        roi.y = 0;
-        roi.w = 224;
-        roi.h = 224;
+        fb_alloc_mark();
+        histogram_t hist;
+        hist.LBinCount = COLOR_L_MAX - COLOR_L_MIN + 1;
+        hist.ABinCount = COLOR_A_MAX - COLOR_A_MIN + 1;
+        hist.BBinCount = COLOR_B_MAX - COLOR_B_MIN + 1;
+        hist.LBins = (float *)fb_alloc(hist.LBinCount * sizeof(float), FB_ALLOC_NO_HINT);
+        hist.ABins = (float *)fb_alloc(hist.ABinCount * sizeof(float), FB_ALLOC_NO_HINT);
+        hist.BBins = (float *)fb_alloc(hist.BBinCount * sizeof(float), FB_ALLOC_NO_HINT);
+        imlib_get_histogram(&hist, img, &roi, NULL, false, NULL);
+        statistics_t stats;
+        imlib_get_statistics(&stats, (pixformat_t)img->pixfmt, &hist);
+        fb_free(hist.BBins);
+        fb_free(hist.ABins);
+        fb_free(hist.LBins);
+        fb_alloc_free_till_mark();
+        printf("[imlib_get_statistics] LMin: %d, LMax: %d, AMin: %d, AMax: %d, BMin: %d, BMax: %d\n", stats.LMin, stats.LMax, stats.AMin, stats.AMax, stats.BMin, stats.BMax);
+      }
+
+      {
         unsigned int x_stride = 2;
         unsigned int y_stride = 2;
         uint32_t threshold = 50;
@@ -84,7 +101,6 @@ extern "C"
         fb_alloc_mark();
         imlib_find_circles(&out, img, &roi, x_stride, y_stride, threshold, x_margin, y_margin, r_margin, r_min, r_max, r_step);
         fb_alloc_free_till_mark();
-
         for (size_t i = 0; list_size(&out); i++)
         {
           find_circles_list_lnk_data_t lnk_data;
@@ -92,8 +108,8 @@ extern "C"
           printf("[imlib_find_circles]  %d: %d, %d, %d\n", i, lnk_data.p.x, lnk_data.p.y, lnk_data.r);
         }
       }
-      {
 
+      {
         list_t thresholds;
         imlib_list_init(&thresholds, sizeof(color_thresholds_list_lnk_data_t));
         bool invert = false;
@@ -112,8 +128,6 @@ extern "C"
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
         list_t out;
-        static int mk = 0;
-
         fb_alloc_mark();
         for(int i = 0; i < 4; i ++){
             list_push_back(&thresholds, &self->lab_thresholds[i]);
