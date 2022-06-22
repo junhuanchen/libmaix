@@ -66,10 +66,11 @@ extern "C"
         img->pixfmt = PIXFORMAT_RGB888;
       }
 
+      fb_alloc_mark();
+
       rectangle_t roi = {.x = 0, .y = 0, .w = img->w, .h = img->h};
 
       {
-        fb_alloc_mark();
         histogram_t hist;
         hist.LBinCount = COLOR_L_MAX - COLOR_L_MIN + 1;
         hist.ABinCount = COLOR_A_MAX - COLOR_A_MIN + 1;
@@ -83,31 +84,28 @@ extern "C"
         fb_free(hist.BBins);
         fb_free(hist.ABins);
         fb_free(hist.LBins);
-        fb_alloc_free_till_mark();
         printf("[imlib_get_statistics] LMin: %d, LMax: %d, AMin: %d, AMax: %d, BMin: %d, BMax: %d\n", stats.LMin, stats.LMax, stats.AMin, stats.AMax, stats.BMin, stats.BMax);
       }
 
-      {
-        unsigned int x_stride = 2;
-        unsigned int y_stride = 2;
-        uint32_t threshold = 50;
-        unsigned int x_margin = 10;
-        unsigned int y_margin = 10;
-        unsigned int r_margin = 10;
-        unsigned int r_min = 15;
-        unsigned int r_max = 25;
-        unsigned int r_step = 2;
-        list_t out;
-        fb_alloc_mark();
-        imlib_find_circles(&out, img, &roi, x_stride, y_stride, threshold, x_margin, y_margin, r_margin, r_min, r_max, r_step);
-        fb_alloc_free_till_mark();
-        for (size_t i = 0; list_size(&out); i++)
-        {
-          find_circles_list_lnk_data_t lnk_data;
-          list_pop_front(&out, &lnk_data);
-          printf("[imlib_find_circles]  %d: %d, %d, %d\n", i, lnk_data.p.x, lnk_data.p.y, lnk_data.r);
-        }
-      }
+      // {
+      //   unsigned int x_stride = 2;
+      //   unsigned int y_stride = 2;
+      //   uint32_t threshold = 50;
+      //   unsigned int x_margin = 10;
+      //   unsigned int y_margin = 10;
+      //   unsigned int r_margin = 10;
+      //   unsigned int r_min = 15;
+      //   unsigned int r_max = 25;
+      //   unsigned int r_step = 2;
+      //   list_t out;
+      //   imlib_find_circles(&out, img, &roi, x_stride, y_stride, threshold, x_margin, y_margin, r_margin, r_min, r_max, r_step);
+      //   for (size_t i = 0; list_size(&out); i++)
+      //   {
+      //     find_circles_list_lnk_data_t lnk_data;
+      //     list_pop_front(&out, &lnk_data);
+      //     // printf("[imlib_find_circles]  %d: %d, %d, %d\n", i, lnk_data.p.x, lnk_data.p.y, lnk_data.r);
+      //   }
+      // }
 
       {
         list_t thresholds;
@@ -128,7 +126,6 @@ extern "C"
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
         list_t out;
-        fb_alloc_mark();
         for(int i = 0; i < 4; i ++){
             list_push_back(&thresholds, &self->lab_thresholds[i]);
             imlib_find_blobs(&out, img, &roi, x_stride, y_stride, &thresholds, invert,area_threshold,
@@ -141,8 +138,9 @@ extern "C"
                 printf("[imlib_find_blobs] %d %d %d %d\n", lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
             }
         }
-        fb_alloc_free_till_mark();
       }
+
+      fb_alloc_free_till_mark();
     }
     return 0;
   }

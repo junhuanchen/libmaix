@@ -112,7 +112,7 @@ extern "C"
 // #define IMLIB_ENABLE_FIND_LINE_SEGMENTS
 
 // Enable find_circles()
-#define IMLIB_ENABLE_FIND_CIRCLES
+// #define IMLIB_ENABLE_FIND_CIRCLES
 
 // // Enable find_qrcodes() (14 KB)
 // #define IMLIB_ENABLE_QRCODES
