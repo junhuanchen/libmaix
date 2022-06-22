@@ -43,101 +43,133 @@ extern "C"
   void zm831_protocol_recv(char *buf, int len)
   {
     char data = buf[0];
-    static char data_buf[64] = { 0 };
-    static uint16_t data_sta, data_len;
-    switch (data_sta)
-    {
-    case 0:
-    {
-      if (data == 0x86)
-      {
-        data_sta = 1;
-      }
-      break;
-    }
-    case 1:
-    {
-      if (data == 0xAB)
-      {
-        data_sta = 2;
-        data_len = 0;
-      }
-      else
-      {
-        data_sta = 0;
-      }
-      break;
-    }
-    case 2:
-    {
-      data_len = data << 8;
-      data_sta = 3;
-      break;
-    }
-    case 3:
-    {
-      data_len = data_len | data;
-      data_len = data_len - 4;
-      data_sta = 4;
-      break;
-    }
-    case 4:
-    { // cmd one
-      data_len--;
-      data_sta = 5;
-      break;
-    }
-    case 5:
-    { // cmd two
-      data_len--;
-      data_sta = 6;
-      break;
-    }
-    case 6:
-    { // fun
-      data_len--;
-      extern int zm831_home_app_select(int id);
-      zm831_home_app_select(data); // home app select
-      if (data_len == 3)
-      {
-        data_sta = 8;
-      }
-      else
-      {
-        data_sta = 7;
-      }
-      break;
-    }
-    case 7:
-    { // data
-      data_len--;
-      // extern int zm831_home_app_index;
-      // zm831->protocol_list.push_back({zm831_home_app_index, std::string(1, data)});
-      if (data_len == 3)
-        data_sta = 8;
-      break;
-    }
-    case 8:
-    { // number
-      data_len--;
-      data_sta = 9;
-      break;
-    }
-    case 9:
-    { // sum
-      data_len--;
-      data_sta = 10;
-      break;
-    }
-    case 10:
-    { // end
-      data_len--;
+    static char data_buf[64] = { 0 }, *data_pos = NULL;
+    static uint16_t data_sta, data_tmp, data_len;
+
+    if (data_pos - data_buf > 64) {
+      data_pos = data_buf;
       data_sta = 0;
-      break;
-    }
     }
 
-    LIBMAIX_DEBUG_PRINTF("\n data_sta %d data_len %d 0x%02X", data_sta, data_len, buf[0]);
+    switch (data_sta)
+    {
+      case 0:
+      {
+        if (data == 0x86)
+        {
+          data_sta = 1;
+          data_pos = data_buf;
+          *data_pos++ = data;
+        }
+        break;
+      }
+      case 1:
+      {
+        if (data == 0xAB)
+        {
+          data_sta = 2;
+          data_tmp = 0;
+          *data_pos++ = data;
+        }
+        else
+        {
+          data_sta = 0;
+        }
+        break;
+      }
+      case 2:
+      {
+        *data_pos++ = data;
+        data_tmp = data << 8;
+        data_sta = 3;
+        break;
+      }
+      case 3:
+      {
+        *data_pos++ = data;
+        data_tmp = data_tmp | data;
+        data_tmp = data_tmp - 4;
+        data_sta = 4;
+        break;
+      }
+      case 4:
+      { // cmd one
+        *data_pos++ = data;
+        data_tmp--;
+        data_sta = 5;
+        break;
+      }
+      case 5:
+      { // cmd two
+        *data_pos++ = data;
+        data_tmp--;
+        data_sta = 6;
+        break;
+      }
+      case 6:
+      { // fun
+        *data_pos++ = data;
+        data_tmp--;
+        extern int zm831_home_app_select(int id);
+        zm831_home_app_select(data); // home app select
+        if (data_tmp == 3)
+        {
+          data_sta = 8;
+        }
+        else
+        {
+          data_sta = 7;
+        }
+        break;
+      }
+      case 7:
+      { // data
+        *data_pos++ = data;
+        data_tmp--;
+        if (data_tmp == 3) {
+          data_sta = 8;
+        }
+        break;
+      }
+      case 8:
+      { // number
+        *data_pos++ = data;
+        data_tmp--;
+        data_sta = 9;
+        break;
+      }
+      case 9:
+      { // sum
+        *data_pos++ = data;
+        data_tmp--;
+        data_sta = 10;
+        break;
+      }
+      case 10:
+      { // end
+        *data_pos++ = data;
+        data_sta = 0;
+        data_tmp--;
+        if (data_tmp == 0) {
+          uint8_t data_sum = 0;
+          int data_len = (data_pos - data_buf);
+          for (int i = 0, len = data_len - 2; i < len; i++) data_sum += data_buf[i];
+          if (data_sum == data_buf[data_len - 2]) { // sum check pass
+            LIBMAIX_INFO_PRINTF("\n data_sum 0x%02X data_len %d", data_sum, data_len);
+            // for(int i = 0; i < data_len; i++) LIBMAIX_INFO_PRINTF(" 0x%02X", data_buf[i]);
+            extern int zm831_home_app_index;
+            if (zm831->recvPacks.size() > 16) { // limit recv pack size
+              zm831->recvPacks.pop_back();
+            }
+            auto tmp = std::vector<uint8_t>(data_len);
+            memcpy(tmp.data(), data_buf, data_len);
+            zm831->recvPacks.push_back((zm831_pack_t){ zm831_home_app_index, tmp});
+          }
+        }
+        break;
+      }
+    }
+    // LIBMAIX_INFO_PRINTF("\n data_sta %d data 0x%02X", data_sta, data);
   }
 
   void zm831_protocol_send(char *buf, int len)

@@ -23,7 +23,18 @@ extern "C"
       // libmaix_image_t tmp = *ai_rgb;
       // LIBMAIX_INFO_PRINTF("_zm831_home_app_loop");
     }
+
     usleep(zm831->ai_th_usec);
+
+    if (!zm831->recvPacks.empty()){
+      zm831_pack_t pack = zm831->recvPacks.front();
+      zm831->recvPacks.pop_front();
+      LIBMAIX_INFO_PRINTF("recv pack: %d\n", pack.type);
+      auto tmp = pack.data;
+      for (int i = 0; i < tmp.size(); i++) printf(" 0x%02X", tmp[i]);
+      printf("\n");
+    }
+
     // LIBMAIX_INFO_PRINTF("_zm831_home_app_loop");
     return 0;
   }
@@ -156,7 +167,7 @@ extern "C"
       lv_obj_set_event_cb(btn, btn_event_app_cb); /*Assign a callback to the button*/
       static lv_style_t style_btn_red;
       lv_style_init(&style_btn_red);
-      lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0x00, 0x00, 0xff, 0x7f});
+      lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0x00, 0x00, 0xff, 0x7f}); // bgra
       lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
       lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
       lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
