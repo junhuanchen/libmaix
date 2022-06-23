@@ -29,7 +29,7 @@ extern "C"
     if (!zm831->recvPacks.empty()){
       zm831_pack_t pack = zm831->recvPacks.front();
       zm831->recvPacks.pop_front();
-      LIBMAIX_INFO_PRINTF("recv pack: %d\n", pack.type);
+      LIBMAIX_INFO_PRINTF("recv pack type: %d\n", pack.type);
       auto tmp = pack.data;
       for (int i = 0; i < tmp.size(); i++) printf(" 0x%02X", tmp[i]);
       printf("\n");
@@ -62,8 +62,8 @@ extern "C"
 
   int zm831_home_app_index = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] ={
-    NULL, // 0
-    NULL, // 1
+    NULL, // 0 is disabled
+    get_imlib_find_blobs_app, // 1
     get_zm831_home_app,
     get_qrcode_zbar_app,
     get_qrcode_quirc_app,
@@ -178,6 +178,8 @@ extern "C"
     }
 
     zm831_home_app_reload(get_zm831_home_app());
+
+    zm831_home_app_select(1);
 
     // int ret, stacksize = 204800; /*thread 堆栈设置为 20K */
     // pthread_attr_t attr;
