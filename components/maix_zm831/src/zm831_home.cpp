@@ -18,9 +18,9 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      // CALC_FPS("zm831_home_loop");
-      // ai_rgb = NULL;
-      // libmaix_image_t tmp = *ai_rgb;
+      CALC_FPS("zm831_home_loop");
+      // LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
+      // cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
       // LIBMAIX_INFO_PRINTF("_zm831_home_app_loop");
     }
 
@@ -59,12 +59,15 @@ extern "C"
   extern zm831_home_app get_qrcode_quirc_app();
   extern zm831_home_app get_find_apriltag_app();
   extern zm831_home_app get_imlib_find_blobs_app();
+  extern zm831_home_app get_imlib_cube_color_app();
+  extern zm831_home_app get_cv_nn_find_ball_app();
 
   int zm831_home_app_index = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] ={
     NULL, // 0 is disabled
-    get_imlib_find_blobs_app, // 1
     get_zm831_home_app,
+    get_cv_nn_find_ball_app, // 1
+    get_imlib_cube_color_app,
     get_qrcode_zbar_app,
     get_qrcode_quirc_app,
     get_nn_yolo_face_app,

@@ -47,7 +47,7 @@
         clock_gettime(CLOCK_MONOTONIC, &ts2);                                                                  \
         if ((ts2.tv_sec * 1000 + ts2.tv_nsec / 1000000) - (ts1.tv_sec * 1000 + ts1.tv_nsec / 1000000) >= 1000) \
         {                                                                                                      \
-            printf("%s => H26X FPS:%d     \r\n", tips, fcnt);                                                      \
+            printf("%s => H26X FPS:%d     \r\n", tips, fcnt);                                                  \
             ts1 = ts2;                                                                                         \
             fcnt = 0;                                                                                          \
         }                                                                                                      \
@@ -84,7 +84,7 @@ typedef struct
     // libmaix_image_t *ui_rgba;
     lv_color_t *ui_buf1, *ui_buf2;
     lv_color_t canvas_buffer[LV_CANVAS_BUF_SIZE_TRUE_COLOR_ALPHA(zm831_ui_w, zm831_ui_h)];
-    lv_obj_t * canvas;
+    lv_obj_t *canvas;
     lv_style_t screen_style;
     // ui
     pthread_t ui_thread;
@@ -95,17 +95,16 @@ typedef struct
     volatile int ai_th_keep;
 } zm831_uv;
 
-
 typedef struct _zm831_home_app_
 {
-    int (*load)(struct _zm831_home_app_*);
-    int (*loop)(struct _zm831_home_app_*);
-    int (*exit)(struct _zm831_home_app_*);
+    int (*load)(struct _zm831_home_app_ *);
+    int (*loop)(struct _zm831_home_app_ *);
+    int (*exit)(struct _zm831_home_app_ *);
     void *userdata;
 } zm831_home_app;
 
-typedef void (* _zm831_home_app_func_)(zm831_home_app*);
+typedef void (*_zm831_home_app_func_)(zm831_home_app *);
 
-typedef zm831_home_app (* _get_zm831_home_app_func_)();
+typedef zm831_home_app (*_get_zm831_home_app_func_)();
 
 #endif /*_zm831_uv_*/
