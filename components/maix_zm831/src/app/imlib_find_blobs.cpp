@@ -138,6 +138,16 @@ extern "C"
                 pthread_mutex_lock(&zm831->ui_mutex);
                 lv_canvas_draw_rect(zm831->canvas, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.w + 8, lnk_data.rect.h + 8, &self->rect_dsc);
                 pthread_mutex_unlock(&zm831->ui_mutex);
+
+                uint8_t cmd[5];
+                cmd[0] = 0x01;
+                cmd[1]= lnk_data.rect.x;
+                cmd[2] = lnk_data.rect.y;
+                cmd[3] = lnk_data.rect.w;
+                cmd[4] = lnk_data.rect.h;
+                extern int zm831_protocol_send(uint8_t *data, int len);
+                zm831_protocol_send(cmd, sizeof(cmd));
+
                 self->now = time(NULL);
 
                 // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);

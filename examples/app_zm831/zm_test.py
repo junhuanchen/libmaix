@@ -12,6 +12,13 @@ ser.write(b'\x86\xAB\x00\x0B\xE8\x15\x01\x00\x00\x40\xCF')
 
 # time.sleep(2)
 
+# while True:
+#   data = ser.read_until(b'\xCF')
+#   if data:
+#     print(data)
+#     s= 'Sample String'.encode('iso8859-1')
+#     print(s.hex())
+
 sys.exit(0)
 
 while True:
