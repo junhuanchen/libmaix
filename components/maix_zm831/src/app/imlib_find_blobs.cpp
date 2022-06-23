@@ -41,9 +41,9 @@ extern "C"
     auto self = (_imlib_find_blobs_ *)app->userdata;
     lv_draw_rect_dsc_init(&self->rect_dsc);
     self->rect_dsc.radius = 5;
-    self->rect_dsc.bg_opa = LV_OPA_TRANSP;
-    self->rect_dsc.border_width = 5;
-    self->rect_dsc.border_opa = LV_OPA_90;
+    self->rect_dsc.bg_opa = LV_OPA_50;
+    self->rect_dsc.border_width = 2;
+    self->rect_dsc.border_opa = LV_OPA_50;
     self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
     lv_draw_label_dsc_init(&self->label_dsc);
