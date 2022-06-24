@@ -172,6 +172,7 @@ extern "C"
               {ai2vi(det->p[3][0]), ai2vi(det->p[3][1])},
               {ai2vi(det->p[0][0]), ai2vi(det->p[0][1])},
           };
+
           lv_canvas_draw_line(zm831->canvas, points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
 
           lv_canvas_draw_text(zm831->canvas, det->c[0], det->c[1], 100, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);

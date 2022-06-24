@@ -110,6 +110,9 @@ typedef zm831_home_app (*_get_zm831_home_app_func_)();
 #define ai2vi(val) (int)((val) * (240.0 / 224.0)) // ai / vi = 224 / 240
 #define vi2ai(val) (int)((val) * (224.0 / 240.0)) // vi / ai = 240 / 224
 
+// #define ai2vi(val) (int)((val) * 15 / 14) // ai / vi = 224 / 240
+// #define vi2ai(val) (int)((val) * 14 / 15) // vi / ai = 240 / 224
+
 #define mv2cvL(l) (int(((l) * 255) / 100))
 #define mv2cvA(a) ((a) + 128)
 #define mv2cvB(b) ((b) + 128)
