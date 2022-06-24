@@ -35,11 +35,12 @@ extern "C"
     libmaix_nn_opt_param_t opt_param;
 
     int threshold_target = 0; // < thresholds.size()
-    std::vector<std::vector<int>> thresholds[4] = {
-        {{21, 78, 34, 77, -8, 55}, {18, 61, 25, 61, -2, 50}},
-        {{6, 86, -47, -9, 12, 46}},
-        {{10, 60, 5, 41, -70, -24}, {20, 55, 8, 42, -88, -24}},
-        {{50, 100, -2, 40, 40, 90}},
+    std::vector<std::vector<int>> thresholds[4] = { // mv lab to cv lab need (int((l) / 100), a + 128, b + 128)
+        // {{21, 78, 34, 77, -8, 55}, {18, 61, 25, 61, -2, 50}},
+        // {{6, 86, -47, -9, 12, 46}},
+        // {{10, 60, 5, 41, -70, -24}, {20, 55, 8, 42, -88, -24}},
+        // {{50, 100, -2, 40, 40, 90}},
+        {{mv2cvL(5), mv2cvA(3), mv2cvB(-81), mv2cvL(82), mv2cvA(57), mv2cvA(-30)}} // blue
     };
 
   } cv_nn_find_ball_app;
@@ -102,8 +103,8 @@ extern "C"
       cv::bitwise_not(mask, mask);
     }
 
-    extern void zm831_ui_show_image(cv::Mat &img, int x, int y);
-    zm831_ui_show_image(mask, 8, 8);
+    extern void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);
+    zm831_ui_show_image(mask, 8, 8, LV_OPA_100);
 
     cv::Mat se = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(x_stride, y_stride), cv::Point(-1, -1));
     cv::morphologyEx(mask, mask, cv::MORPH_OPEN, se);

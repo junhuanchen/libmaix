@@ -7,7 +7,7 @@ extern "C"
 
 // ==============================================================================================
 
-  void zm831_ui_show_image(cv::Mat &img, int x, int y)
+  void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa)
   {
       pthread_mutex_lock(&zm831->ui_mutex);
 
@@ -24,7 +24,7 @@ extern "C"
 
       lv_draw_img_dsc_t img_dsc;
       lv_draw_img_dsc_init(&img_dsc);
-      img_dsc.opa = LV_OPA_80;
+      img_dsc.opa = opa;
       lv_canvas_draw_img(zm831->canvas, x, y, &img_bgra, &img_dsc);
 
       pthread_mutex_unlock(&zm831->ui_mutex);
@@ -47,7 +47,7 @@ extern "C"
       cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
       LIBMAIX_INFO_PRINTF("_zm831_home_app_loop");
 
-      zm831_ui_show_image(rgb, 8, 8);
+      zm831_ui_show_image(rgb, 8, 8, LV_OPA_80);
     }
 
     usleep(zm831->ai_th_usec);
