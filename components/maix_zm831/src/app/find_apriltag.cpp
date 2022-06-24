@@ -166,11 +166,11 @@ extern "C"
           prob2str << det->id;
 
           const lv_point_t points[] = {
-              {det->p[0][0] + 8, det->p[0][1] + 8},
-              {det->p[1][0] + 8, det->p[1][1] + 8},
-              {det->p[2][0] + 8, det->p[2][1] + 8},
-              {det->p[3][0] + 8, det->p[3][1] + 8},
-              {det->p[0][0] + 8, det->p[0][1] + 8},
+              {ai2vi(det->p[0][0]), ai2vi(det->p[0][1])},
+              {ai2vi(det->p[1][0]), ai2vi(det->p[1][1])},
+              {ai2vi(det->p[2][0]), ai2vi(det->p[2][1])},
+              {ai2vi(det->p[3][0]), ai2vi(det->p[3][1])},
+              {ai2vi(det->p[0][0]), ai2vi(det->p[0][1])},
           };
           lv_canvas_draw_line(zm831->canvas, points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
 

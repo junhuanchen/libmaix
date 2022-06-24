@@ -107,4 +107,7 @@ typedef void (*_zm831_home_app_func_)(zm831_home_app *);
 
 typedef zm831_home_app (*_get_zm831_home_app_func_)();
 
+#define ai2vi(val) (int)((val) * (240.0 / 224.0)) // ai / vi = 224 / 240
+#define vi2ai(val) (int)((val) * (224.0 / 240.0)) // vi / ai = 240 / 224
+
 #endif /*_zm831_uv_*/

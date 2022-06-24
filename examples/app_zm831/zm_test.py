@@ -8,11 +8,11 @@ while True:
 
   ser.write(b'\x86\xAB\x00\x0B\xE8\x15\x01\x00\x00\x40\xCF')
 
-  time.sleep(3)
+  time.sleep(2)
 
   ser.write(b'\x86\xAB\x00\x0B\xE8\x15\x07\x00\x00\x41\xCF')
 
-  time.sleep(3)
+  time.sleep(2)
 
 # while True:
 #   data = ser.read_until(b'\xCF')

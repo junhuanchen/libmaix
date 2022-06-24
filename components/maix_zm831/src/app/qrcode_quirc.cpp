@@ -117,7 +117,7 @@ extern "C"
           // dump_data(&data);
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_rect(zm831->canvas, code.corners[0].x, code.corners[0].y, code.corners[2].x - code.corners[0].x + 8, code.corners[2].y - code.corners[0].y + 8, &self->rect_dsc);
+          lv_canvas_draw_rect(zm831->canvas, code.corners[0].x, code.corners[0].y, ai2vi(code.corners[2].x - code.corners[0].x), ai2vi(code.corners[2].y - code.corners[0].y), &self->rect_dsc);
           lv_canvas_draw_text(zm831->canvas, code.corners[0].x, code.corners[1].y, 100, &self->label_dsc, info.c_str(), LV_LABEL_ALIGN_LEFT);
           pthread_mutex_unlock(&zm831->ui_mutex);
           self->now = time(NULL);

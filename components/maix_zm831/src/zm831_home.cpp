@@ -7,6 +7,29 @@ extern "C"
 
 // ==============================================================================================
 
+  void zm831_ui_show_image(cv::Mat &img, int x, int y)
+  {
+      pthread_mutex_lock(&zm831->ui_mutex);
+
+      cv::Mat bgra;
+      cv::cvtColor(img, bgra, cv::COLOR_RGB2BGRA);
+
+      lv_img_dsc_t img_bgra;
+      img_bgra.header.always_zero = 0;
+      img_bgra.header.w = bgra.cols;
+      img_bgra.header.h = bgra.rows;
+      img_bgra.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
+      img_bgra.data = (uint8_t*)bgra.data;
+      img_bgra.data_size = bgra.cols * bgra.rows * LV_IMG_PX_SIZE_ALPHA_BYTE;
+
+      lv_draw_img_dsc_t img_dsc;
+      lv_draw_img_dsc_init(&img_dsc);
+      img_dsc.opa = LV_OPA_80;
+      lv_canvas_draw_img(zm831->canvas, x, y, &img_bgra, &img_dsc);
+
+      pthread_mutex_unlock(&zm831->ui_mutex);
+  }
+
   int zm831_home_app_load(zm831_home_app *app)
   {
     LIBMAIX_INFO_PRINTF("zm831_home_app_load");
@@ -19,9 +42,12 @@ extern "C"
     if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       CALC_FPS("zm831_home_loop");
-      // LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
-      // cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
-      // LIBMAIX_INFO_PRINTF("_zm831_home_app_loop");
+
+      LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
+      cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+      LIBMAIX_INFO_PRINTF("_zm831_home_app_loop");
+
+      zm831_ui_show_image(rgb, 8, 8);
     }
 
     usleep(zm831->ai_th_usec);
@@ -65,7 +91,6 @@ extern "C"
   int zm831_home_app_index = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] ={
     NULL, // 0 is disabled
-    get_zm831_home_app,
     get_cv_nn_find_ball_app, // 1
     get_imlib_cube_color_app,
     get_qrcode_zbar_app,
@@ -184,15 +209,17 @@ extern "C"
 
     zm831_home_app_select(1);
 
+    zm831->ai_th_usec = 40000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
+
+    zm831->ai_th_id = pthread_create(&zm831->ai_thread, NULL, _zm831_home_loop, NULL);
+
     // int ret, stacksize = 204800; /*thread 堆栈设置为 20K */
     // pthread_attr_t attr;
     // ret = pthread_attr_init(&attr);
     // ret = pthread_attr_setstacksize(&attr, stacksize);
-    // ret = pthread_create(&zm831->ai_thread, &attr, zm831_home_thread, NULL);
+    // zm831->ai_th_id = pthread_create(&zm831->ai_thread, &attr, _zm831_home_loop, NULL);
     // ret = pthread_attr_destroy(&attr);
 
-    zm831->ai_th_usec = 40000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
-    zm831->ai_th_id = pthread_create(&zm831->ai_thread, NULL, _zm831_home_loop, NULL);
     if(zm831->ai_th_id != 0)
     {
         printf("new thread create is failed.\n");

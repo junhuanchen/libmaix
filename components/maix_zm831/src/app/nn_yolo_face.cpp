@@ -108,7 +108,7 @@ extern "C"
         printf("%d %d %d %d %f %s\n", x, y, w, h, prob, self->labels[class_id]);
         std::ostringstream prob2str;
         prob2str << prob;
-        lv_canvas_draw_rect(zm831->canvas, x, y, w + 8, h + 8, &self->rect_dsc);
+        lv_canvas_draw_rect(zm831->canvas, x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
         lv_canvas_draw_text(zm831->canvas, x, y, 120, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_AUTO);
       }
     }

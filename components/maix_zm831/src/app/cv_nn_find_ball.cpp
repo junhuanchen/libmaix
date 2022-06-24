@@ -86,34 +86,25 @@ extern "C"
     return std::move(cv_dst);
   }
 
-  void cv_nn_find_ball(cv::Mat &in_img, std::vector<std::vector<int>> &thresholds, int x_stride, int y_stride, int area_threshold, int pixels_threshold, int w_min, int h_min, bool invert, bool margin)
+  std::vector<std::vector<int>> cv_nn_find_ball(cv::Mat &lab, std::vector<std::vector<int>> &thresholds, int x_stride, int y_stride, int area_threshold, int pixels_threshold, int w_min, int h_min, bool invert, bool margin)
   {
-    cv::Mat lab, mask1;
-    bool grasy = 0;
+    std::vector<std::vector<int>> return_val;
+    cv::Mat tmp, mask = cv::Mat::zeros(lab.size(), CV_8UC1);
+    for (size_t i = 0; i < thresholds.size(); i++)
+    {
+      // LMin AMin BMin LMax AMax BMax
+      cv::inRange(lab, cv::Scalar(thresholds[i][0], thresholds[i][1], thresholds[i][2]), cv::Scalar(thresholds[i][3], thresholds[i][4], thresholds[i][5]), tmp);
+      mask = mask + tmp;
+    }
 
-    cv::Mat mask = cv::Mat::zeros(lab.size(), CV_8UC1);
-    if (grasy)
-    {
-      for (size_t i = 0; i < thresholds.size(); i++)
-      {
-        // LMin LMax
-        cv::inRange(lab, cv::Scalar(thresholds[i][0]), cv::Scalar(thresholds[i][1]), mask1);
-        mask = mask + mask1;
-      }
-    }
-    else
-    {
-      for (size_t i = 0; i < thresholds.size(); i++)
-      {
-        // LMin AMin BMin LMax AMax BMax
-        cv::inRange(lab, cv::Scalar(thresholds[i][0], thresholds[i][1], thresholds[i][2]), cv::Scalar(thresholds[i][3], thresholds[i][4], thresholds[i][5]), mask1);
-        mask = mask + mask1;
-      }
-    }
     if (invert)
     {
       cv::bitwise_not(mask, mask);
     }
+
+    // extern void zm831_ui_show_image(cv::Mat &img, int x, int y);
+    // zm831_ui_show_image(mask, 8, 8);
+
     cv::Mat se = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(x_stride, y_stride), cv::Point(-1, -1));
     cv::morphologyEx(mask, mask, cv::MORPH_OPEN, se);
     if (margin != 0)
@@ -121,13 +112,14 @@ extern "C"
       cv::Mat se_t = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(margin, margin), cv::Point(-1, -1));
       cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, se_t);
     }
+
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hiearchy;
     cv::findContours(mask, contours, hiearchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
     if (contours.size() == 0)
     {
-      return;
+      return std::move(return_val);
     }
 
     for (size_t i = 0; i < contours.size(); i++)
@@ -150,50 +142,47 @@ extern "C"
         continue;
       }
 
-      // val.rect.x = int(rects.x);
-      // val.rect.y = int(rects.y);
-      // val.rect.w = int(rects.width);
-      // val.rect.h = int(rects.height);
-      // val.pixels = int(cv::contourArea(contours[i]));
-      // val.centroid.x = int(rects.x + rects.width / 2);
-      // val.centroid.y = int(rects.y + rects.height / 2);
+      auto tmp = std::vector<int>{
+          int(rects.x), int(rects.y), int(rects.width), int(rects.height),
+          int(cv::contourArea(contours[i])),
+          int(rects.x + rects.width / 2), int(rects.y + rects.height / 2)
+      };
 
       if (contours[i].size() < 6)
       {
-        // val.ball = 0;
-        // list_push_back(out, &val);
+        tmp.push_back(0);
+        return_val.push_back(tmp);
         continue;
       }
+
       cv::RotatedRect rrt = fitEllipse(contours[i]);
       int cr_x, cr_y, cr_w, cr_h;
       cr_x = rrt.center.x;
       cr_y = rrt.center.y;
       cr_w = rrt.size.width;
       cr_h = rrt.size.height;
+
       if ((abs(cr_w - cr_h) > 10) || (cr_w * cr_h) < 400)
       {
-        // val.ball = 0;
-        // list_push_back(out, &val);
+        tmp.push_back(0);
+        return_val.push_back(tmp);
       }
       else
       {
-        int cr_x1, cr_y1, cr_x2, cr_y2;
-        cr_x1 = cr_x - cr_w / 2;
-        cr_x2 = cr_x + cr_w / 2;
-        cr_y1 = cr_y - cr_h / 2;
-        cr_y2 = cr_y + cr_h / 2;
-        // val.rect_ball.x = cr_x;
-        // val.rect_ball.y = cr_y;
-        // val.rect_ball.w = cr_w;
-        // val.rect_ball.h = cr_h;
-        // val.line_ball.x1 = cr_x1;
-        // val.line_ball.y1 = cr_y1;
-        // val.line_ball.x2 = cr_x2;
-        // val.line_ball.y2 = cr_y2;
-        // val.ball = 1;
-        // list_push_back(out, &val);
+        tmp.push_back(1);
+        tmp.push_back(cr_x);
+        tmp.push_back(cr_y);
+        tmp.push_back(cr_w);
+        tmp.push_back(cr_h);
+        tmp.push_back(cr_x - cr_w / 2);
+        tmp.push_back(cr_x + cr_w / 2);
+        tmp.push_back(cr_y - cr_h / 2);
+        tmp.push_back(cr_y + cr_h / 2);
+        return_val.push_back(tmp);
       }
+
     }
+    return std::move(return_val);
   }
 
   int cv_nn_find_ball_app_loop(zm831_home_app *app)
@@ -202,11 +191,26 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
-      cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
-
-      cv_nn_find_ball(rgb, self->thresholds[self->threshold_target], 2, 2, 500, 10, 22, 22, 0, 0);
-
+      try
+      {
+        // LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
+        cv::Mat lab, rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+        cvtColor(rgb, lab, cv::COLOR_RGB2Lab);
+        auto result = cv_nn_find_ball(lab, self->thresholds[self->threshold_target], 2, 2, 500, 10, 22, 22, 0, 0);
+        for (size_t i = 0; i < result.size(); i++)
+        {
+          std::cout << result[i].size() << " ";
+          for (size_t j = 0; j < result[i].size(); j++)
+          {
+            std::cout << result[i][j] << " ";
+          }
+          std::cout << std::endl;
+        }
+      }
+      catch(const std::exception& e)
+      {
+        std::cerr << e.what() << '\n';
+      }
     }
 
     usleep(zm831->ai_th_usec);
