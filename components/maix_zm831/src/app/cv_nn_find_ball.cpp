@@ -14,8 +14,8 @@ extern "C"
 
     const char *model_path_param = "/home/res/ball.param";
     const char *model_path_bin = "/home/res/ball.bin";
-    const char *inputs_names[1] = {"input0"};
-    const char *outputs_names[1] = {"output0"};
+    const char *inputs_names[1] = {"ftr00_input_blob"};
+    const char *outputs_names[1] = {"fc2_blob"};
     const float opt_param_mean = 127.5;
     const float opt_param_norm = 0.00784313725490196;
     libmaix_nn_layer_t input = {
@@ -87,8 +87,9 @@ extern "C"
     return std::move(cv_dst);
   }
 
-  std::vector<std::vector<int>> cv_nn_find_ball(cv::Mat &lab, std::vector<std::vector<int>> &thresholds, int x_stride, int y_stride, int area_threshold, int pixels_threshold, int w_min, int h_min, bool invert, bool margin)
+  std::vector<std::vector<int>> cv_nn_find_ball(zm831_home_app *app, cv::Mat &lab, std::vector<std::vector<int>> &thresholds, int x_stride, int y_stride, int area_threshold, int pixels_threshold, int w_min, int h_min, bool invert, bool margin)
   {
+    auto self = (_cv_nn_find_ball_ *)app->userdata;
     std::vector<std::vector<int>> return_val;
     cv::Mat tmp, mask = cv::Mat::zeros(lab.size(), CV_8UC1);
     for (size_t i = 0; i < thresholds.size(); i++)
@@ -165,8 +166,27 @@ extern "C"
 
       if ((abs(cr_w - cr_h) > 10) || (cr_w * cr_h) < 400)
       {
-        tmp.push_back(0);
-        return_val.push_back(tmp);
+        // show ball image
+        cv::Mat ball = cv_resize_with_padding(mask(cv::Rect(rects.x, rects.y, rects.width, rects.height)), 32, 32);
+
+        extern void zm831_ui_show_image(cv::Mat &ball, int x, int y, lv_opa_t opa);
+        zm831_ui_show_image(ball, 0, 0, LV_OPA_100);
+
+        self->input.data = ball.data;
+        libmaix_err_t err = self->nn->forward(self->nn, &self->input, &self->out_fmap);
+        if (err == LIBMAIX_ERR_NONE)
+        {
+          float *ball_val = (float*)self->out_fmap.data;
+          // printf("%f\n", ball_val[0]);
+          if(ball_val[0] > 0.5)
+          {
+            tmp.push_back(2);
+          } else {
+            tmp.push_back(0);
+          }
+          return_val.push_back(tmp);
+        }
+
       }
       else
       {
@@ -181,7 +201,6 @@ extern "C"
         tmp.push_back(cr_y + cr_h / 2);
         return_val.push_back(tmp);
       }
-
     }
     return std::move(return_val);
   }
@@ -197,7 +216,7 @@ extern "C"
         // LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
         cv::Mat lab, rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
         cvtColor(rgb, lab, cv::COLOR_RGB2Lab);
-        auto result = cv_nn_find_ball(lab, self->thresholds[self->threshold_target], 2, 2, 500, 10, 22, 22, 0, 0);
+        auto result = cv_nn_find_ball(app, lab, self->thresholds[self->threshold_target], 2, 2, 500, 10, 22, 22, 0, 0);
         for (size_t i = 0; i < result.size(); i++)
         {
           std::cout << result[i].size() << " ";
