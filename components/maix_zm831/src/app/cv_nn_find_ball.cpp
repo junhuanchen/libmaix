@@ -102,8 +102,8 @@ extern "C"
       cv::bitwise_not(mask, mask);
     }
 
-    // extern void zm831_ui_show_image(cv::Mat &img, int x, int y);
-    // zm831_ui_show_image(mask, 8, 8);
+    extern void zm831_ui_show_image(cv::Mat &img, int x, int y);
+    zm831_ui_show_image(mask, 8, 8);
 
     cv::Mat se = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(x_stride, y_stride), cv::Point(-1, -1));
     cv::morphologyEx(mask, mask, cv::MORPH_OPEN, se);
