@@ -75,7 +75,7 @@ extern "C"
   {
     auto self = (_imlib_cube_color_ *)app->userdata;
     libmaix_image_t *ai_rgb = NULL;
-    if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
+    if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       CALC_FPS("imlib_cube_color_app_loop");
 

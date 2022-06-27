@@ -22,7 +22,7 @@ append_srcs_dir(ADD_SRCS "lib")
 ###############################################
 
 ###### Add required/dependent components ######
-list(APPEND ADD_REQUIREMENTS libmaix maix_zm831)
+list(APPEND ADD_REQUIREMENTS libmaix maix_zm831 maix_speech)
 
 ###############################################
 

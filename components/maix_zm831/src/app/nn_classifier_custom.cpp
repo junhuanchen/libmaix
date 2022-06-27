@@ -151,7 +151,7 @@ extern "C"
     auto self = (_nn_classifier_custom_ *)app->userdata;
     libmaix_err_t err = LIBMAIX_ERR_NONE;
     libmaix_image_t *ai_rgb = NULL;
-    if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
+    if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       if (self->flag_trained)
       {

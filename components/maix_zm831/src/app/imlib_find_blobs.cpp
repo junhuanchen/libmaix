@@ -58,7 +58,7 @@ extern "C"
   {
     auto self = (_imlib_find_blobs_ *)app->userdata;
     libmaix_image_t *ai_rgb = NULL;
-    if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
+    if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       CALC_FPS("imlib_find_blobs_app_loop");
 

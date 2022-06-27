@@ -441,7 +441,7 @@ extern "C"
     // {
     //     libmaix_err_t err = LIBMAIX_ERR_NONE;
     //     libmaix_image_t *ai_rgb = NULL;
-    //     if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
+    //     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     //     {
     //         zm831_ai->input.data = ai_rgb->data;
     //         err = zm831_ai->nn->forward(zm831_ai->nn, &zm831_ai->input, &zm831_ai->out_fmap);
@@ -464,6 +464,28 @@ extern "C"
 
     // // =========================================================================================
 
+    void zm831_vi_open()
+    {
+        zm831->vi = libmaix_cam_create(0, zm831->vi_w, zm831->vi_h, 0, 0);
+        if (NULL == zm831->vi)
+            return;
+        zm831->vi->start_capture(zm831->vi);
+
+        zm831->ai = libmaix_cam_create(1, zm831->ai_w, zm831->ai_h, 0, 0);
+        if (NULL == zm831->ai)
+            return;
+        zm831->ai->start_capture(zm831->ai);
+    }
+
+    void zm831_vi_stop()
+    {
+        if (NULL != zm831->vi)
+            libmaix_cam_destroy(&zm831->vi);
+
+        if (NULL != zm831->ai)
+            libmaix_cam_destroy(&zm831->ai);
+    }
+
     void zm831_vi_load()
     {
         LIBMAIX_DEBUG_PRINTF("zm831_vi_load");
@@ -475,19 +497,11 @@ extern "C"
         zm831->ai_w = zm831_ai_w, zm831->ai_h = zm831_ai_h;
         zm831->ui_w = zm831_ui_w, zm831->ui_h = zm831_ui_h;
 
-        zm831->vi = libmaix_cam_create(0, zm831->vi_w, zm831->vi_h, 1, 0);
-        if (NULL == zm831->vi)
-            return;
-        zm831->vi->start_capture(zm831->vi);
+        zm831_vi_open();
 
         // zm831->vi_yuv = (uint8_t *)g2d_allocMem(zm831->vi_w * zm831->vi_h * 3 / 2);
         // if (NULL == zm831->vi_yuv)
         //     return;
-
-        zm831->ai = libmaix_cam_create(1, zm831->ai_w, zm831->ai_h, 0, 0);
-        if (NULL == zm831->ai)
-            return;
-        zm831->ai->start_capture(zm831->ai);
 
         // zm831->ai_rgb = (uint8_t *)malloc(zm831->ai_w * zm831->ai_h * 3);
         // if (NULL == zm831->ai_rgb)
@@ -506,14 +520,10 @@ extern "C"
 
     void zm831_vi_exit()
     {
-        if (NULL != zm831->vi)
-            libmaix_cam_destroy(&zm831->vi);
+        zm831_vi_stop();
 
         // if (NULL != zm831->vi_yuv)
         //     g2d_freeMem(zm831->vi_yuv), zm831->vi_yuv = NULL;
-
-        if (NULL != zm831->ai)
-            libmaix_cam_destroy(&zm831->ai);
 
         // if (NULL != zm831->ai_rgb)
         //     free(zm831->ai_rgb), zm831->ai_rgb = NULL;
@@ -542,7 +552,7 @@ extern "C"
         {
             uint32_t *phy = NULL, *vir = NULL;
             zm831->ui->frame_addr(zm831->ui, frame, &vir, &phy);
-            if (LIBMAIX_ERR_NONE == zm831->vi->capture(zm831->vi, (unsigned char *)vir[0]))
+            if (zm831->vi && LIBMAIX_ERR_NONE == zm831->vi->capture(zm831->vi, (unsigned char *)vir[0]))
             {
                 zm831->ui->set_frame(zm831->ui, frame, 0);
             }

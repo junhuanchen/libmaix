@@ -39,7 +39,7 @@ extern "C"
   int zm831_home_app_loop(zm831_home_app *app)
   {
     libmaix_image_t *ai_rgb = NULL;
-    if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
+    if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       CALC_FPS("zm831_home_loop");
 
@@ -90,11 +90,12 @@ extern "C"
   extern zm831_home_app get_nn_classifier_resnet_app();
   extern zm831_home_app get_nn_retinaface_app();
   extern zm831_home_app get_nn_classifier_custom_app();
-
+  extern zm831_home_app get_speech_asr_app();
 
   int zm831_home_app_index = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] ={
     NULL, // 0 is disabled
+    get_speech_asr_app,
     get_nn_classifier_custom_app,
     get_nn_retinaface_app,
     get_nn_classifier_resnet_app,

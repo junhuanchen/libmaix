@@ -72,6 +72,7 @@ if(CONFIG_COMPONENT_MAIX_ZM831_ENABLE)
 
         include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libmaix/lib/arch/v83x/include/opencv4)
 
+        list(APPEND ADD_REQUIREMENTS maix_speech)
 
         list(APPEND ADD_DYNAMIC_LIB
             # "lib/libzbar.so"

@@ -276,7 +276,7 @@ extern "C"
     auto self = (_nn_retinaface_ *)app->userdata;
     libmaix_err_t err = LIBMAIX_ERR_NONE;
     libmaix_image_t *ai_rgb = NULL;
-    if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
+    if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       int face_num = 0;
       face_obj_t *face_objs = NULL;
