@@ -324,6 +324,10 @@ extern "C"
           {
             //没有记录的人脸时,但有脸
           }
+        } else {
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+          pthread_mutex_unlock(&zm831->ui_mutex);
         }
       }
     }

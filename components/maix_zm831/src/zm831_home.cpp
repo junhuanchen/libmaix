@@ -43,9 +43,9 @@ extern "C"
     {
       CALC_FPS("zm831_home_loop");
 
-      LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
+      // LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
       cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
-      LIBMAIX_INFO_PRINTF("_zm831_home_app_loop");
+      // LIBMAIX_INFO_PRINTF("_zm831_home_app_loop");
 
       zm831_ui_show_image(rgb, 8, 8, LV_OPA_80);
     }
@@ -110,11 +110,16 @@ extern "C"
 
   zm831_home_app *app_bak, *app_run, app_old, app_new;
 
+  void zm831_home_app_stop()
+  {
+    if (app_run) app_run->loop = NULL; // when app lopp stop & exit old app
+  }
+
   void zm831_home_app_reload(zm831_home_app app)
   {
     app_new = app;
     app_bak = &app_new;
-    if (app_run) app_run->loop = NULL; // when app lopp stop & exit old app
+    zm831_home_app_stop();
     LIBMAIX_INFO_PRINTF("zm831_home_app_reload");
   }
 
@@ -238,6 +243,7 @@ extern "C"
     if (zm831->ai_th_usec)
     {
       zm831->ai_th_usec = 0;
+      zm831_home_app_stop();
       pthread_join(zm831->ai_thread, (void **)&thread_ret);
     }
     LIBMAIX_INFO_PRINTF("zm831_home_exit");
