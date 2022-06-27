@@ -167,7 +167,7 @@ extern "C"
             prob2str << "class id: " << self->class_id << ", prob: " << (int)((100 - self->class_prob) * 10) << std::endl;
             pthread_mutex_lock(&zm831->ui_mutex);
             lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
-            lv_canvas_draw_text(zm831->canvas, 0, 0, 240, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_CENTER);
+            lv_canvas_draw_text(zm831->canvas, 0, 0, 240, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
             pthread_mutex_unlock(&zm831->ui_mutex);
           }
         }
