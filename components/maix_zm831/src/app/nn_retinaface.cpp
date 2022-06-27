@@ -13,6 +13,7 @@ extern "C"
   {
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
+    lv_draw_line_dsc_t line_dsc;
     time_t now;
 
     const char *fa_model_path_param = "/home/res/model_int8.param";
@@ -44,6 +45,7 @@ extern "C"
 
     float face_threshold = 70.f;   // 人脸阈值
     int face_feature_id = 0;       // 人脸学习id
+    int face_feature_max = 0;      // 人脸总数id
     const int face_sum = 20;       // 最大人脸数量
     const int face_len = 256;      // 人脸数据宽度
     float **face_features;         // 人脸学习数据
@@ -74,7 +76,12 @@ extern "C"
     self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
     lv_draw_label_dsc_init(&self->label_dsc);
-    self->label_dsc.color = LV_COLOR_YELLOW;
+    self->label_dsc.color = LV_COLOR_GREEN;
+
+    lv_draw_line_dsc_init(&self->line_dsc);
+    self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+    self->line_dsc.width = 2;
+    self->line_dsc.opa = LV_OPA_70;
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 
@@ -246,7 +253,12 @@ extern "C"
       self->face_feature_id = 0;
       return -1;
     }
-    for (int i = 0; i < self->face_feature_id; ++i)
+    if (self->face_feature_max == 0)
+    {
+      return -1;
+    }
+    int limit = std::min(self->face_feature_max, self->face_sum);
+    for (int i = 0; i < limit; ++i)
     {
       face_scores[i] = libmaix_nn_feature_compare_float(face_feature, self->face_features[i], self->face_len);
       if (face_scores[i] > face_scores[face_score_max_id])
@@ -272,18 +284,28 @@ extern "C"
       {
         if (face_num > 0)
         {
-          printf("face_num: %d\n", face_num);
-          printf("face_objs: %p\n", face_objs);
-          printf("face_objs->prob: %f\n", face_objs->prob);
-          printf("face_objs->x1: %d\n", face_objs->x1);
-          printf("face_objs->y1: %d\n", face_objs->y1);
-          printf("face_objs->x2: %d\n", face_objs->x2);
-          printf("face_objs->y2: %d\n", face_objs->y2);
+          // printf("face_num: %d\n", face_num);
+          // printf("face_objs: %p\n", face_objs);
+          // printf("face_objs->prob: %f\n", face_objs->prob);
+          // printf("face_objs->x1: %d\n", face_objs->x1);
+          // printf("face_objs->y1: %d\n", face_objs->y1);
+          // printf("face_objs->x2: %d\n", face_objs->x2);
+          // printf("face_objs->y2: %d\n", face_objs->y2);
 
-          for (int i = 0; i < 5; i++)
-          {
-            printf("face_objs->key_point(%d, %d)\n", i, face_objs->key_point.point[i].x, face_objs->key_point.point[i].y);
-          }
+          // for (int i = 0; i < 5; i++)
+          // {
+          //   printf("face_objs->key_point(%d, %d)\n", i, face_objs->key_point.point[i].x, face_objs->key_point.point[i].y);
+          // }
+
+          std::ostringstream prob2str;
+          prob2str << face_objs->prob;
+
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+          lv_canvas_draw_rect(zm831->canvas, face_objs->x1, face_objs->y1, ai2vi(face_objs->x2 - face_objs->x1), ai2vi(face_objs->y2 - face_objs->y1), &self->rect_dsc);
+          lv_canvas_draw_text(zm831->canvas, face_objs->x1, face_objs->y1, 100, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
+          for (int i = 0; i < 5; i++) lv_canvas_draw_arc(zm831->canvas, ai2vi(face_objs->key_point.point[i].x), ai2vi(face_objs->key_point.point[i].y), 5, 0, 360, &self->line_dsc);
+          pthread_mutex_unlock(&zm831->ui_mutex);
 
           float _tmp_score = 0;
           int tmp_id = nn_get_face_recognize_scores_max(app, face_objs->feature, &_tmp_score);
