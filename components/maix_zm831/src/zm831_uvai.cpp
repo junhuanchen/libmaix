@@ -226,6 +226,29 @@ extern "C"
 
         // lv_demo_widgets();
 
+        /*Init freetype library
+        /* init freetype library */
+        lv_freetype_init(64, 1, 0);
+
+        /*Create a font*/
+        zm831->ft_font.name = "/home/res/sans.ttf";
+        zm831->ft_font.weight = 32;
+        zm831->ft_font.style = FT_FONT_STYLE_NORMAL;
+        lv_ft_font_init(&zm831->ft_font);
+
+        // lv_style_set_text_font(&zm831->screen_style, LV_STATE_DEFAULT, zm831->ft_font.font);
+        // lv_obj_add_style(zm831->canvas, LV_LABEL_PART_MAIN, &zm831->screen_style);
+
+        // /*Create style with the new font*/
+        // static lv_style_t style;
+        // lv_style_init(&style);
+        // lv_style_set_text_font(&style, LV_STATE_DEFAULT, sans_ft.font);
+
+        // /*Create a label with the new style*/
+        // lv_obj_t * label = lv_label_create(lv_scr_act(), NULL);
+        // lv_obj_add_style(label, LV_LABEL_PART_MAIN, &style);
+        // lv_label_set_text(label, "你好 Hi 今天");
+
         signal(SIGALRM, zm831_signal);
         ualarm(5000, 5000); // 5ms
 

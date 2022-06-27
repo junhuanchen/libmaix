@@ -77,6 +77,7 @@ extern "C"
 
     lv_draw_label_dsc_init(&self->label_dsc);
     self->label_dsc.color = LV_COLOR_GREEN;
+    self->label_dsc.font = zm831->ft_font.font;
 
     lv_draw_line_dsc_init(&self->line_dsc);
     self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};

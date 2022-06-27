@@ -51,6 +51,7 @@ if(CONFIG_COMPONENT_MAIX_ZM831_ENABLE)
         list(APPEND ADD_INCLUDE
         "../third_party/lvgl/"
         "../third_party/lvgl/include/"
+        "../third_party/lvgl/freetype/"
         )
         aux_source_directory("../third_party/lvgl/lvgl/src/lv_core"    LVGL_SRCS)
         # aux_source_directory("../third_party/lvgl/lvgl/fonts"    LVGL_SRCS)
@@ -64,7 +65,7 @@ if(CONFIG_COMPONENT_MAIX_ZM831_ENABLE)
         aux_source_directory("../third_party/lvgl/lvgl/src/lv_themes"    LVGL_SRCS)
         aux_source_directory("../third_party/lvgl/lv_lib_gif"    LVGL_SRCS)
         aux_source_directory("../third_party/lvgl/lv_lib_png"    LVGL_SRCS)
-        # aux_source_directory("../third_party/lvgl/lv_lib_qrcode"   LVGL_SRCS)
+        aux_source_directory("../third_party/lvgl/lv_lib_freetype"   LVGL_SRCS)
         aux_source_directory("../third_party/lvgl/lv_drivers"    LVGL_SRCS)
         aux_source_directory("../third_party/lvgl/src"   LVGL_SRCS)
         list(APPEND ADD_SRCS ${LVGL_SRCS})
@@ -79,6 +80,8 @@ if(CONFIG_COMPONENT_MAIX_ZM831_ENABLE)
             # "lib/libapriltag.so.3"
             "../libmaix/lib/arch/v831/libmaix_nn.so"
             "../libmaix/lib/arch/v831/libmaix_image.so"
+            "../libmaix/lib/arch/v83x/lib/libfreetype.so"
+            "../libmaix/lib/arch/v83x/lib/libbz2.so"
             # "../libmaix/lib/arch/v83x/lib/libjpeg.so"
             # "../libmaix/lib/arch/v83x/lib/libpng12.so"
             # "../libmaix/lib/arch/v83x/lib/libwebp.so"

@@ -26,6 +26,7 @@
 #include "lvgl/lvgl.h"
 #include "lv_examples/lv_examples.h"
 #include "lv_lib_png/lv_png.h"
+#include "lv_lib_freetype/lv_freetype.h"
 #include "evdev_mouse.h"
 #include "linux_uart.h"
 
@@ -86,6 +87,7 @@ typedef struct
     lv_color_t canvas_buffer[LV_CANVAS_BUF_SIZE_TRUE_COLOR_ALPHA(zm831_ui_w, zm831_ui_h)];
     lv_obj_t *canvas;
     lv_style_t screen_style;
+    lv_ft_info_t ft_font;
     // ui
     pthread_t ui_thread;
     int ui_th_usec, vi_th_usec;
