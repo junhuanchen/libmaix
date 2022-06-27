@@ -232,7 +232,7 @@ extern "C"
 
         /*Create a font*/
         zm831->ft_font.name = "/home/res/sans.ttf";
-        zm831->ft_font.weight = 32;
+        zm831->ft_font.weight = 20;
         zm831->ft_font.style = FT_FONT_STYLE_NORMAL;
         lv_ft_font_init(&zm831->ft_font);
 
@@ -447,15 +447,13 @@ extern "C"
     //         err = zm831_ai->nn->forward(zm831_ai->nn, &zm831_ai->input, &zm831_ai->out_fmap);
     //         if(err != LIBMAIX_ERR_NONE)
     //         {
-    //             printf("libmaix_nn forward fail: %s\n", libmaix_get_err_msg(err));\
+    //             printf("libmaix_nn forward fail: %s\n", libmaix_get_err_msg(err));
     //         }
-
     //         err = zm831_ai->yolo2_decoder->decode(zm831_ai->yolo2_decoder, &zm831_ai->out_fmap, (void*)&zm831_ai->yolo2_result);
     //         if(err != LIBMAIX_ERR_NONE)
     //         {
     //             printf("yolo2 decode fail: %s\n", libmaix_get_err_msg(err));
     //         }
-
     //         if(zm831_ai->yolo2_result.boxes_num > 0)
     //         {
     //             // libmaix_nn_decoder_yolo2_draw(zm831_ai, zm831_ai->yolo2_decoder, &zm831_ai->yolo2_result);

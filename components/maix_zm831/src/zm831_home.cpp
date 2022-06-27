@@ -89,11 +89,13 @@ extern "C"
   extern zm831_home_app get_cv_nn_find_ball_app();
   extern zm831_home_app get_nn_classifier_resnet_app();
   extern zm831_home_app get_nn_retinaface_app();
+  extern zm831_home_app get_nn_classifier_custom_app();
 
 
   int zm831_home_app_index = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] ={
     NULL, // 0 is disabled
+    get_nn_classifier_custom_app,
     get_nn_retinaface_app,
     get_nn_classifier_resnet_app,
     get_cv_nn_find_ball_app,
