@@ -7,14 +7,20 @@ extern "C"
 
   // ==============================================================================================
   /*
-  显示当前摄像头拍摄的图像，并显示帧率，按下确定键可以拍照，屏幕同时闪烁一次（矽速可自行调整闪烁方式），并保存到虚拟磁盘的camera文件夹下。
+    显示当前摄像头拍摄的图像，并显示帧率，按下确定键可以拍照，屏幕同时闪烁一次（矽速可自行调整闪烁方式），并保存到虚拟磁盘的camera文件夹下。
+
+    1. UI 的样式
+      控件 有几个 数量 按钮 帧率 label
+    2. 获取摄像头的图像 和 帧率
+      显示当前摄像头拍摄的图像，并显示帧率。 UI
+
+    屏幕同时闪烁一次
+
   */
   static struct _function_0x01_
   {
     lv_draw_label_dsc_t label_dsc_zh, label_dsc_en;
     lv_draw_rect_dsc_t rect_dsc;
-    int fps = 0, tmp = 0;
-    struct timespec old;
 
     lv_obj_t *btn, *label;
     bool is_capture = false;
@@ -48,6 +54,8 @@ extern "C"
     if (event == LV_EVENT_CLICKED)
     {
       function_0x01_app.is_capture = true;
+      // extern int zm831_home_app_select(int id);
+      // zm831_home_app_select(2);
     }
   }
 
@@ -74,6 +82,7 @@ extern "C"
     {
       if (access("/root/camera",0))
           system("mkdir /root/camera");
+
       {
         self->btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
         lv_obj_set_pos(self->btn, 80, 160);                      /*Set its position*/
@@ -91,6 +100,7 @@ extern "C"
         lv_obj_t *label = lv_label_create(self->btn, NULL);            /*Add a label to the button*/
         lv_label_set_text(label, "capture");                         /*Set the labels text*/
       }
+
       {
         self->label = lv_label_create(lv_scr_act(), NULL);            /*Add a label to the button*/
         lv_obj_set_pos(self->label, 10, 10);                      /*Set its position*/
@@ -112,7 +122,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      CALC_FPS("function_0x01_app_loop");
+      CALC_FPS("function_0x01_app_loop"); // 224x224
 
       if (function_0x01_app.is_capture)
       {
@@ -125,15 +135,30 @@ extern "C"
 
         cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
         cv::imwrite(filename.str(), rgb);
+        system("sync");
       }
 
-      // self->fps = fps;
+      {
+        static int fcnt = 0, fps = 0;
+        static struct timespec old, now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        fcnt++;
+        if ((now.tv_sec * 1000 + now.tv_nsec / 1000000) - (old.tv_sec * 1000 + old.tv_nsec / 1000000) >= 1000)
+        {
+          fps = fcnt;
+          old = now;
+          fcnt = 0;
+        }
+        std::ostringstream fps_str;
+        fps_str << string_format("fps: %d", fps);
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_label_set_text(self->label, fps_str.str().c_str());
+        pthread_mutex_unlock(&zm831->ui_mutex);
+      }
 
-      // printf("fps: %d\n", self->fps);
-
-      pthread_mutex_lock(&zm831->ui_mutex);
-      lv_label_set_text(self->label, "fps: 30");
-      pthread_mutex_unlock(&zm831->ui_mutex);
+      // {
+      //   system("rm /root/camera/* && sync");
+      // }
 
     }
     return 0;

@@ -194,44 +194,44 @@ extern "C"
     return NULL;
   }
 
-  // static void btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
-  // {
-  //   if (event == LV_EVENT_CLICKED)
-  //   {
-  //     static uint8_t cnt = 0;
-  //     cnt++;
+  static void btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
+  {
+    if (event == LV_EVENT_CLICKED)
+    {
+      static uint8_t cnt = 0;
+      cnt++;
 
-  //     /*Get the first child of the button which is the label and change its text*/
-  //     lv_obj_t *label = lv_obj_get_child(btn, NULL);
-  //     lv_label_set_text_fmt(label, "app: %d", cnt);
+      /*Get the first child of the button which is the label and change its text*/
+      lv_obj_t *label = lv_obj_get_child(btn, NULL);
+      lv_label_set_text_fmt(label, "app: %d", cnt);
 
-  //     if (cnt > 20) {
-  //         zm831->exit = 1;
-  //     }
+      if (cnt > 20) {
+          zm831->exit = 1;
+      }
 
-  //     zm831_home_app_select(cnt);
-  //   }
-  // }
+      zm831_home_app_select(cnt);
+    }
+  }
 
   void zm831_home_load()
   {
-    // {
-    //   lv_obj_t *btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
-    //   lv_obj_set_pos(btn, 80, 160);                      /*Set its position*/
-    //   // lv_obj_align(btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
-    //   lv_obj_set_size(btn, 80, 80);               /*Set its size*/
-    //   lv_obj_set_event_cb(btn, btn_event_app_cb); /*Assign a callback to the button*/
-    //   static lv_style_t style_btn_red;
-    //   lv_style_init(&style_btn_red);
-    //   lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0x00, 0x00, 0xff, 0x7f}); // bgra
-    //   lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
-    //   lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
-    //   lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
-    //   lv_style_set_text_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-    //   lv_obj_add_style(btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
-    //   lv_obj_t *label = lv_label_create(btn, NULL);            /*Add a label to the button*/
-    //   lv_label_set_text(label, "app");                         /*Set the labels text*/
-    // }
+    {
+      lv_obj_t *btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
+      lv_obj_set_pos(btn, 80, 80);                      /*Set its position*/
+      // lv_obj_align(btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+      lv_obj_set_size(btn, 80, 80);               /*Set its size*/
+      lv_obj_set_event_cb(btn, btn_event_app_cb); /*Assign a callback to the button*/
+      static lv_style_t style_btn_red;
+      lv_style_init(&style_btn_red);
+      lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0xff, 0x00, 0x00, 0x7f}); // bgra
+      lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
+      lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
+      lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
+      lv_style_set_text_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+      lv_obj_add_style(btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
+      lv_obj_t *label = lv_label_create(btn, NULL);            /*Add a label to the button*/
+      lv_label_set_text(label, "app");                         /*Set the labels text*/
+    }
 
     zm831_home_app_reload(get_zm831_home_app());
 
