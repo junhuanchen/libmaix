@@ -63,8 +63,8 @@ extern "C"
     }
     pthread_mutex_lock(&zm831->ui_mutex);
     lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
-    lv_canvas_draw_rect(zm831->canvas, 0, 0, 240, 240, &speech_asr_app.rect_dsc);
-    lv_canvas_draw_text(zm831->canvas, 0, 0, 240, &speech_asr_app.label_dsc_en, tmp_pnys.c_str(), LV_LABEL_ALIGN_LEFT);
+    lv_canvas_draw_rect(zm831->canvas, 8, 8, 224, 224, &speech_asr_app.rect_dsc);
+    lv_canvas_draw_text(zm831->canvas, 12, 12, 220, &speech_asr_app.label_dsc_en, tmp_pnys.c_str(), LV_LABEL_ALIGN_LEFT);
     // lv_canvas_draw_text(zm831->canvas, 0, 120, 240, &speech_asr_app.label_dsc, tmp_words.c_str(), LV_LABEL_ALIGN_LEFT);
     pthread_mutex_unlock(&zm831->ui_mutex);
     return;
@@ -200,6 +200,7 @@ extern "C"
     if (!self->init)
     {
       int res = ms_asr_init(self->device_type, (char *)self->device_name, (am_args_t *)&self->am_args, 0x00);
+      // printf("ms_asr_init res: %d\n", res);
       if (res == 0)
       {
         // speech_asr_app_set_dig(1);
@@ -237,11 +238,17 @@ extern "C"
     auto self = (_speech_asr_ *)app->userdata;
     if (self->init)
     {
-      ms_asr_deinit(), self->init = false;
+      extern void zm831_vi_stop();
+      zm831_vi_stop();
+      zm831->exit = 1; // need restart app
+      void zm831_home_app_stop();
+      zm831_home_app_stop();
+      ms_asr_deinit();
+      self->init = false;
       // extern void zm831_vi_open();
       // zm831_vi_open();
     }
-    LIBMAIX_INFO_PRINTF("qrcode_zbar_app_exit");
+    LIBMAIX_INFO_PRINTF("speech_asr_app_exit");
     return 0;
   }
 }

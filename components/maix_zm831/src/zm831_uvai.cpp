@@ -543,7 +543,7 @@ extern "C"
 
     void zm831_vi_loop()
     {
-        // CALC_FPS("zm831_vi_loop");
+        CALC_FPS("zm831_vi_loop");
         // LIBMAIX_INFO_PRINTF("zm831_vi_loop");
 
         cap_set();
