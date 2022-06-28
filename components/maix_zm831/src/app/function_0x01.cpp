@@ -75,12 +75,11 @@ extern "C"
       if (access("/root/camera",0))
           system("mkdir /root/camera");
       {
-        lv_obj_t *btn = self->btn;
-        btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
-        lv_obj_set_pos(btn, 80, 160);                      /*Set its position*/
-        // lv_obj_align(btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
-        lv_obj_set_size(btn, 80, 80);               /*Set its size*/
-        lv_obj_set_event_cb(btn, function_0x01_btn_event_app_cb); /*Assign a callback to the button*/
+        self->btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
+        lv_obj_set_pos(self->btn, 80, 160);                      /*Set its position*/
+        // lv_obj_align(self->btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+        lv_obj_set_size(self->btn, 80, 80);               /*Set its size*/
+        lv_obj_set_event_cb(self->btn, function_0x01_btn_event_app_cb); /*Assign a callback to the button*/
         static lv_style_t style_btn_red;
         lv_style_init(&style_btn_red);
         lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0x00, 0x00, 0xff, 0x7f}); // bgra
@@ -88,15 +87,14 @@ extern "C"
         lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
         lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
         lv_style_set_text_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-        lv_obj_add_style(btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
-        lv_obj_t *label = lv_label_create(btn, NULL);            /*Add a label to the button*/
+        lv_obj_add_style(self->btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
+        lv_obj_t *label = lv_label_create(self->btn, NULL);            /*Add a label to the button*/
         lv_label_set_text(label, "capture");                         /*Set the labels text*/
       }
       {
-        lv_obj_t *label = self->label;
-        label = lv_label_create(lv_scr_act(), NULL);            /*Add a label to the button*/
-        lv_obj_set_pos(label, 10, 10);                      /*Set its position*/
-        lv_label_set_text(label, "fps: 00");                         /*Set the labels text*/
+        self->label = lv_label_create(lv_scr_act(), NULL);            /*Add a label to the button*/
+        lv_obj_set_pos(self->label, 10, 10);                      /*Set its position*/
+        lv_label_set_text(self->label, "fps: 00");                         /*Set the labels text*/
       }
 
       function_0x01_app.is_capture = false;
@@ -133,7 +131,10 @@ extern "C"
 
       // printf("fps: %d\n", self->fps);
 
-      lv_label_set_text_fmt(self->label, "fps: %02d", self->fps);
+      pthread_mutex_lock(&zm831->ui_mutex);
+      lv_label_set_text(self->label, "fps: 30");
+      pthread_mutex_unlock(&zm831->ui_mutex);
+
     }
     return 0;
   }
