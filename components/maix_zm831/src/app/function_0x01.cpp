@@ -98,6 +98,9 @@ extern "C"
         lv_obj_set_pos(label, 10, 10);                      /*Set its position*/
         lv_label_set_text(label, "fps: 00");                         /*Set the labels text*/
       }
+
+      function_0x01_app.is_capture = false;
+
       self->init = true;
     }
     LIBMAIX_INFO_PRINTF("function_0x01_app_load");
@@ -126,20 +129,11 @@ extern "C"
         cv::imwrite(filename.str(), rgb);
       }
 
-      struct timespec now;
-      clock_gettime(CLOCK_MONOTONIC, &now);
-      self->tmp++;
-      if ((now.tv_sec * 1000 + now.tv_nsec / 1000000) - (self->old.tv_sec * 1000 + self->old.tv_nsec / 1000000) >= 1000)
-      {
-        self->fps = self->tmp;
-        self->old = now;
-        self->tmp = 0;
-      }
+      // self->fps = fps;
 
-      printf("fps: %d\n", self->fps);
+      // printf("fps: %d\n", self->fps);
 
       lv_label_set_text_fmt(self->label, "fps: %02d", self->fps);
-
     }
     return 0;
   }
