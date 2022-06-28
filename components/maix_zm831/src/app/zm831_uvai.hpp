@@ -40,6 +40,16 @@
 #include <opencv2/imgcodecs/legacy/constants_c.h>
 #include "opencv2/core/types_c.h"
 
+// << string_format("%d", 202412);
+template<typename ... Args>
+std::string string_format(const std::string& format, Args ... args){
+    size_t size = 1 + snprintf(nullptr, 0, format.c_str(), args ...);  // Extra space for \0
+    // unique_ptr<char[]> buf(new char[size]);
+    char bytes[size];
+    snprintf(bytes, size, format.c_str(), args ...);
+    return std::string(bytes);
+}
+
 #define CALC_FPS(tips)                                                                                         \
     {                                                                                                          \
         static int fcnt = 0;                                                                                   \
