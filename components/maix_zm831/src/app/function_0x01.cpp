@@ -77,10 +77,7 @@ extern "C"
 
   static struct _function_0x01_
   {
-    // lv_draw_label_dsc_t label_dsc_zh, label_dsc_en;
-    // lv_draw_rect_dsc_t rect_dsc;
-
-    // lv_obj_t *btn, *label;
+    lv_ui *ui = &zm831->ui;
     bool is_capture = false;
     bool is_clear = false;
 
@@ -137,21 +134,6 @@ extern "C"
   {
     auto self = (_function_0x01_ *)app->userdata;
 
-    // lv_draw_label_dsc_init(&self->label_dsc_zh);
-    // self->label_dsc_zh.color = LV_COLOR_GREEN;
-    // self->label_dsc_zh.font = zm831->ft_font.font;
-
-    // lv_draw_label_dsc_init(&self->label_dsc_en);
-    // self->label_dsc_en.color = LV_COLOR_WHITE;
-
-    // lv_draw_rect_dsc_init(&self->rect_dsc);
-    // self->rect_dsc.radius = 5;
-    // self->rect_dsc.bg_color = {0x00, 0x00, 0x00, 0xDF};;
-    // self->rect_dsc.bg_opa = LV_OPA_80;
-    // self->rect_dsc.border_width = 5;
-    // self->rect_dsc.border_opa = LV_OPA_80;
-    // self->rect_dsc.border_color = {0x00, 0x00, 0x00, 0x7f};
-
     if (!self->init)
     {
       if (access("/root/camera",0))
@@ -160,39 +142,7 @@ extern "C"
       zm831_home_setup_ui(setup_scr_camera, 1000);
 
       pthread_mutex_lock(&zm831->ui_mutex);
-
-      {
-        lv_obj_set_event_cb(zm831->ui.camera_btn_1, function_0x01_btn_event_app_cb); /*Assign a callback to the button*/
-      }
-
-      // {
-      //   self->btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
-      //   lv_obj_set_pos(self->btn, 80, 160);                      /*Set its position*/
-      //   // lv_obj_align(self->btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
-      //   lv_obj_set_size(self->btn, 80, 80);               /*Set its size*/
-      //   lv_obj_set_event_cb(self->btn, function_0x01_btn_event_app_cb); /*Assign a callback to the button*/
-      //   static lv_style_t style_btn_red;
-      //   lv_style_init(&style_btn_red);
-      //   lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0x00, 0x00, 0xff, 0x7f}); // bgra
-      //   lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
-      //   lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
-      //   lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
-      //   lv_style_set_text_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-      //   lv_obj_add_style(self->btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
-      //   lv_obj_t *label = lv_label_create(self->btn, NULL);            /*Add a label to the button*/
-      //   lv_label_set_text(label, "capture");                         /*Set the labels text*/
-      // }
-
-      // {
-      //   self->label = lv_label_create(lv_scr_act(), NULL);            /*Add a label to the button*/
-      //   lv_obj_set_pos(self->label, 10, 10);                      /*Set its position*/
-      //   lv_label_set_text(self->label, "fps: 00");                         /*Set the labels text*/
-      // }
-
-      // // lv_obj_set_hidden(self->btn, true);
-      // // lv_obj_set_hidden(self->btn, false);
-      // // lv_obj_refresh_style(self->btn, LV_OBJ_PART_ALL, LV_STYLE_PROP_ALL);
-
+      lv_obj_set_event_cb(self->ui->camera_btn_1, function_0x01_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
@@ -241,8 +191,7 @@ extern "C"
 
       {
         pthread_mutex_lock(&zm831->ui_mutex);
-        // lv_label_set_text(self->label, string_format("fps: %02d", get_fps()).c_str());
-        lv_label_set_text(zm831->ui.camera_label_1, string_format("fps: %02d", get_fps()).c_str());
+        lv_label_set_text(self->ui->camera_label_1, string_format("fps: %02d", get_fps()).c_str());
         pthread_mutex_unlock(&zm831->ui_mutex);
       }
 

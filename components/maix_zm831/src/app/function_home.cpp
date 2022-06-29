@@ -52,7 +52,7 @@ extern "C"
 
   static struct _function_home_
   {
-    lv_ui page;
+    lv_ui *ui = &zm831->ui;
     bool init = false;
   } function_home_app;
 
@@ -72,7 +72,7 @@ extern "C"
     auto self = (_function_home_ *)app->userdata;
     if (!self->init)
     {
-      zm831_home_setup_ui(setup_scr_screen, 2000);
+      zm831_home_setup_ui(setup_scr_screen, 3000);
       self->init = true;
     }
     LIBMAIX_INFO_PRINTF("function_home_app_load");
