@@ -491,7 +491,7 @@ LV_ATTRIBUTE_FAST_MEM static inline lv_color_t lv_color_mix_premult(uint16_t * p
     LV_COLOR_SET_R(ret, LV_MATH_UDIV255(premult_c1[0] + LV_COLOR_GET_R(c2) * mix + LV_COLOR_MIX_ROUND_OFS));
     LV_COLOR_SET_G(ret, LV_MATH_UDIV255(premult_c1[1] + LV_COLOR_GET_G(c2) * mix + LV_COLOR_MIX_ROUND_OFS));
     LV_COLOR_SET_B(ret, LV_MATH_UDIV255(premult_c1[2] + LV_COLOR_GET_B(c2) * mix + LV_COLOR_MIX_ROUND_OFS));
-    LV_COLOR_SET_A(ret, 0xFF);
+    LV_COLOR_SET_A(ret, LV_MATH_UDIV255(premult_c1[3] + LV_COLOR_GET_B(c2) * mix + LV_COLOR_MIX_ROUND_OFS));
 #else
     /*LV_COLOR_DEPTH == 1*/
     /*Restore color1*/
