@@ -109,12 +109,11 @@ extern "C"
 
   uint8_t zm831_home_app_index = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] = {
-      NULL, // 0 is disabled
-      get_function_0x01_app,
       get_zm831_home_app,
+      get_function_0x01_app,
+      get_nn_classifier_resnet_app,
       get_nn_classifier_custom_app,
       get_nn_retinaface_app,
-      get_nn_classifier_resnet_app,
       get_cv_nn_find_ball_app,
       get_imlib_cube_color_app,
       get_qrcode_zbar_app,
@@ -217,10 +216,11 @@ extern "C"
         zm831->exit = 1;
       }
 
-      zm831_home_app_select(cnt);
-
       zm831->config_json["last_select"] = (int)cnt;
       zm831_save_json_conf();
+
+      zm831_home_app_select(cnt);
+
     }
   }
 
@@ -244,14 +244,13 @@ extern "C"
       lv_label_set_text(label, "app");                         /*Set the labels text*/
     }
 
+    zm831_home_app_reload(get_zm831_home_app());
+
     auto result = zm831->config_json["last_select"];
     if (result.is_number())
     {
-      zm831_home_app_select(result);
-    }
-    else
-    {
-      zm831_home_app_reload(get_zm831_home_app());
+      // printf("last_select: %d\n", result.as_integer());
+      zm831_home_app_select(result.as_integer());
     }
 
     zm831->ai_th_usec = 40000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
