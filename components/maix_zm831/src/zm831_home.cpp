@@ -7,34 +7,47 @@ extern "C"
 
   // ==============================================================================================
 
-  void zm831_ui_show_clear()
+  extern zm831_home_app get_qrcode_zbar_app();
+  extern zm831_home_app get_nn_yolo_face_app();
+  extern zm831_home_app get_qrcode_quirc_app();
+  extern zm831_home_app get_find_apriltag_app();
+  extern zm831_home_app get_imlib_find_blobs_app();
+  extern zm831_home_app get_imlib_cube_color_app();
+  extern zm831_home_app get_cv_nn_find_ball_app();
+  extern zm831_home_app get_nn_classifier_resnet_app();
+  extern zm831_home_app get_nn_retinaface_app();
+  extern zm831_home_app get_nn_classifier_custom_app();
+  extern zm831_home_app get_speech_asr_app();
+
+  extern zm831_home_app get_function_home_app();
+  extern zm831_home_app get_function_0x01_app();
+
+  uint8_t zm831_home_app_index = 0; // current app index
+  static _get_zm831_home_app_func_ zm831_home_app_lists[] = {
+      get_function_home_app,
+      get_function_0x01_app,
+      get_nn_classifier_resnet_app,
+      get_nn_classifier_custom_app,
+      get_nn_retinaface_app,
+      get_cv_nn_find_ball_app,
+      get_imlib_cube_color_app,
+      get_qrcode_zbar_app,
+      get_qrcode_quirc_app,
+      get_nn_yolo_face_app,
+      get_find_apriltag_app,
+      get_imlib_find_blobs_app,
+      // get_speech_asr_app,
+  };
+
+  // ==============================================================================================
+
+  int zm831_home_app_load(zm831_home_app *app);
+  int zm831_home_app_loop(zm831_home_app *app);
+  int zm831_home_app_exit(zm831_home_app *app);
+
+  zm831_home_app get_zm831_home_app()
   {
-    pthread_mutex_lock(&zm831->ui_mutex);
-    lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
-    pthread_mutex_unlock(&zm831->ui_mutex);
-  }
-
-  void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa)
-  {
-    pthread_mutex_lock(&zm831->ui_mutex);
-
-    cv::Mat bgra;
-    cv::cvtColor(img, bgra, cv::COLOR_RGB2BGRA);
-
-    lv_img_dsc_t img_bgra;
-    img_bgra.header.always_zero = 0;
-    img_bgra.header.w = bgra.cols;
-    img_bgra.header.h = bgra.rows;
-    img_bgra.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
-    img_bgra.data = (uint8_t *)bgra.data;
-    img_bgra.data_size = bgra.cols * bgra.rows * LV_IMG_PX_SIZE_ALPHA_BYTE;
-
-    lv_draw_img_dsc_t img_dsc;
-    lv_draw_img_dsc_init(&img_dsc);
-    img_dsc.opa = opa;
-    lv_canvas_draw_img(zm831->canvas, x, y, &img_bgra, &img_dsc);
-
-    pthread_mutex_unlock(&zm831->ui_mutex);
+    return {zm831_home_app_load, zm831_home_app_loop, zm831_home_app_exit, NULL};
   }
 
   int zm831_home_app_load(zm831_home_app *app)
@@ -81,48 +94,6 @@ extern "C"
     LIBMAIX_INFO_PRINTF("zm831_home_app_exit");
     return 0;
   }
-
-  int zm831_home_app_load(zm831_home_app *app);
-  int zm831_home_app_loop(zm831_home_app *app);
-  int zm831_home_app_exit(zm831_home_app *app);
-
-  zm831_home_app get_zm831_home_app()
-  {
-    return {zm831_home_app_load, zm831_home_app_loop, zm831_home_app_exit, NULL};
-  }
-
-  // ==============================================================================================
-
-  extern zm831_home_app get_qrcode_zbar_app();
-  extern zm831_home_app get_nn_yolo_face_app();
-  extern zm831_home_app get_qrcode_quirc_app();
-  extern zm831_home_app get_find_apriltag_app();
-  extern zm831_home_app get_imlib_find_blobs_app();
-  extern zm831_home_app get_imlib_cube_color_app();
-  extern zm831_home_app get_cv_nn_find_ball_app();
-  extern zm831_home_app get_nn_classifier_resnet_app();
-  extern zm831_home_app get_nn_retinaface_app();
-  extern zm831_home_app get_nn_classifier_custom_app();
-  extern zm831_home_app get_speech_asr_app();
-
-  extern zm831_home_app get_function_0x01_app();
-
-  uint8_t zm831_home_app_index = 0; // current app index
-  static _get_zm831_home_app_func_ zm831_home_app_lists[] = {
-      get_zm831_home_app,
-      get_function_0x01_app,
-      get_nn_classifier_resnet_app,
-      get_nn_classifier_custom_app,
-      get_nn_retinaface_app,
-      get_cv_nn_find_ball_app,
-      get_imlib_cube_color_app,
-      get_qrcode_zbar_app,
-      get_qrcode_quirc_app,
-      get_nn_yolo_face_app,
-      get_find_apriltag_app,
-      get_imlib_find_blobs_app,
-      // get_speech_asr_app,
-  };
 
   // ==============================================================================================
 
@@ -179,7 +150,7 @@ extern "C"
           int ret = app_run->load(app_run);
           if (ret)
           {
-            zm831_home_app_reload(get_zm831_home_app()); // return app index
+            zm831_home_app_reload(get_function_home_app()); // return app index
             continue;
           }
           app_run->load = NULL;
@@ -200,51 +171,46 @@ extern "C"
     return NULL;
   }
 
-  static void btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
-  {
-    if (event == LV_EVENT_CLICKED)
-    {
-      static uint8_t cnt = 0;
-      cnt++;
-
-      /*Get the first child of the button which is the label and change its text*/
-      lv_obj_t *label = lv_obj_get_child(btn, NULL);
-      lv_label_set_text_fmt(label, "app: %d", cnt);
-
-      if (cnt > 20)
-      {
-        zm831->exit = 1;
-      }
-
-      zm831->config_json["last_select"] = (int)cnt;
-      zm831_save_json_conf();
-
-      zm831_home_app_select(cnt);
-
-    }
-  }
+  // static void btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
+  // {
+  //   if (event == LV_EVENT_CLICKED)
+  //   {
+  //     static uint8_t cnt = 0;
+  //     cnt++;
+  //     /*Get the first child of the button which is the label and change its text*/
+  //     lv_obj_t *label = lv_obj_get_child(btn, NULL);
+  //     lv_label_set_text_fmt(label, "app: %d", cnt);
+  //     if (cnt > 20)
+  //     {
+  //       zm831->exit = 1;
+  //     }
+  //     zm831->config_json["last_select"] = (int)cnt;
+  //     zm831_save_json_conf();
+  //     zm831_home_app_select(cnt);
+  //   }
+  // }
 
   void zm831_home_load()
   {
-    {
-      lv_obj_t *btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
-      lv_obj_set_pos(btn, 80, 20);                       /*Set its position*/
-      // lv_obj_align(btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
-      lv_obj_set_size(btn, 80, 80);               /*Set its size*/
-      lv_obj_set_event_cb(btn, btn_event_app_cb); /*Assign a callback to the button*/
-      static lv_style_t style_btn_red;
-      lv_style_init(&style_btn_red);
-      lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0xff, 0x00, 0x00, 0x7f}); // bgra
-      lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
-      lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
-      lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
-      lv_style_set_text_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-      lv_obj_add_style(btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
-      lv_obj_t *label = lv_label_create(btn, NULL);            /*Add a label to the button*/
-      lv_label_set_text(label, "app");                         /*Set the labels text*/
-    }
+    // {
+    //   lv_obj_t *btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
+    //   lv_obj_set_pos(btn, 80, 20);                       /*Set its position*/
+    //   // lv_obj_align(btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+    //   lv_obj_set_size(btn, 80, 80);               /*Set its size*/
+    //   lv_obj_set_event_cb(btn, btn_event_app_cb); /*Assign a callback to the button*/
+    //   static lv_style_t style_btn_red;
+    //   lv_style_init(&style_btn_red);
+    //   lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0xff, 0x00, 0x00, 0x7f}); // bgra
+    //   lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
+    //   lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
+    //   lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
+    //   lv_style_set_text_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+    //   lv_obj_add_style(btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
+    //   lv_obj_t *label = lv_label_create(btn, NULL);            /*Add a label to the button*/
+    //   lv_label_set_text(label, "app");                         /*Set the labels text*/
+    // }
 
-    zm831_home_app_reload(get_zm831_home_app());
+    zm831_home_app_reload(get_function_home_app());
 
     auto result = zm831->config_json["last_select"];
     if (result.is_number())

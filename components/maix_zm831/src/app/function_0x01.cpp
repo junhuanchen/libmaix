@@ -40,7 +40,7 @@ extern "C"
 
   // ==============================================================================================
 
-  int get_fps()
+  static int get_fps()
   {
     static int fcnt = 0, fps = 0;
     static struct timespec old, now;
@@ -55,7 +55,7 @@ extern "C"
     return fps;
   }
 
-  int get_dir_file_nums()
+  static int get_dir_file_nums()
   {
     FILE *fp;
     int file_num = 0;
@@ -99,6 +99,9 @@ extern "C"
       if (access("/root/camera",0))
           system("mkdir /root/camera");
 
+
+      pthread_mutex_lock(&zm831->ui_mutex);
+
       {
         self->btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
         lv_obj_set_pos(self->btn, 80, 160);                      /*Set its position*/
@@ -123,7 +126,11 @@ extern "C"
         lv_label_set_text(self->label, "fps: 00");                         /*Set the labels text*/
       }
 
-      function_0x01_app.is_capture = false;
+      // lv_obj_set_hidden(self->btn, true);
+      // lv_obj_set_hidden(self->btn, false);
+      // lv_obj_refresh_style(self->btn, LV_OBJ_PART_ALL, LV_STYLE_PROP_ALL);
+
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
     }
@@ -156,7 +163,7 @@ extern "C"
         system("sync");
 
         printf("capture %s\n", filename.str().c_str());
-        
+
         void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);
         zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
 

@@ -278,6 +278,36 @@ extern "C"
         LIBMAIX_DEBUG_PRINTF("zm831_ui_exit");
     }
 
+    void zm831_ui_show_clear()
+    {
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+        pthread_mutex_unlock(&zm831->ui_mutex);
+    }
+
+    void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa)
+    {
+        pthread_mutex_lock(&zm831->ui_mutex);
+
+        cv::Mat bgra;
+        cv::cvtColor(img, bgra, cv::COLOR_RGB2BGRA);
+
+        lv_img_dsc_t img_bgra;
+        img_bgra.header.always_zero = 0;
+        img_bgra.header.w = bgra.cols;
+        img_bgra.header.h = bgra.rows;
+        img_bgra.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
+        img_bgra.data = (uint8_t *)bgra.data;
+        img_bgra.data_size = bgra.cols * bgra.rows * LV_IMG_PX_SIZE_ALPHA_BYTE;
+
+        lv_draw_img_dsc_t img_dsc;
+        lv_draw_img_dsc_init(&img_dsc);
+        img_dsc.opa = opa;
+        lv_canvas_draw_img(zm831->canvas, x, y, &img_bgra, &img_dsc);
+
+        pthread_mutex_unlock(&zm831->ui_mutex);
+    }
+
     // // =========================================================================================
 
     // static struct _zm831_ai_
