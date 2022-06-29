@@ -157,7 +157,7 @@ extern "C"
       if (access("/root/camera",0))
           system("mkdir /root/camera");
 
-      zm831_home_setup_ui(setup_scr_camera);
+      zm831_home_setup_ui(setup_scr_camera, 1000);
 
       pthread_mutex_lock(&zm831->ui_mutex);
 

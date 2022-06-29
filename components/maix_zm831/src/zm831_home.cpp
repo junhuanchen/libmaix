@@ -95,12 +95,12 @@ extern "C"
     return 0;
   }
 
-  void zm831_home_setup_ui(_ui_setup_scr_ setup_scr)
+  void zm831_home_setup_ui(_ui_setup_scr_ setup_scr, int load_time_ms)
   {
     pthread_mutex_lock(&zm831->ui_mutex);
     lv_ui *ui = &zm831->ui;
     setup_scr(ui);
-    lv_scr_load_anim(ui->screen, LV_SCR_LOAD_ANIM_FADE_ON, 1000, 0, false); // set false lv_scr_act() cant delete
+    lv_scr_load_anim(ui->screen, LV_SCR_LOAD_ANIM_FADE_ON, load_time_ms, 0, false); // set false lv_scr_act() cant delete
     zm831->canvas = lv_canvas_create(ui->screen, NULL);
     lv_canvas_set_buffer(zm831->canvas, zm831->canvas_buffer, zm831->ui_w, zm831->ui_h, LV_IMG_CF_TRUE_COLOR_ALPHA);
     pthread_mutex_unlock(&zm831->ui_mutex);

@@ -72,7 +72,7 @@ extern "C"
     auto self = (_function_home_ *)app->userdata;
     if (!self->init)
     {
-      zm831_home_setup_ui(setup_scr_screen);
+      zm831_home_setup_ui(setup_scr_screen, 2000);
       self->init = true;
     }
     LIBMAIX_INFO_PRINTF("function_home_app_load");

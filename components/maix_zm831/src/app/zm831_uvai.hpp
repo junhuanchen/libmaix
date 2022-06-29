@@ -97,7 +97,7 @@ extern "C"
     LV_FONT_DECLARE(lv_font_simsun_12);
 
     typedef void (*_ui_setup_scr_)(lv_ui *ui);
-    void zm831_home_setup_ui(_ui_setup_scr_ setup_scr);
+    void zm831_home_setup_ui(_ui_setup_scr_ setup_scr, int load_time_ms);
     void zm831_home_clear_ui();
 }
 
