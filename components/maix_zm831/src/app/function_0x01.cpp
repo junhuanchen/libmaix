@@ -24,6 +24,7 @@ extern "C"
 
     lv_obj_t *btn, *label;
     bool is_capture = false;
+    bool is_clear = false;
 
     bool init = false;
   } function_0x01_app;
@@ -39,6 +40,21 @@ extern "C"
 
   // ==============================================================================================
 
+  int get_fps()
+  {
+    static int fcnt = 0, fps = 0;
+    static struct timespec old, now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    fcnt++;
+    if ((now.tv_sec * 1000 + now.tv_nsec / 1000000) - (old.tv_sec * 1000 + old.tv_nsec / 1000000) >= 1000)
+    {
+      fps = fcnt;
+      old = now;
+      fcnt = 0;
+    }
+    return fps;
+  }
+
   int get_dir_file_nums()
   {
     FILE *fp;
@@ -51,7 +67,7 @@ extern "C"
 
   static void function_0x01_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
   {
-    if (event == LV_EVENT_CLICKED)
+    if (event == LV_EVENT_RELEASED)
     {
       function_0x01_app.is_capture = true;
       // extern int zm831_home_app_select(int id);
@@ -122,7 +138,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      CALC_FPS("function_0x01_app_loop"); // 224x224
+      // CALC_FPS("function_0x01_app_loop"); // 224x224
 
       if (function_0x01_app.is_capture)
       {
@@ -131,34 +147,37 @@ extern "C"
         int file_nums = get_dir_file_nums();
 
         std::ostringstream filename;
-        filename << string_format("/root/camera/maix_image_%d.jpg", file_nums + 1);
+        filename << string_format("/root/camera/maix_image_%03d.jpg", file_nums + 1);
 
         cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
-        cv::imwrite(filename.str(), rgb);
+        cv::Mat bgr;
+        cvtColor(rgb, bgr, cv::COLOR_RGB2BGR);
+        cv::imwrite(filename.str(), bgr);
         system("sync");
+
+        printf("capture %s\n", filename.str().c_str());
+        
+        void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);
+        zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
+
+        sleep(2);
+
+        void zm831_ui_show_clear();
+        zm831_ui_show_clear();
+
       }
 
       {
-        static int fcnt = 0, fps = 0;
-        static struct timespec old, now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        fcnt++;
-        if ((now.tv_sec * 1000 + now.tv_nsec / 1000000) - (old.tv_sec * 1000 + old.tv_nsec / 1000000) >= 1000)
-        {
-          fps = fcnt;
-          old = now;
-          fcnt = 0;
-        }
-        std::ostringstream fps_str;
-        fps_str << string_format("fps: %d", fps);
         pthread_mutex_lock(&zm831->ui_mutex);
-        lv_label_set_text(self->label, fps_str.str().c_str());
+        lv_label_set_text(self->label, string_format("fps: %02d", get_fps()).c_str());
         pthread_mutex_unlock(&zm831->ui_mutex);
       }
 
-      // {
-      //   system("rm /root/camera/* && sync");
-      // }
+      if (function_0x01_app.is_clear)
+      {
+        function_0x01_app.is_clear = false;
+        system("rm /root/camera/* && sync");
+      }
 
     }
     return 0;

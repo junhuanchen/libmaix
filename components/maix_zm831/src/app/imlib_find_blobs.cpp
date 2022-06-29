@@ -74,7 +74,7 @@ extern "C"
 
       fb_alloc_mark();
 
-      rectangle_t roi = {.x = 0, .y = 0, .w = img->w, .h = img->h};
+      rectangle_t roi = {.x = 0, .y = 0, .w = (int16_t)img->w, .h = (int16_t)img->h};
 
       // {
       //   histogram_t hist;
@@ -100,8 +100,8 @@ extern "C"
         rectangle_t roi = {
             .x = 0,
             .y = 0,
-            .w = img->w,
-            .h = img->h,
+            .w = (int16_t)img->w,
+            .h = (int16_t)img->h,
         };
         unsigned int x_stride = 10;
         unsigned int y_stride = 10;

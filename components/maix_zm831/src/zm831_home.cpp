@@ -5,8 +5,7 @@ extern "C"
 {
   extern zm831_uv *zm831;
 
-// ==============================================================================================
-
+  // ==============================================================================================
 
   void zm831_ui_show_clear()
   {
@@ -17,25 +16,25 @@ extern "C"
 
   void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa)
   {
-      pthread_mutex_lock(&zm831->ui_mutex);
+    pthread_mutex_lock(&zm831->ui_mutex);
 
-      cv::Mat bgra;
-      cv::cvtColor(img, bgra, cv::COLOR_RGB2BGRA);
+    cv::Mat bgra;
+    cv::cvtColor(img, bgra, cv::COLOR_RGB2BGRA);
 
-      lv_img_dsc_t img_bgra;
-      img_bgra.header.always_zero = 0;
-      img_bgra.header.w = bgra.cols;
-      img_bgra.header.h = bgra.rows;
-      img_bgra.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
-      img_bgra.data = (uint8_t*)bgra.data;
-      img_bgra.data_size = bgra.cols * bgra.rows * LV_IMG_PX_SIZE_ALPHA_BYTE;
+    lv_img_dsc_t img_bgra;
+    img_bgra.header.always_zero = 0;
+    img_bgra.header.w = bgra.cols;
+    img_bgra.header.h = bgra.rows;
+    img_bgra.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
+    img_bgra.data = (uint8_t *)bgra.data;
+    img_bgra.data_size = bgra.cols * bgra.rows * LV_IMG_PX_SIZE_ALPHA_BYTE;
 
-      lv_draw_img_dsc_t img_dsc;
-      lv_draw_img_dsc_init(&img_dsc);
-      img_dsc.opa = opa;
-      lv_canvas_draw_img(zm831->canvas, x, y, &img_bgra, &img_dsc);
+    lv_draw_img_dsc_t img_dsc;
+    lv_draw_img_dsc_init(&img_dsc);
+    img_dsc.opa = opa;
+    lv_canvas_draw_img(zm831->canvas, x, y, &img_bgra, &img_dsc);
 
-      pthread_mutex_unlock(&zm831->ui_mutex);
+    pthread_mutex_unlock(&zm831->ui_mutex);
   }
 
   int zm831_home_app_load(zm831_home_app *app)
@@ -61,12 +60,14 @@ extern "C"
 
     usleep(zm831->ai_th_usec);
 
-    if (!zm831->recvPacks.empty()){
+    if (!zm831->recvPacks.empty())
+    {
       zm831_pack_t pack = zm831->recvPacks.front();
       zm831->recvPacks.pop_front();
       LIBMAIX_INFO_PRINTF("recv pack type: %d\n", pack.type);
       auto tmp = pack.data;
-      for (int i = 0; i < tmp.size(); i++) printf(" 0x%02X", tmp[i]);
+      for (int i = 0; i < tmp.size(); i++)
+        printf(" 0x%02X", tmp[i]);
       printf("\n");
     }
 
@@ -106,31 +107,32 @@ extern "C"
 
   extern zm831_home_app get_function_0x01_app();
 
-  int zm831_home_app_index = 0; // current app index
-  static _get_zm831_home_app_func_ zm831_home_app_lists[] ={
-    NULL, // 0 is disabled
-    get_function_0x01_app,
-    get_zm831_home_app,
-    get_nn_classifier_custom_app,
-    get_nn_retinaface_app,
-    get_nn_classifier_resnet_app,
-    get_cv_nn_find_ball_app,
-    get_imlib_cube_color_app,
-    get_qrcode_zbar_app,
-    get_qrcode_quirc_app,
-    get_nn_yolo_face_app,
-    get_find_apriltag_app,
-    get_imlib_find_blobs_app,
-    // get_speech_asr_app,
+  uint8_t zm831_home_app_index = 0; // current app index
+  static _get_zm831_home_app_func_ zm831_home_app_lists[] = {
+      NULL, // 0 is disabled
+      get_function_0x01_app,
+      get_zm831_home_app,
+      get_nn_classifier_custom_app,
+      get_nn_retinaface_app,
+      get_nn_classifier_resnet_app,
+      get_cv_nn_find_ball_app,
+      get_imlib_cube_color_app,
+      get_qrcode_zbar_app,
+      get_qrcode_quirc_app,
+      get_nn_yolo_face_app,
+      get_find_apriltag_app,
+      get_imlib_find_blobs_app,
+      // get_speech_asr_app,
   };
 
-// ==============================================================================================
+  // ==============================================================================================
 
   zm831_home_app *app_bak, *app_run, app_old, app_new;
 
   void zm831_home_app_stop()
   {
-    if (app_run) app_run->loop = NULL; // when app lopp stop & exit old app
+    if (app_run)
+      app_run->loop = NULL; // when app lopp stop & exit old app
   }
 
   void zm831_home_app_reload(zm831_home_app app)
@@ -143,7 +145,8 @@ extern "C"
 
   int zm831_home_app_select(int id)
   {
-    if (id == zm831_home_app_index) return 0;
+    if (id == zm831_home_app_index)
+      return 0;
     if (id < 0 || id >= sizeof(zm831_home_app_lists) / sizeof(zm831_home_app_lists[0]))
     {
       LIBMAIX_ERROR_PRINTF("zm831_home_app_select: id out of range");
@@ -172,21 +175,25 @@ extern "C"
       }
       else
       {
-        if (app_run->load) {
+        if (app_run->load)
+        {
           int ret = app_run->load(app_run);
-          if (ret) {
+          if (ret)
+          {
             zm831_home_app_reload(get_zm831_home_app()); // return app index
             continue;
           }
           app_run->load = NULL;
         }
-        while (app_run->loop) {
+        while (app_run->loop)
+        {
           app_run->loop(app_run);
           // pthread_mutex_lock(&zm831->ai_mutex);
           // zm831->ai_th_keep = 0; // keep ai thread running.
           // pthread_mutex_unlock(&zm831->ai_mutex);
         }
-        if (app_run->exit) {
+        if (app_run->exit)
+        {
           app_run->exit(app_run), app_run->exit = NULL;
         }
       }
@@ -205,11 +212,15 @@ extern "C"
       lv_obj_t *label = lv_obj_get_child(btn, NULL);
       lv_label_set_text_fmt(label, "app: %d", cnt);
 
-      if (cnt > 20) {
-          zm831->exit = 1;
+      if (cnt > 20)
+      {
+        zm831->exit = 1;
       }
 
       zm831_home_app_select(cnt);
+
+      zm831->config_json["last_select"] = (int)cnt;
+      zm831_save_json_conf();
     }
   }
 
@@ -217,7 +228,7 @@ extern "C"
   {
     {
       lv_obj_t *btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
-      lv_obj_set_pos(btn, 80, 80);                      /*Set its position*/
+      lv_obj_set_pos(btn, 80, 20);                       /*Set its position*/
       // lv_obj_align(btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
       lv_obj_set_size(btn, 80, 80);               /*Set its size*/
       lv_obj_set_event_cb(btn, btn_event_app_cb); /*Assign a callback to the button*/
@@ -233,9 +244,15 @@ extern "C"
       lv_label_set_text(label, "app");                         /*Set the labels text*/
     }
 
-    zm831_home_app_reload(get_zm831_home_app());
-
-    zm831_home_app_select(1);
+    auto result = zm831->config_json["last_select"];
+    if (result.is_number())
+    {
+      zm831_home_app_select(result);
+    }
+    else
+    {
+      zm831_home_app_reload(get_zm831_home_app());
+    }
 
     zm831->ai_th_usec = 40000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
 
@@ -248,9 +265,9 @@ extern "C"
     // zm831->ai_th_id = pthread_create(&zm831->ai_thread, &attr, _zm831_home_loop, NULL);
     // ret = pthread_attr_destroy(&attr);
 
-    if(zm831->ai_th_id != 0)
+    if (zm831->ai_th_id != 0)
     {
-        printf("new thread create is failed.\n");
+      printf("new thread create is failed.\n");
     }
     LIBMAIX_INFO_PRINTF("zm831_home_load");
   }
@@ -289,5 +306,4 @@ extern "C"
     // zm831->ai_th_keep++; // thread need reply zm831->ai_th_keep = 0;
     // pthread_mutex_unlock(&zm831->ai_mutex);
   }
-
 }

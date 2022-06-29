@@ -40,6 +40,8 @@
 #include <opencv2/imgcodecs/legacy/constants_c.h>
 #include "opencv2/core/types_c.h"
 
+#include "json5pp.hpp"
+
 // << string_format("%d", 202412);
 template<typename ... Args>
 std::string string_format(const std::string& format, Args ... args){
@@ -77,6 +79,9 @@ struct zm831_pack_t
 typedef struct
 {
     // sys
+    const char *config_file = "/root/zm831.conf";
+    json5pp::value config_json;
+
     int exit, signal;
     pthread_mutex_t vi_mutex, ai_mutex, ui_mutex;
     // hw
@@ -128,5 +133,16 @@ typedef zm831_home_app (*_get_zm831_home_app_func_)();
 #define mv2cvL(l) (int(((l) * 255) / 100))
 #define mv2cvA(a) ((a) + 128)
 #define mv2cvB(b) ((b) + 128)
+
+extern "C" {
+
+    void zm831_load_json_conf();
+    void zm831_save_json_conf();
+    void zm831_ui_show_clear();
+    void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);
+    int zm831_home_app_select(int id);
+    void zm831_home_app_stop();
+
+}
 
 #endif /*_zm831_uv_*/

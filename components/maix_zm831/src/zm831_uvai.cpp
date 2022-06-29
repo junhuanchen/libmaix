@@ -543,7 +543,7 @@ extern "C"
 
     void zm831_vi_loop()
     {
-        CALC_FPS("zm831_vi_loop");
+        // CALC_FPS("zm831_vi_loop");
         // LIBMAIX_INFO_PRINTF("zm831_vi_loop");
 
         cap_set();
@@ -582,8 +582,68 @@ extern "C"
         // cap_get("zm831->ai");
     }
 
+    void zm831_write_string_to_file(std::string path, std::string txt) {
+        std::ofstream outfile(path);
+        outfile << txt;
+        outfile.close();
+    }
+
+    std::string zm831_read_file_to_string(const std::string& path) {
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            return "";
+        }
+        std::stringstream ss;
+        ss << file.rdbuf();
+        return ss.str();
+    }
+
+    void zm831_save_json_conf()
+    {
+        auto tmp = zm831->config_json.stringify();
+        LIBMAIX_INFO_PRINTF("save_json_conf %s\n", tmp.c_str());
+        zm831_write_string_to_file(zm831->config_file, tmp);
+        system("sync");
+    }
+
+    void zm831_load_json_conf()
+    {
+        std::string conf = zm831_read_file_to_string(zm831->config_file);
+        try
+        {
+            zm831->config_json = json5pp::parse(conf);
+            // {
+            //     zm831->config_json["last_select"] = zm831->config_json["last_select"] + 1;
+            //     zm831->config_json["language"] = "zh-kz";
+            //     std::cout << zm831->config_json["last_select"] << std::endl;
+            //     std::cout << zm831->config_json["language"] << std::endl;
+            // }
+        }
+        catch (json5pp::syntax_error e)
+        {
+            LIBMAIX_ERROR_PRINTF("load_json_conf %s : %s", conf.c_str(), e.what());
+        }
+
+        if (zm831->config_json.is_null())
+        {
+            zm831->config_json = json5pp::object({
+                // {"foo", 123},
+                // {"bar",
+                //     json5pp::array({
+                //     1, "baz", true,
+                //     })
+                // },
+                { "last_select", 0 },
+                { "language", "zh-cn" },
+            });
+        }
+
+        LIBMAIX_INFO_PRINTF("load_json_conf %s\n", conf.c_str());
+    }
+
     void maix_zm831_main(int argc, char *argv[])
     {
+        zm831_load_json_conf();
         void zm831_ctrl_load();
         void zm831_home_load();
         void zm831_ctrl_loop();
@@ -638,5 +698,6 @@ extern "C"
         zm831_ui_exit();
         zm831_vi_exit();
         zm831->exit = 1;
+        zm831_save_json_conf();
     }
 }
