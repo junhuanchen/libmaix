@@ -95,6 +95,25 @@ extern "C"
     return 0;
   }
 
+  void zm831_home_setup_ui(_ui_setup_scr_ setup_scr)
+  {
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_ui *ui = &zm831->ui;
+    setup_scr(ui);
+    lv_scr_load_anim(ui->screen, LV_SCR_LOAD_ANIM_FADE_ON, 1000, 0, false); // set false lv_scr_act() cant delete
+    zm831->canvas = lv_canvas_create(ui->screen, NULL);
+    lv_canvas_set_buffer(zm831->canvas, zm831->canvas_buffer, zm831->ui_w, zm831->ui_h, LV_IMG_CF_TRUE_COLOR_ALPHA);
+    pthread_mutex_unlock(&zm831->ui_mutex);
+  }
+
+  void zm831_home_clear_ui()
+  {
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_ui *ui = &zm831->ui;
+    lv_obj_clean(ui->screen);
+    pthread_mutex_unlock(&zm831->ui_mutex);
+  }
+
   // ==============================================================================================
 
   zm831_home_app *app_bak, *app_run, app_old, app_new;
@@ -192,6 +211,7 @@ extern "C"
 
   void zm831_home_load()
   {
+
     // {
     //   lv_obj_t *btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
     //   lv_obj_set_pos(btn, 80, 20);                       /*Set its position*/
@@ -218,6 +238,9 @@ extern "C"
       // printf("last_select: %d\n", result.as_integer());
       zm831_home_app_select(result.as_integer());
     }
+
+    // zm831->config_json["last_select"] = (int)cnt;
+    // zm831_save_json_conf();
 
     zm831->ai_th_usec = 40000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
 

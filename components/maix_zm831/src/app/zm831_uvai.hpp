@@ -43,12 +43,13 @@
 #include "json5pp.hpp"
 
 // << string_format("%d", 202412);
-template<typename ... Args>
-std::string string_format(const std::string& format, Args ... args){
-    size_t size = 1 + snprintf(nullptr, 0, format.c_str(), args ...);  // Extra space for \0
+template <typename... Args>
+std::string string_format(const std::string &format, Args... args)
+{
+    size_t size = 1 + snprintf(nullptr, 0, format.c_str(), args...); // Extra space for \0
     // unique_ptr<char[]> buf(new char[size]);
     char bytes[size];
-    snprintf(bytes, size, format.c_str(), args ...);
+    snprintf(bytes, size, format.c_str(), args...);
     return std::string(bytes);
 }
 
@@ -76,8 +77,34 @@ struct zm831_pack_t
     std::vector<uint8_t> data;
 };
 
+extern "C"
+{
+    typedef struct
+    {
+        lv_obj_t *camera;
+        lv_obj_t *camera_label_1;
+        lv_obj_t *camera_btn_1;
+        lv_obj_t *camera_btn_1_label;
+        lv_obj_t *screen;
+        lv_obj_t *screen_imgbtn_1;
+        lv_obj_t *screen_imgbtn_1_label;
+    } lv_ui;
+
+    void setup_ui(lv_ui *ui);
+    void setup_scr_camera(lv_ui *ui);
+    void setup_scr_screen(lv_ui *ui);
+    LV_IMG_DECLARE(_possum2_alpha_172x181);
+    LV_FONT_DECLARE(lv_font_simsun_12);
+
+    typedef void (*_ui_setup_scr_)(lv_ui *ui);
+    void zm831_home_setup_ui(_ui_setup_scr_ setup_scr);
+    void zm831_home_clear_ui();
+}
+
 typedef struct
 {
+    // ui designed
+    lv_ui ui;
     // sys
     const char *config_file = "/root/zm831.conf";
     json5pp::value config_json;
@@ -95,7 +122,7 @@ typedef struct
     // uint8_t *vi_yuv;
     // uint8_t *ai_rgb;
     // libmaix_image_t *ai_rgb;
-    libmaix_vo *ui;
+    libmaix_vo *vo;
     // cv::Mat ui_bgra;
     // libmaix_image_t *ui_rgba;
     lv_color_t *ui_buf1, *ui_buf2;
@@ -130,19 +157,18 @@ typedef zm831_home_app (*_get_zm831_home_app_func_)();
 // #define ai2vi(val) (int)((val) * 15 / 14) // ai / vi = 224 / 240
 // #define vi2ai(val) (int)((val) * 14 / 15) // vi / ai = 240 / 224
 
-#define mv2cvL(l) (int(((l) * 255) / 100))
+#define mv2cvL(l) (int(((l)*255) / 100))
 #define mv2cvA(a) ((a) + 128)
 #define mv2cvB(b) ((b) + 128)
 
-extern "C" {
-
+extern "C"
+{
     void zm831_load_json_conf();
     void zm831_save_json_conf();
     void zm831_ui_show_clear();
     void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);
     int zm831_home_app_select(int id);
     void zm831_home_app_stop();
-
 }
 
 #endif /*_zm831_uv_*/

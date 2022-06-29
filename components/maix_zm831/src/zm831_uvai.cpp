@@ -80,13 +80,13 @@ extern "C"
     void _lvgl_ui_flush_(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_p)
     {
         cap_set();
-        if (zm831->ui)
+        if (zm831->vo)
         {
-            void *tmp = zm831->ui->get_frame(zm831->ui, 9);
+            void *tmp = zm831->vo->get_frame(zm831->vo, 9);
             if (tmp != NULL)
             {
                 uint32_t *phy = NULL, *vir = NULL;
-                zm831->ui->frame_addr(zm831->ui, tmp, &vir, &phy);
+                zm831->vo->frame_addr(zm831->vo, tmp, &vir, &phy);
                 cv::Mat ui_bgra(zm831->ui_h, zm831->ui_w, CV_8UC4, (unsigned char *)color_p);
                 cv::Mat vo_bgra(zm831->ui_h, zm831->ui_w, CV_8UC4, (unsigned char *)vir[0]);
                 ui_bgra.copyTo(vo_bgra);
@@ -96,7 +96,7 @@ extern "C"
                 // zm831->ui_bgra.copyTo(vo_bgra);
                 // pthread_mutex_unlock(&zm831->ai_mutex);
                 // cv::cvtColor(rgba, bgra, cv::COLOR_BGRA2RGBA);
-                zm831->ui->set_frame(zm831->ui, tmp, 9);
+                zm831->vo->set_frame(zm831->vo, tmp, 9);
                 lv_disp_flush_ready(drv);
             }
         }
@@ -194,9 +194,9 @@ extern "C"
         lv_obj_add_style(lv_scr_act(), LV_BTN_PART_MAIN, &zm831->screen_style); /*Default button style*/
         lv_obj_add_style(lv_scr_act(), LV_IMG_PART_MAIN, &zm831->screen_style); /*Default button style*/
 
-        zm831->canvas = lv_canvas_create(lv_scr_act(), NULL);
-        lv_canvas_set_buffer(zm831->canvas, zm831->canvas_buffer, zm831->ui_w, zm831->ui_h, LV_IMG_CF_TRUE_COLOR_ALPHA);
-        lv_obj_align(zm831->canvas, NULL, LV_ALIGN_CENTER, 0, 0);
+        // zm831->canvas = lv_canvas_create(lv_scr_act(), NULL);
+        // lv_canvas_set_buffer(zm831->canvas, zm831->canvas_buffer, zm831->ui_w, zm831->ui_h, LV_IMG_CF_TRUE_COLOR_ALPHA);
+        // lv_obj_align(zm831->canvas, NULL, LV_ALIGN_CENTER, 0, 0);
 
         // lv_obj_t *screen = lv_obj_create(lv_scr_act(), NULL);
         // lv_obj_set_size(screen, disp_width, disp_height);
@@ -537,8 +537,8 @@ extern "C"
         // if (NULL == zm831->ai_rgb)
         //     return;
 
-        zm831->ui = libmaix_vo_create(zm831->ui_w, zm831->ui_h, 0, 0, zm831->ui_w, zm831->ui_h);
-        if (NULL == zm831->ui)
+        zm831->vo = libmaix_vo_create(zm831->ui_w, zm831->ui_h, 0, 0, zm831->ui_w, zm831->ui_h);
+        if (NULL == zm831->vo)
             return;
 
         // zm831->ui_rgba = libmaix_image_create(zm831->ui_w, zm831->ui_h, LIBMAIX_IMAGE_MODE_RGBA8888, LIBMAIX_IMAGE_LAYOUT_HWC, NULL, false);
@@ -558,8 +558,8 @@ extern "C"
         // if (NULL != zm831->ai_rgb)
         //     free(zm831->ai_rgb), zm831->ai_rgb = NULL;
 
-        if (NULL != zm831->ui)
-            libmaix_vo_destroy(&zm831->ui), zm831->ui = NULL;
+        if (NULL != zm831->vo)
+            libmaix_vo_destroy(&zm831->vo), zm831->vo = NULL;
 
         // if (zm831->ui_rgba)
         //     libmaix_image_destroy(&zm831->ui_rgba);
@@ -577,14 +577,14 @@ extern "C"
         // LIBMAIX_INFO_PRINTF("zm831_vi_loop");
 
         cap_set();
-        void *frame = zm831->ui->get_frame(zm831->ui, 0);
+        void *frame = zm831->vo->get_frame(zm831->vo, 0);
         if (frame != NULL)
         {
             uint32_t *phy = NULL, *vir = NULL;
-            zm831->ui->frame_addr(zm831->ui, frame, &vir, &phy);
+            zm831->vo->frame_addr(zm831->vo, frame, &vir, &phy);
             if (zm831->vi && LIBMAIX_ERR_NONE == zm831->vi->capture(zm831->vi, (unsigned char *)vir[0]))
             {
-                zm831->ui->set_frame(zm831->ui, frame, 0);
+                zm831->vo->set_frame(zm831->vo, frame, 0);
             }
         }
         cap_get("zm831->vi");
@@ -595,17 +595,17 @@ extern "C"
         // {
         //     // cv::Mat cv_src(zm831->ai_rgb->height, zm831->ai_rgb->width, CV_8UC3, zm831->ai_rgb->data);
         //     // cv::rectangle(cv_src, cv::Point(24, 24), cv::Point(200, 200), cv::Scalar(255, 0, 0), 5);
-        //     // void *tmp = zm831->ui->get_frame(zm831->ui, 9);
+        //     // void *tmp = zm831->vo->get_frame(zm831->vo, 9);
         //     // if (tmp != NULL)
         //     // {
         //     //     uint32_t *phy = NULL, *vir = NULL;
-        //     //     zm831->ui->frame_addr(zm831->ui, tmp, &vir, &phy);
+        //     //     zm831->vo->frame_addr(zm831->vo, tmp, &vir, &phy);
         //     //     cv::Mat bgra(zm831->ui_h, zm831->ui_w, CV_8UC4, (unsigned char *)vir[0]);
         //     //     cv::rectangle(bgra, cv::Point(20, 20), cv::Point(220, 220), cv::Scalar(0, 0, 255, 128), 20);
         //     //     // cv::Mat cv_dst;
         //     //     // cv::resize(cv_src, cv_dst, cv::Size(zm831->ui_w, zm831->ui_h));
         //     //     // cv::cvtColor(cv_dst, bgra, cv::COLOR_RGB2BGRA);
-        //     //     zm831->ui->set_frame(zm831->ui, tmp, 9);
+        //     //     zm831->vo->set_frame(zm831->vo, tmp, 9);
         //     // }
         // }
         // pthread_mutex_unlock(&zm831->vi_mutex);

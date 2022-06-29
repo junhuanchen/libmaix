@@ -6,23 +6,81 @@ extern "C"
   extern zm831_uv *zm831;
 
   // ==============================================================================================
-  /*
-    显示当前摄像头拍摄的图像，并显示帧率，按下确定键可以拍照，屏幕同时闪烁一次（矽速可自行调整闪烁方式），并保存到虚拟磁盘的camera文件夹下。
 
-    1. UI 的样式
-      控件 有几个 数量 按钮 帧率 label
-    2. 获取摄像头的图像 和 帧率
-      显示当前摄像头拍摄的图像，并显示帧率。 UI
+  void setup_scr_camera(lv_ui *ui){
 
-    屏幕同时闪烁一次
+    //Write codes camera
+    ui->camera = lv_scr_act();
 
-  */
+    // //Write style LV_OBJ_PART_MAIN for camera
+    // static lv_style_t style_camera_main;
+    // lv_style_reset(&style_camera_main);
+
+    // //Write style state: LV_STATE_DEFAULT for style_camera_main
+    // lv_style_set_bg_color(&style_camera_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+    // lv_style_set_bg_opa(&style_camera_main, LV_STATE_DEFAULT, 0);
+    // lv_obj_add_style(ui->camera, LV_OBJ_PART_MAIN, &style_camera_main);
+
+    //Write codes camera_label_1
+    ui->camera_label_1 = lv_label_create(ui->camera, NULL);
+    lv_label_set_text(ui->camera_label_1, "fps: 00");
+    lv_label_set_long_mode(ui->camera_label_1, LV_LABEL_LONG_BREAK);
+    lv_label_set_align(ui->camera_label_1, LV_LABEL_ALIGN_CENTER);
+
+    //Write style LV_LABEL_PART_MAIN for camera_label_1
+    static lv_style_t style_camera_label_1_main;
+    lv_style_reset(&style_camera_label_1_main);
+
+    //Write style state: LV_STATE_DEFAULT for style_camera_label_1_main
+    lv_style_set_radius(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_bg_color(&style_camera_label_1_main, LV_STATE_DEFAULT, lv_color_make(0x5a, 0x61, 0x73));
+    lv_style_set_bg_grad_color(&style_camera_label_1_main, LV_STATE_DEFAULT, lv_color_make(0x5a, 0x61, 0x73));
+    lv_style_set_bg_grad_dir(&style_camera_label_1_main, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
+    lv_style_set_bg_opa(&style_camera_label_1_main, LV_STATE_DEFAULT, 255);
+    lv_style_set_text_color(&style_camera_label_1_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+    lv_style_set_text_font(&style_camera_label_1_main, LV_STATE_DEFAULT, &lv_font_simsun_12);
+    lv_style_set_text_letter_space(&style_camera_label_1_main, LV_STATE_DEFAULT, 2);
+    lv_style_set_pad_left(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_right(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_top(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_bottom(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
+    lv_obj_add_style(ui->camera_label_1, LV_LABEL_PART_MAIN, &style_camera_label_1_main);
+    lv_obj_set_pos(ui->camera_label_1, 17, 16);
+    lv_obj_set_size(ui->camera_label_1, 106, 0);
+
+    //Write codes camera_btn_1
+    ui->camera_btn_1 = lv_btn_create(ui->camera, NULL);
+
+    //Write style LV_BTN_PART_MAIN for camera_btn_1
+    static lv_style_t style_camera_btn_1_main;
+    lv_style_reset(&style_camera_btn_1_main);
+
+    //Write style state: LV_STATE_DEFAULT for style_camera_btn_1_main
+    lv_style_set_radius(&style_camera_btn_1_main, LV_STATE_DEFAULT, 50);
+    lv_style_set_bg_color(&style_camera_btn_1_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+    lv_style_set_bg_grad_color(&style_camera_btn_1_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x48, 0xff));
+    lv_style_set_bg_grad_dir(&style_camera_btn_1_main, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
+    lv_style_set_bg_opa(&style_camera_btn_1_main, LV_STATE_DEFAULT, 255);
+    lv_style_set_border_color(&style_camera_btn_1_main, LV_STATE_DEFAULT, lv_color_make(0x01, 0xa2, 0xb1));
+    lv_style_set_border_width(&style_camera_btn_1_main, LV_STATE_DEFAULT, 2);
+    lv_style_set_border_opa(&style_camera_btn_1_main, LV_STATE_DEFAULT, 255);
+    lv_style_set_outline_color(&style_camera_btn_1_main, LV_STATE_DEFAULT, lv_color_make(0xd4, 0xd7, 0xd9));
+    lv_style_set_outline_opa(&style_camera_btn_1_main, LV_STATE_DEFAULT, 255);
+    lv_obj_add_style(ui->camera_btn_1, LV_BTN_PART_MAIN, &style_camera_btn_1_main);
+    lv_obj_set_pos(ui->camera_btn_1, 67, 157);
+    lv_obj_set_size(ui->camera_btn_1, 100, 50);
+    ui->camera_btn_1_label = lv_label_create(ui->camera_btn_1, NULL);
+    lv_label_set_text(ui->camera_btn_1_label, "capture");
+    lv_obj_set_style_local_text_color(ui->camera_btn_1_label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
+    lv_obj_set_style_local_text_font(ui->camera_btn_1_label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_simsun_12);
+  }
+
   static struct _function_0x01_
   {
-    lv_draw_label_dsc_t label_dsc_zh, label_dsc_en;
-    lv_draw_rect_dsc_t rect_dsc;
+    // lv_draw_label_dsc_t label_dsc_zh, label_dsc_en;
+    // lv_draw_rect_dsc_t rect_dsc;
 
-    lv_obj_t *btn, *label;
+    // lv_obj_t *btn, *label;
     bool is_capture = false;
     bool is_clear = false;
 
@@ -79,56 +137,61 @@ extern "C"
   {
     auto self = (_function_0x01_ *)app->userdata;
 
-    lv_draw_label_dsc_init(&self->label_dsc_zh);
-    self->label_dsc_zh.color = LV_COLOR_GREEN;
-    self->label_dsc_zh.font = zm831->ft_font.font;
+    // lv_draw_label_dsc_init(&self->label_dsc_zh);
+    // self->label_dsc_zh.color = LV_COLOR_GREEN;
+    // self->label_dsc_zh.font = zm831->ft_font.font;
 
-    lv_draw_label_dsc_init(&self->label_dsc_en);
-    self->label_dsc_en.color = LV_COLOR_WHITE;
+    // lv_draw_label_dsc_init(&self->label_dsc_en);
+    // self->label_dsc_en.color = LV_COLOR_WHITE;
 
-    lv_draw_rect_dsc_init(&self->rect_dsc);
-    self->rect_dsc.radius = 5;
-    self->rect_dsc.bg_color = {0x00, 0x00, 0x00, 0xDF};;
-    self->rect_dsc.bg_opa = LV_OPA_80;
-    self->rect_dsc.border_width = 5;
-    self->rect_dsc.border_opa = LV_OPA_80;
-    self->rect_dsc.border_color = {0x00, 0x00, 0x00, 0x7f};
+    // lv_draw_rect_dsc_init(&self->rect_dsc);
+    // self->rect_dsc.radius = 5;
+    // self->rect_dsc.bg_color = {0x00, 0x00, 0x00, 0xDF};;
+    // self->rect_dsc.bg_opa = LV_OPA_80;
+    // self->rect_dsc.border_width = 5;
+    // self->rect_dsc.border_opa = LV_OPA_80;
+    // self->rect_dsc.border_color = {0x00, 0x00, 0x00, 0x7f};
 
     if (!self->init)
     {
       if (access("/root/camera",0))
           system("mkdir /root/camera");
 
+      zm831_home_setup_ui(setup_scr_camera);
 
       pthread_mutex_lock(&zm831->ui_mutex);
 
       {
-        self->btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
-        lv_obj_set_pos(self->btn, 80, 160);                      /*Set its position*/
-        // lv_obj_align(self->btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
-        lv_obj_set_size(self->btn, 80, 80);               /*Set its size*/
-        lv_obj_set_event_cb(self->btn, function_0x01_btn_event_app_cb); /*Assign a callback to the button*/
-        static lv_style_t style_btn_red;
-        lv_style_init(&style_btn_red);
-        lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0x00, 0x00, 0xff, 0x7f}); // bgra
-        lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
-        lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
-        lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
-        lv_style_set_text_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-        lv_obj_add_style(self->btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
-        lv_obj_t *label = lv_label_create(self->btn, NULL);            /*Add a label to the button*/
-        lv_label_set_text(label, "capture");                         /*Set the labels text*/
+        lv_obj_set_event_cb(zm831->ui.camera_btn_1, function_0x01_btn_event_app_cb); /*Assign a callback to the button*/
       }
 
-      {
-        self->label = lv_label_create(lv_scr_act(), NULL);            /*Add a label to the button*/
-        lv_obj_set_pos(self->label, 10, 10);                      /*Set its position*/
-        lv_label_set_text(self->label, "fps: 00");                         /*Set the labels text*/
-      }
+      // {
+      //   self->btn = lv_btn_create(lv_scr_act(), NULL); /*Add a button the current screen*/
+      //   lv_obj_set_pos(self->btn, 80, 160);                      /*Set its position*/
+      //   // lv_obj_align(self->btn, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+      //   lv_obj_set_size(self->btn, 80, 80);               /*Set its size*/
+      //   lv_obj_set_event_cb(self->btn, function_0x01_btn_event_app_cb); /*Assign a callback to the button*/
+      //   static lv_style_t style_btn_red;
+      //   lv_style_init(&style_btn_red);
+      //   lv_style_set_bg_color(&style_btn_red, LV_STATE_DEFAULT, {0x00, 0x00, 0xff, 0x7f}); // bgra
+      //   lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_MAROON);
+      //   lv_style_set_bg_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_MAROON);
+      //   lv_style_set_bg_grad_color(&style_btn_red, LV_STATE_PRESSED, LV_COLOR_RED);
+      //   lv_style_set_text_color(&style_btn_red, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+      //   lv_obj_add_style(self->btn, LV_BTN_PART_MAIN, &style_btn_red); /*Add the red style on top of the current */
+      //   lv_obj_t *label = lv_label_create(self->btn, NULL);            /*Add a label to the button*/
+      //   lv_label_set_text(label, "capture");                         /*Set the labels text*/
+      // }
 
-      // lv_obj_set_hidden(self->btn, true);
-      // lv_obj_set_hidden(self->btn, false);
-      // lv_obj_refresh_style(self->btn, LV_OBJ_PART_ALL, LV_STYLE_PROP_ALL);
+      // {
+      //   self->label = lv_label_create(lv_scr_act(), NULL);            /*Add a label to the button*/
+      //   lv_obj_set_pos(self->label, 10, 10);                      /*Set its position*/
+      //   lv_label_set_text(self->label, "fps: 00");                         /*Set the labels text*/
+      // }
+
+      // // lv_obj_set_hidden(self->btn, true);
+      // // lv_obj_set_hidden(self->btn, false);
+      // // lv_obj_refresh_style(self->btn, LV_OBJ_PART_ALL, LV_STYLE_PROP_ALL);
 
       pthread_mutex_unlock(&zm831->ui_mutex);
 
@@ -172,11 +235,14 @@ extern "C"
         void zm831_ui_show_clear();
         zm831_ui_show_clear();
 
+        zm831_home_app_select(0);
+
       }
 
       {
         pthread_mutex_lock(&zm831->ui_mutex);
-        lv_label_set_text(self->label, string_format("fps: %02d", get_fps()).c_str());
+        // lv_label_set_text(self->label, string_format("fps: %02d", get_fps()).c_str());
+        lv_label_set_text(zm831->ui.camera_label_1, string_format("fps: %02d", get_fps()).c_str());
         pthread_mutex_unlock(&zm831->ui_mutex);
       }
 
@@ -195,8 +261,9 @@ extern "C"
     auto self = (_function_0x01_ *)app->userdata;
     if (self->init)
     {
-      lv_obj_del(self->btn);
-      lv_obj_del(self->label);
+      // lv_obj_del(self->btn);
+      // lv_obj_del(self->label);
+      zm831_home_clear_ui();
       self->init = false;
     }
     LIBMAIX_INFO_PRINTF("function_0x01_app_exit");

@@ -12,6 +12,8 @@ if(CONFIG_COMPONENT_MAIX_ZM831_ENABLE)
     list(APPEND ADD_INCLUDE "src/app/")
     append_srcs_dir(ADD_SRCS "src/app/")
 
+    append_srcs_dir(ADD_SRCS "src/app/function_home")
+
     ############ Add static libs ##################
     # list(APPEND ADD_STATIC_LIB "core/lib/libmaix_nn.a")
     ###############################################
@@ -53,6 +55,7 @@ if(CONFIG_COMPONENT_MAIX_ZM831_ENABLE)
         "../third_party/lvgl/include/"
         "../third_party/lvgl/freetype/"
         )
+
         aux_source_directory("../third_party/lvgl/lvgl/src/lv_core"    LVGL_SRCS)
         # aux_source_directory("../third_party/lvgl/lvgl/fonts"    LVGL_SRCS)
 
