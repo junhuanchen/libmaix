@@ -81,24 +81,77 @@ extern "C"
 {
     typedef struct
     {
-        lv_obj_t *camera;
-        lv_obj_t *camera_label_1;
-        lv_obj_t *camera_btn_1;
-        lv_obj_t *camera_btn_1_label;
-        lv_obj_t *screen;
-        lv_obj_t *screen_imgbtn_1;
-        lv_obj_t *screen_imgbtn_1_label;
-    } lv_ui;
+        lv_obj_t *Home;
+        lv_obj_t *Home_home;
+        lv_obj_t *Home_home_home_1;
+        lv_obj_t *Home_home1_lline_h;
+        lv_obj_t *Home_home1_line_w;
+        lv_obj_t *Home_home1_lline_h2;
+        lv_obj_t *Home_home_photo;
+        lv_obj_t *Home_home_photo_label;
+        lv_obj_t *Home_home_gesture;
+        lv_obj_t *Home_home_gesture_label;
+        lv_obj_t *Home_home_face_s;
+        lv_obj_t *Home_home_face_s_label;
+        lv_obj_t *Home_home_face;
+        lv_obj_t *Home_home_face_label;
+        lv_obj_t *Home_label_photo;
+        lv_obj_t *Home_label_face;
+        lv_obj_t *Home_label_face_s;
+        lv_obj_t *Home_label_gesture;
+        lv_obj_t *Home_home_home_2;
+        lv_obj_t *Home_home2_line_w;
+        lv_obj_t *Home_label_tagcode;
+        lv_obj_t *Home_label_qrcode;
+        lv_obj_t *Home_label_color_s;
+        lv_obj_t *Home_label_color;
+        lv_obj_t *Home_home2_lline_h2;
+        lv_obj_t *Home_home2_line_h;
+        lv_obj_t *Home_hom_color;
+        lv_obj_t *Home_hom_color_label;
+        lv_obj_t *Home_hom_tagcode;
+        lv_obj_t *Home_hom_tagcode_label;
+        lv_obj_t *Home_home_qrcode;
+        lv_obj_t *Home_home_qrcode_label;
+        lv_obj_t *Home_hom_colo_s;
+        lv_obj_t *Home_hom_colo_s_label;
+        lv_obj_t *Home_home_home_3;
+        lv_obj_t *Home_imgbtn_5;
+        lv_obj_t *Home_imgbtn_5_label;
+        lv_obj_t *photo_app;
+        lv_obj_t *photo_app_photo_app;
+        lv_obj_t *photo_app_photo_app_tileview;
+        lv_obj_t *photo_app_label_top;
+        lv_obj_t *photo_app_imgbtn_press;
+        lv_obj_t *photo_app_imgbtn_press_label;
+        lv_obj_t *photo_app_imgbtn_clear;
+        lv_obj_t *photo_app_imgbtn_clear_label;
+        lv_obj_t *photo_app_imgbtn_back;
+        lv_obj_t *photo_app_imgbtn_back_label;
+    }lv_ui;
 
     void setup_ui(lv_ui *ui);
-    void setup_scr_camera(lv_ui *ui);
-    void setup_scr_screen(lv_ui *ui);
-    LV_IMG_DECLARE(_possum2_alpha_172x181);
-    LV_FONT_DECLARE(lv_font_simsun_12);
+    extern lv_ui guider_ui;
+    void setup_scr_Home(lv_ui *ui);
+    void setup_scr_photo_app(lv_ui *ui);
+    LV_IMG_DECLARE(_press_alpha_63x63);
+    LV_IMG_DECLARE(_clear_alpha_50x50);
+    LV_IMG_DECLARE(_main_photo_alpha_60x42);
+    LV_IMG_DECLARE(_home_tagcode_alpha_47x47);
+    LV_IMG_DECLARE(_home_qrcode_alpha_47x47);
+    LV_IMG_DECLARE(_home_s_alpha_52x50);
+    LV_IMG_DECLARE(_main_face_s_alpha_49x49);
+    LV_IMG_DECLARE(_back_alpha_50x50);
+    LV_IMG_DECLARE(_main_face_alpha_49x49);
+    LV_IMG_DECLARE(_home_color_alpha_52x49);
+    LV_IMG_DECLARE(_main_shoushi_alpha_47x47);
+    LV_IMG_DECLARE(_main_shoushi_alpha_50x44);
+    LV_FONT_DECLARE(lv_font_simsun_15);
+    LV_FONT_DECLARE(lv_font_simsun_6);
 
     typedef void (*_ui_setup_scr_)(lv_ui *ui);
-    void zm831_home_setup_ui(_ui_setup_scr_ setup_scr, int load_time_ms);
-    void zm831_home_clear_ui();
+    void zm831_home_setup_ui(lv_obj_t **lvgl_screen, _ui_setup_scr_ setup_scr, int load_time_ms);
+    void zm831_home_clear_ui(lv_obj_t **lvgl_screen);
 }
 
 typedef struct

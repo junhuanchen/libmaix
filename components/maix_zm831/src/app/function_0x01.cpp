@@ -7,72 +7,181 @@ extern "C"
 
   // ==============================================================================================
 
-  void setup_scr_camera(lv_ui *ui){
+  void setup_scr_camera(lv_ui *ui)
+  {
 
-    //Write codes camera
-    ui->camera = lv_scr_act();
+    // Write codes camera
+    ui->photo_app = lv_scr_act();
 
-    // //Write style LV_OBJ_PART_MAIN for camera
-    // static lv_style_t style_camera_main;
-    // lv_style_reset(&style_camera_main);
+    // Write codes photo_app_photo_app
+    ui->photo_app_photo_app = lv_tileview_create(ui->photo_app, NULL);
+    static lv_point_t photo_app_photo_app_valid_pos[] = {
+        {0, 0},
+    };
+    lv_tileview_set_valid_positions(ui->photo_app_photo_app, photo_app_photo_app_valid_pos, 1);
+    lv_tileview_set_edge_flash(ui->photo_app_photo_app, true);
+    lv_tileview_set_anim_time(ui->photo_app_photo_app, 1000);
 
-    // //Write style state: LV_STATE_DEFAULT for style_camera_main
-    // lv_style_set_bg_color(&style_camera_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
-    // lv_style_set_bg_opa(&style_camera_main, LV_STATE_DEFAULT, 0);
-    // lv_obj_add_style(ui->camera, LV_OBJ_PART_MAIN, &style_camera_main);
+    // Write style LV_TILEVIEW_PART_BG for photo_app_photo_app
+    static lv_style_t style_photo_app_photo_app_bg;
+    lv_style_reset(&style_photo_app_photo_app_bg);
 
-    //Write codes camera_label_1
-    ui->camera_label_1 = lv_label_create(ui->camera, NULL);
-    lv_label_set_text(ui->camera_label_1, "fps: 00");
-    lv_label_set_long_mode(ui->camera_label_1, LV_LABEL_LONG_BREAK);
-    lv_label_set_align(ui->camera_label_1, LV_LABEL_ALIGN_CENTER);
+    // Write style state: LV_STATE_DEFAULT for style_photo_app_photo_app_bg
+    lv_style_set_radius(&style_photo_app_photo_app_bg, LV_STATE_DEFAULT, 0);
+    lv_style_set_bg_color(&style_photo_app_photo_app_bg, LV_STATE_DEFAULT, lv_color_make(0xad, 0xaa, 0xa9));
+    lv_style_set_bg_grad_color(&style_photo_app_photo_app_bg, LV_STATE_DEFAULT, lv_color_make(0xc4, 0xb7, 0xb5));
+    lv_style_set_bg_grad_dir(&style_photo_app_photo_app_bg, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
+    lv_style_set_bg_opa(&style_photo_app_photo_app_bg, LV_STATE_DEFAULT, 255);
+    lv_obj_add_style(ui->photo_app_photo_app, LV_TILEVIEW_PART_BG, &style_photo_app_photo_app_bg);
 
-    //Write style LV_LABEL_PART_MAIN for camera_label_1
-    static lv_style_t style_camera_label_1_main;
-    lv_style_reset(&style_camera_label_1_main);
+    // Write style LV_TILEVIEW_PART_EDGE_FLASH for photo_app_photo_app
+    static lv_style_t style_photo_app_photo_app_edge_flash;
+    lv_style_reset(&style_photo_app_photo_app_edge_flash);
 
-    //Write style state: LV_STATE_DEFAULT for style_camera_label_1_main
-    lv_style_set_radius(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
-    lv_style_set_bg_color(&style_camera_label_1_main, LV_STATE_DEFAULT, lv_color_make(0x5a, 0x61, 0x73));
-    lv_style_set_bg_grad_color(&style_camera_label_1_main, LV_STATE_DEFAULT, lv_color_make(0x5a, 0x61, 0x73));
-    lv_style_set_bg_grad_dir(&style_camera_label_1_main, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
-    lv_style_set_bg_opa(&style_camera_label_1_main, LV_STATE_DEFAULT, 255);
-    lv_style_set_text_color(&style_camera_label_1_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
-    lv_style_set_text_font(&style_camera_label_1_main, LV_STATE_DEFAULT, &lv_font_simsun_12);
-    lv_style_set_text_letter_space(&style_camera_label_1_main, LV_STATE_DEFAULT, 2);
-    lv_style_set_pad_left(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
-    lv_style_set_pad_right(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
-    lv_style_set_pad_top(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
-    lv_style_set_pad_bottom(&style_camera_label_1_main, LV_STATE_DEFAULT, 0);
-    lv_obj_add_style(ui->camera_label_1, LV_LABEL_PART_MAIN, &style_camera_label_1_main);
-    lv_obj_set_pos(ui->camera_label_1, 17, 16);
-    lv_obj_set_size(ui->camera_label_1, 106, 0);
+    // Write style state: LV_STATE_DEFAULT for style_photo_app_photo_app_edge_flash
+    lv_style_set_radius(&style_photo_app_photo_app_edge_flash, LV_STATE_DEFAULT, 0);
+    lv_style_set_bg_color(&style_photo_app_photo_app_edge_flash, LV_STATE_DEFAULT, lv_color_make(0xea, 0xef, 0xf3));
+    lv_style_set_bg_grad_color(&style_photo_app_photo_app_edge_flash, LV_STATE_DEFAULT, lv_color_make(0xea, 0xef, 0xf3));
+    lv_style_set_bg_grad_dir(&style_photo_app_photo_app_edge_flash, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
+    lv_style_set_bg_opa(&style_photo_app_photo_app_edge_flash, LV_STATE_DEFAULT, 255);
+    lv_obj_add_style(ui->photo_app_photo_app, LV_TILEVIEW_PART_EDGE_FLASH, &style_photo_app_photo_app_edge_flash);
 
-    //Write codes camera_btn_1
-    ui->camera_btn_1 = lv_btn_create(ui->camera, NULL);
+    // Write style LV_TILEVIEW_PART_SCROLLBAR for photo_app_photo_app
+    static lv_style_t style_photo_app_photo_app_scrollbar;
+    lv_style_reset(&style_photo_app_photo_app_scrollbar);
 
-    //Write style LV_BTN_PART_MAIN for camera_btn_1
-    static lv_style_t style_camera_btn_1_main;
-    lv_style_reset(&style_camera_btn_1_main);
+    // Write style state: LV_STATE_DEFAULT for style_photo_app_photo_app_scrollbar
+    lv_style_set_radius(&style_photo_app_photo_app_scrollbar, LV_STATE_DEFAULT, 0);
+    lv_style_set_bg_color(&style_photo_app_photo_app_scrollbar, LV_STATE_DEFAULT, lv_color_make(0xea, 0xef, 0xf3));
+    lv_style_set_bg_grad_color(&style_photo_app_photo_app_scrollbar, LV_STATE_DEFAULT, lv_color_make(0xea, 0xef, 0xf3));
+    lv_style_set_bg_grad_dir(&style_photo_app_photo_app_scrollbar, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
+    lv_style_set_bg_opa(&style_photo_app_photo_app_scrollbar, LV_STATE_DEFAULT, 255);
+    lv_obj_add_style(ui->photo_app_photo_app, LV_TILEVIEW_PART_SCROLLBAR, &style_photo_app_photo_app_scrollbar);
+    lv_obj_set_pos(ui->photo_app_photo_app, 0, 0);
+    lv_obj_set_size(ui->photo_app_photo_app, 240, 240);
 
-    //Write style state: LV_STATE_DEFAULT for style_camera_btn_1_main
-    lv_style_set_radius(&style_camera_btn_1_main, LV_STATE_DEFAULT, 50);
-    lv_style_set_bg_color(&style_camera_btn_1_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
-    lv_style_set_bg_grad_color(&style_camera_btn_1_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x48, 0xff));
-    lv_style_set_bg_grad_dir(&style_camera_btn_1_main, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
-    lv_style_set_bg_opa(&style_camera_btn_1_main, LV_STATE_DEFAULT, 255);
-    lv_style_set_border_color(&style_camera_btn_1_main, LV_STATE_DEFAULT, lv_color_make(0x01, 0xa2, 0xb1));
-    lv_style_set_border_width(&style_camera_btn_1_main, LV_STATE_DEFAULT, 2);
-    lv_style_set_border_opa(&style_camera_btn_1_main, LV_STATE_DEFAULT, 255);
-    lv_style_set_outline_color(&style_camera_btn_1_main, LV_STATE_DEFAULT, lv_color_make(0xd4, 0xd7, 0xd9));
-    lv_style_set_outline_opa(&style_camera_btn_1_main, LV_STATE_DEFAULT, 255);
-    lv_obj_add_style(ui->camera_btn_1, LV_BTN_PART_MAIN, &style_camera_btn_1_main);
-    lv_obj_set_pos(ui->camera_btn_1, 67, 157);
-    lv_obj_set_size(ui->camera_btn_1, 100, 50);
-    ui->camera_btn_1_label = lv_label_create(ui->camera_btn_1, NULL);
-    lv_label_set_text(ui->camera_btn_1_label, "capture");
-    lv_obj_set_style_local_text_color(ui->camera_btn_1_label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
-    lv_obj_set_style_local_text_font(ui->camera_btn_1_label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_simsun_12);
+    // Write codes photo_app_photo_app_tileview
+    ui->photo_app_photo_app_tileview = lv_obj_create(ui->photo_app_photo_app, NULL);
+    lv_obj_set_style_local_bg_opa(ui->photo_app_photo_app_tileview, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, 0);
+    lv_obj_set_style_local_border_width(ui->photo_app_photo_app_tileview, LV_OBJ_PART_MAIN, LV_STATE_FOCUSED, 0);
+    lv_obj_set_pos(ui->photo_app_photo_app_tileview, 0 * 240, 0);
+    lv_obj_set_size(ui->photo_app_photo_app_tileview, 240, 240);
+    lv_tileview_add_element(ui->photo_app_photo_app, ui->photo_app_photo_app_tileview);
+
+    // Write codes photo_app_label_top
+    ui->photo_app_label_top = lv_label_create(ui->photo_app_photo_app_tileview, NULL);
+    lv_label_set_text(ui->photo_app_label_top, "实时拍照");
+    lv_label_set_long_mode(ui->photo_app_label_top, LV_LABEL_LONG_BREAK);
+    lv_label_set_align(ui->photo_app_label_top, LV_LABEL_ALIGN_CENTER);
+
+    // Write style LV_LABEL_PART_MAIN for photo_app_label_top
+    static lv_style_t style_photo_app_label_top_main;
+    lv_style_reset(&style_photo_app_label_top_main);
+
+    // Write style state: LV_STATE_DEFAULT for style_photo_app_label_top_main
+    lv_style_set_radius(&style_photo_app_label_top_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_bg_color(&style_photo_app_label_top_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_bg_grad_color(&style_photo_app_label_top_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_bg_grad_dir(&style_photo_app_label_top_main, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
+    lv_style_set_bg_opa(&style_photo_app_label_top_main, LV_STATE_DEFAULT, 100);
+    lv_style_set_text_color(&style_photo_app_label_top_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+    lv_style_set_text_font(&style_photo_app_label_top_main, LV_STATE_DEFAULT, &lv_font_simsun_15);
+    lv_style_set_text_letter_space(&style_photo_app_label_top_main, LV_STATE_DEFAULT, 2);
+    lv_style_set_pad_left(&style_photo_app_label_top_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_right(&style_photo_app_label_top_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_top(&style_photo_app_label_top_main, LV_STATE_DEFAULT, 8);
+    lv_style_set_pad_bottom(&style_photo_app_label_top_main, LV_STATE_DEFAULT, 8);
+    lv_obj_add_style(ui->photo_app_label_top, LV_LABEL_PART_MAIN, &style_photo_app_label_top_main);
+    lv_obj_set_pos(ui->photo_app_label_top, 0, 0);
+    lv_obj_set_size(ui->photo_app_label_top, 240, 0);
+    lv_tileview_add_element(ui->photo_app_photo_app, ui->photo_app_label_top);
+
+    // Write codes photo_app_imgbtn_press
+    ui->photo_app_imgbtn_press = lv_imgbtn_create(ui->photo_app_photo_app_tileview, NULL);
+
+    // Write style LV_IMGBTN_PART_MAIN for photo_app_imgbtn_press
+    static lv_style_t style_photo_app_imgbtn_press_main;
+    lv_style_reset(&style_photo_app_imgbtn_press_main);
+
+    // Write style state: LV_STATE_DEFAULT for style_photo_app_imgbtn_press_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_press_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_press_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_press_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_image_opa(&style_photo_app_imgbtn_press_main, LV_STATE_DEFAULT, 255);
+
+    // Write style state: LV_STATE_PRESSED for style_photo_app_imgbtn_press_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_press_main, LV_STATE_PRESSED, lv_color_make(0xFF, 0x33, 0xFF));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_press_main, LV_STATE_PRESSED, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_press_main, LV_STATE_PRESSED, 0);
+
+    // Write style state: LV_STATE_CHECKED for style_photo_app_imgbtn_press_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_press_main, LV_STATE_CHECKED, lv_color_make(0xFF, 0x33, 0xFF));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_press_main, LV_STATE_CHECKED, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_press_main, LV_STATE_CHECKED, 0);
+    lv_obj_add_style(ui->photo_app_imgbtn_press, LV_IMGBTN_PART_MAIN, &style_photo_app_imgbtn_press_main);
+    lv_obj_set_pos(ui->photo_app_imgbtn_press, 88, 170);
+    lv_obj_set_size(ui->photo_app_imgbtn_press, 63, 63);
+    lv_tileview_add_element(ui->photo_app_photo_app, ui->photo_app_imgbtn_press);
+    lv_imgbtn_set_src(ui->photo_app_imgbtn_press, LV_BTN_STATE_RELEASED, &_press_alpha_63x63);
+    lv_imgbtn_set_checkable(ui->photo_app_imgbtn_press, true);
+
+    // Write codes photo_app_imgbtn_clear
+    ui->photo_app_imgbtn_clear = lv_imgbtn_create(ui->photo_app_photo_app_tileview, NULL);
+
+    // Write style LV_IMGBTN_PART_MAIN for photo_app_imgbtn_clear
+    static lv_style_t style_photo_app_imgbtn_clear_main;
+    lv_style_reset(&style_photo_app_imgbtn_clear_main);
+
+    // Write style state: LV_STATE_DEFAULT for style_photo_app_imgbtn_clear_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_clear_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_clear_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_clear_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_image_opa(&style_photo_app_imgbtn_clear_main, LV_STATE_DEFAULT, 255);
+
+    // Write style state: LV_STATE_PRESSED for style_photo_app_imgbtn_clear_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_clear_main, LV_STATE_PRESSED, lv_color_make(0xFF, 0x33, 0xFF));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_clear_main, LV_STATE_PRESSED, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_clear_main, LV_STATE_PRESSED, 0);
+
+    // Write style state: LV_STATE_CHECKED for style_photo_app_imgbtn_clear_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_clear_main, LV_STATE_CHECKED, lv_color_make(0xFF, 0x33, 0xFF));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_clear_main, LV_STATE_CHECKED, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_clear_main, LV_STATE_CHECKED, 0);
+    lv_obj_add_style(ui->photo_app_imgbtn_clear, LV_IMGBTN_PART_MAIN, &style_photo_app_imgbtn_clear_main);
+    lv_obj_set_pos(ui->photo_app_imgbtn_clear, 170, 180);
+    lv_obj_set_size(ui->photo_app_imgbtn_clear, 50, 50);
+    lv_tileview_add_element(ui->photo_app_photo_app, ui->photo_app_imgbtn_clear);
+    lv_imgbtn_set_src(ui->photo_app_imgbtn_clear, LV_BTN_STATE_RELEASED, &_clear_alpha_50x50);
+    lv_imgbtn_set_checkable(ui->photo_app_imgbtn_clear, true);
+
+    // Write codes photo_app_imgbtn_back
+    ui->photo_app_imgbtn_back = lv_imgbtn_create(ui->photo_app_photo_app_tileview, NULL);
+
+    // Write style LV_IMGBTN_PART_MAIN for photo_app_imgbtn_back
+    static lv_style_t style_photo_app_imgbtn_back_main;
+    lv_style_reset(&style_photo_app_imgbtn_back_main);
+
+    // Write style state: LV_STATE_DEFAULT for style_photo_app_imgbtn_back_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_back_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_back_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_back_main, LV_STATE_DEFAULT, 0);
+    lv_style_set_image_opa(&style_photo_app_imgbtn_back_main, LV_STATE_DEFAULT, 255);
+
+    // Write style state: LV_STATE_PRESSED for style_photo_app_imgbtn_back_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_back_main, LV_STATE_PRESSED, lv_color_make(0xFF, 0x33, 0xFF));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_back_main, LV_STATE_PRESSED, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_back_main, LV_STATE_PRESSED, 0);
+
+    // Write style state: LV_STATE_CHECKED for style_photo_app_imgbtn_back_main
+    lv_style_set_text_color(&style_photo_app_imgbtn_back_main, LV_STATE_CHECKED, lv_color_make(0xFF, 0x33, 0xFF));
+    lv_style_set_image_recolor(&style_photo_app_imgbtn_back_main, LV_STATE_CHECKED, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_image_recolor_opa(&style_photo_app_imgbtn_back_main, LV_STATE_CHECKED, 0);
+    lv_obj_add_style(ui->photo_app_imgbtn_back, LV_IMGBTN_PART_MAIN, &style_photo_app_imgbtn_back_main);
+    lv_obj_set_pos(ui->photo_app_imgbtn_back, 20, 180);
+    lv_obj_set_size(ui->photo_app_imgbtn_back, 50, 50);
+    lv_tileview_add_element(ui->photo_app_photo_app, ui->photo_app_imgbtn_back);
+    lv_imgbtn_set_src(ui->photo_app_imgbtn_back, LV_BTN_STATE_RELEASED, &_back_alpha_50x50);
+    lv_imgbtn_set_checkable(ui->photo_app_imgbtn_back, true);
   }
 
   static struct _function_0x01_
@@ -122,7 +231,8 @@ extern "C"
 
   static void function_0x01_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
   {
-    if (event == LV_EVENT_RELEASED)
+    // printf("btn %p event %d\n", btn, event);
+    if (function_0x01_app.ui->photo_app_imgbtn_press == btn && event == LV_EVENT_RELEASED)
     {
       function_0x01_app.is_capture = true;
       // extern int zm831_home_app_select(int id);
@@ -136,18 +246,32 @@ extern "C"
 
     if (!self->init)
     {
-      if (access("/root/camera",0))
-          system("mkdir /root/camera");
+      if (access("/root/camera", 0))
+        system("mkdir /root/camera");
 
-      zm831_home_setup_ui(setup_scr_camera, 1000);
+      zm831_home_setup_ui(&self->ui->photo_app, setup_scr_camera, 1000);
 
       pthread_mutex_lock(&zm831->ui_mutex);
-      lv_obj_set_event_cb(self->ui->camera_btn_1, function_0x01_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->photo_app_imgbtn_press, function_0x01_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
     }
     LIBMAIX_INFO_PRINTF("function_0x01_app_load");
+    return 0;
+  }
+
+  int function_0x01_app_exit(zm831_home_app *app)
+  {
+    auto self = (_function_0x01_ *)app->userdata;
+    if (self->init)
+    {
+      // lv_obj_del(self->btn);
+      // lv_obj_del(self->label);
+      zm831_home_clear_ui(&self->ui->photo_app);
+      self->init = false;
+    }
+    LIBMAIX_INFO_PRINTF("function_0x01_app_exit");
     return 0;
   }
 
@@ -177,7 +301,7 @@ extern "C"
 
         printf("capture %s\n", filename.str().c_str());
 
-        void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);
+        void zm831_ui_show_image(cv::Mat & img, int x, int y, lv_opa_t opa);
         zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
 
         sleep(2);
@@ -186,12 +310,11 @@ extern "C"
         zm831_ui_show_clear();
 
         zm831_home_app_select(0);
-
       }
 
       {
         pthread_mutex_lock(&zm831->ui_mutex);
-        lv_label_set_text(self->ui->camera_label_1, string_format("fps: %02d", get_fps()).c_str());
+        lv_label_set_text(self->ui->photo_app_label_top, string_format("fps: %02d", get_fps()).c_str());
         pthread_mutex_unlock(&zm831->ui_mutex);
       }
 
@@ -200,22 +323,8 @@ extern "C"
         function_0x01_app.is_clear = false;
         system("rm /root/camera/* && sync");
       }
-
     }
     return 0;
   }
 
-  int function_0x01_app_exit(zm831_home_app *app)
-  {
-    auto self = (_function_0x01_ *)app->userdata;
-    if (self->init)
-    {
-      // lv_obj_del(self->btn);
-      // lv_obj_del(self->label);
-      zm831_home_clear_ui();
-      self->init = false;
-    }
-    LIBMAIX_INFO_PRINTF("function_0x01_app_exit");
-    return 0;
-  }
 }
