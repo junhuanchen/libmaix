@@ -700,12 +700,26 @@ extern "C"
 
   // ==============================================================================================
 
+  static void function_home_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
+  {
+    if (function_home_app.ui->Home_home_photo == btn && event == LV_EVENT_CLICKED)
+    {
+      zm831_home_app_select(1);
+      return;
+    }
+  }
+
   int function_home_app_load(zm831_home_app *app)
   {
     auto self = (_function_home_ *)app->userdata;
     if (!self->init)
     {
       zm831_home_setup_ui(&self->ui->Home, setup_scr_screen, 500);
+
+      pthread_mutex_lock(&zm831->ui_mutex);
+      lv_obj_set_event_cb(self->ui->Home_home_photo, function_home_btn_event_app_cb);
+      pthread_mutex_unlock(&zm831->ui_mutex);
+
       self->init = true;
     }
     LIBMAIX_INFO_PRINTF("function_home_app_load");

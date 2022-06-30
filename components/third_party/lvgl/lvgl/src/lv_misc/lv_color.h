@@ -35,6 +35,7 @@ extern "C" {
 /*********************
  *      DEFINES
  *********************/
+#define LV_COLOR_BLANK    (lv_color_t){0xFF, 0xFF, 0xFF, 0x00}
 #define LV_COLOR_WHITE   LV_COLOR_MAKE(0xFF, 0xFF, 0xFF)
 #define LV_COLOR_SILVER  LV_COLOR_MAKE(0xC0, 0xC0, 0xC0)
 #define LV_COLOR_GRAY    LV_COLOR_MAKE(0x80, 0x80, 0x80)
