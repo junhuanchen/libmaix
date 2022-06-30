@@ -116,7 +116,7 @@ extern "C"
     }
 
     pthread_mutex_lock(&zm831->ui_mutex);
-    lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
     pthread_mutex_unlock(&zm831->ui_mutex);
 
     LIBMAIX_INFO_PRINTF("find_apriltag_app_exit");
@@ -138,7 +138,7 @@ extern "C"
         // if (self->now < time(NULL))
         // {
         //   pthread_mutex_lock(&zm831->ui_mutex);
-        //   lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+        //   lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         //   pthread_mutex_unlock(&zm831->ui_mutex);
         // }
 
@@ -155,7 +155,7 @@ extern "C"
         zarray_t *detections = apriltag_detector_detect(self->td, &im);
 
         pthread_mutex_lock(&zm831->ui_mutex);
-        lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         // Draw detection outlines
         for (int i = 0; i < zarray_size(detections); i++) {
 
@@ -173,9 +173,9 @@ extern "C"
               {ai2vi(det->p[0][0]), ai2vi(det->p[0][1])},
           };
 
-          lv_canvas_draw_line(zm831->canvas, points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
+          lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
 
-          lv_canvas_draw_text(zm831->canvas, det->c[0], det->c[1], 100, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), det->c[0], det->c[1], 100, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
           self->now = time(NULL);
 
         }

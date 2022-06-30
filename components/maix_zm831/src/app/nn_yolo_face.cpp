@@ -93,7 +93,7 @@ extern "C"
     libmaix_nn_decoder_yolo2_box_t *boxes = result->boxes;
 
     pthread_mutex_lock(&zm831->ui_mutex);
-    lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
     for (int i = 0; i < result->boxes_num; ++i)
     {
       int class_id = max_index(rl->probs[i], rl->config->classes_num);
@@ -108,8 +108,8 @@ extern "C"
         printf("%d %d %d %d %f %s\n", x, y, w, h, prob, self->labels[class_id]);
         std::ostringstream prob2str;
         prob2str << prob;
-        lv_canvas_draw_rect(zm831->canvas, x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
-        lv_canvas_draw_text(zm831->canvas, x, y, 120, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_AUTO);
+        lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_AUTO);
       }
     }
     pthread_mutex_unlock(&zm831->ui_mutex);
@@ -231,7 +231,7 @@ extern "C"
     }
 
     pthread_mutex_lock(&zm831->ui_mutex);
-    lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
     pthread_mutex_unlock(&zm831->ui_mutex);
 
     LIBMAIX_INFO_PRINTF("nn_yolo_face_app_exit");

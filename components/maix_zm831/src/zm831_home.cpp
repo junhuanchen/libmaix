@@ -21,11 +21,13 @@ extern "C"
 
   extern zm831_home_app get_function_home_app();
   extern zm831_home_app get_function_0x01_app();
+  extern zm831_home_app get_function_0x02_app();
 
   uint8_t zm831_home_app_index = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] = {
       get_function_home_app,
       get_function_0x01_app,
+      get_function_0x02_app,
       get_nn_classifier_resnet_app,
       get_nn_classifier_custom_app,
       get_nn_retinaface_app,
@@ -101,8 +103,6 @@ extern "C"
     lv_ui *ui = &zm831->ui;
     setup_scr(ui);
     lv_scr_load_anim(*lvgl_screen, LV_SCR_LOAD_ANIM_FADE_ON, load_time_ms, 0, false); // set false lv_scr_act() cant delete
-    zm831->canvas = lv_canvas_create(*lvgl_screen, NULL);
-    lv_canvas_set_buffer(zm831->canvas, zm831->canvas_buffer, zm831->ui_w, zm831->ui_h, LV_IMG_CF_TRUE_COLOR_ALPHA);
     pthread_mutex_unlock(&zm831->ui_mutex);
   }
 

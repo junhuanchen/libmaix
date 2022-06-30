@@ -225,7 +225,7 @@ extern "C"
     }
 
     pthread_mutex_lock(&zm831->ui_mutex);
-    lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
     pthread_mutex_unlock(&zm831->ui_mutex);
 
     LIBMAIX_INFO_PRINTF("nn_retinaface_app_exit");
@@ -302,10 +302,10 @@ extern "C"
           prob2str << face_objs->prob;
 
           pthread_mutex_lock(&zm831->ui_mutex);
-          lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_rect(zm831->canvas, face_objs->x1, face_objs->y1, ai2vi(face_objs->x2 - face_objs->x1), ai2vi(face_objs->y2 - face_objs->y1), &self->rect_dsc);
-          lv_canvas_draw_text(zm831->canvas, face_objs->x1, face_objs->y1, 100, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
-          for (int i = 0; i < 5; i++) lv_canvas_draw_arc(zm831->canvas, ai2vi(face_objs->key_point.point[i].x), ai2vi(face_objs->key_point.point[i].y), 5, 0, 360, &self->line_dsc);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          lv_canvas_draw_rect(zm831_ui_get_canvas(), face_objs->x1, face_objs->y1, ai2vi(face_objs->x2 - face_objs->x1), ai2vi(face_objs->y2 - face_objs->y1), &self->rect_dsc);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), face_objs->x1, face_objs->y1, 100, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
+          for (int i = 0; i < 5; i++) lv_canvas_draw_arc(zm831_ui_get_canvas(), ai2vi(face_objs->key_point.point[i].x), ai2vi(face_objs->key_point.point[i].y), 5, 0, 360, &self->line_dsc);
           pthread_mutex_unlock(&zm831->ui_mutex);
 
           float _tmp_score = 0;
@@ -327,7 +327,7 @@ extern "C"
           }
         } else {
           pthread_mutex_lock(&zm831->ui_mutex);
-          lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
           pthread_mutex_unlock(&zm831->ui_mutex);
         }
       }

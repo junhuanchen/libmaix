@@ -278,17 +278,30 @@ extern "C"
         LIBMAIX_DEBUG_PRINTF("zm831_ui_exit");
     }
 
+    lv_obj_t *zm831_ui_get_canvas()
+    {
+        if (!lv_debug_check_obj_valid(zm831->canvas))
+        {
+            zm831->canvas = lv_canvas_create(lv_scr_act(), NULL);
+            if (zm831->canvas == NULL) {
+                LIBMAIX_ERROR_PRINTF("zm831->canvas == NULL !!!");
+                return NULL;
+            }
+            lv_canvas_set_buffer(zm831->canvas, zm831->canvas_buffer, zm831->ui_w, zm831->ui_h, LV_IMG_CF_TRUE_COLOR_ALPHA);
+        }
+        return zm831->canvas;
+    }
+
     void zm831_ui_show_clear()
     {
         pthread_mutex_lock(&zm831->ui_mutex);
-        lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         pthread_mutex_unlock(&zm831->ui_mutex);
     }
 
     void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa)
     {
         pthread_mutex_lock(&zm831->ui_mutex);
-
         cv::Mat bgra;
         cv::cvtColor(img, bgra, cv::COLOR_RGB2BGRA);
 
@@ -303,7 +316,8 @@ extern "C"
         lv_draw_img_dsc_t img_dsc;
         lv_draw_img_dsc_init(&img_dsc);
         img_dsc.opa = opa;
-        lv_canvas_draw_img(zm831->canvas, x, y, &img_bgra, &img_dsc);
+
+        lv_canvas_draw_img(zm831_ui_get_canvas(), x, y, &img_bgra, &img_dsc);
 
         pthread_mutex_unlock(&zm831->ui_mutex);
     }
@@ -568,7 +582,6 @@ extern "C"
         libmaix_image_module_deinit();
         libmaix_camera_module_deinit();
         LIBMAIX_DEBUG_PRINTF("zm831_vi_exit");
-
     }
 
     void zm831_vi_loop()
@@ -612,15 +625,18 @@ extern "C"
         // cap_get("zm831->ai");
     }
 
-    void zm831_write_string_to_file(std::string path, std::string txt) {
+    void zm831_write_string_to_file(std::string path, std::string txt)
+    {
         std::ofstream outfile(path);
         outfile << txt;
         outfile.close();
     }
 
-    std::string zm831_read_file_to_string(const std::string& path) {
+    std::string zm831_read_file_to_string(const std::string &path)
+    {
         std::ifstream file(path);
-        if (!file.is_open()) {
+        if (!file.is_open())
+        {
             return "";
         }
         std::stringstream ss;
@@ -663,8 +679,8 @@ extern "C"
                 //     1, "baz", true,
                 //     })
                 // },
-                { "last_select", 0 },
-                { "language", "zh-cn" },
+                {"last_select", 0},
+                {"language", "zh-cn"},
             });
         }
 

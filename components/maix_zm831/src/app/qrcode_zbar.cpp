@@ -65,7 +65,7 @@ extern "C"
       zbar_image_scanner_destroy(self->scanner), self->scanner = NULL;
 
     pthread_mutex_lock(&zm831->ui_mutex);
-    lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
     pthread_mutex_unlock(&zm831->ui_mutex);
 
     LIBMAIX_INFO_PRINTF("qrcode_zbar_app_exit");
@@ -105,7 +105,7 @@ extern "C"
       if (self->now < time(NULL))
       {
         pthread_mutex_lock(&zm831->ui_mutex);
-        lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         pthread_mutex_unlock(&zm831->ui_mutex);
       }
 
@@ -127,9 +127,9 @@ extern "C"
         {
           printf("decoded %s symbol \"%s\"\n", zbar_get_symbol_name(typ), data);
           pthread_mutex_lock(&zm831->ui_mutex);
-          lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_rect(zm831->canvas, corners[0].x, corners[0].y, ai2vi(corners[2].x - corners[0].x), ai2vi(corners[2].y - corners[0].y), &self->rect_dsc);
-          lv_canvas_draw_text(zm831->canvas, corners[0].x, corners[0].y, 120, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          lv_canvas_draw_rect(zm831_ui_get_canvas(), corners[0].x, corners[0].y, ai2vi(corners[2].x - corners[0].x), ai2vi(corners[2].y - corners[0].y), &self->rect_dsc);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y, 120, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
           pthread_mutex_unlock(&zm831->ui_mutex);
           self->now = time(NULL);
           break;// only one QR code

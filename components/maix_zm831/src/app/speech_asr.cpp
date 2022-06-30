@@ -62,10 +62,10 @@ extern "C"
       ms_asr_clear();
     }
     pthread_mutex_lock(&zm831->ui_mutex);
-    lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
-    lv_canvas_draw_rect(zm831->canvas, 8, 8, 224, 224, &speech_asr_app.rect_dsc);
-    lv_canvas_draw_text(zm831->canvas, 12, 12, 220, &speech_asr_app.label_dsc_en, tmp_pnys.c_str(), LV_LABEL_ALIGN_LEFT);
-    // lv_canvas_draw_text(zm831->canvas, 0, 120, 240, &speech_asr_app.label_dsc, tmp_words.c_str(), LV_LABEL_ALIGN_LEFT);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+    lv_canvas_draw_rect(zm831_ui_get_canvas(), 8, 8, 224, 224, &speech_asr_app.rect_dsc);
+    lv_canvas_draw_text(zm831_ui_get_canvas(), 12, 12, 220, &speech_asr_app.label_dsc_en, tmp_pnys.c_str(), LV_LABEL_ALIGN_LEFT);
+    // lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 120, 240, &speech_asr_app.label_dsc, tmp_words.c_str(), LV_LABEL_ALIGN_LEFT);
     pthread_mutex_unlock(&zm831->ui_mutex);
     return;
   }

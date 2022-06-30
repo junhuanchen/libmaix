@@ -702,9 +702,14 @@ extern "C"
 
   static void function_home_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
   {
-    if (function_home_app.ui->Home_home_photo == btn && event == LV_EVENT_CLICKED)
+    if (function_home_app.ui->Home_home_photo == btn && event == LV_EVENT_PRESSED)
     {
       zm831_home_app_select(1);
+      return;
+    }
+    if (function_home_app.ui->Home_home_face == btn && event == LV_EVENT_PRESSED)
+    {
+      zm831_home_app_select(2);
       return;
     }
   }
@@ -718,6 +723,7 @@ extern "C"
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->Home_home_photo, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->Home_home_face, function_home_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;

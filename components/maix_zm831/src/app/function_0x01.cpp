@@ -217,8 +217,6 @@ extern "C"
     auto self = (_function_0x01_ *)app->userdata;
     if (self->init)
     {
-      // lv_obj_del(self->btn);
-      // lv_obj_del(self->label);
       zm831_home_clear_ui(&self->ui->photo_app);
       self->init = false;
     }
@@ -255,7 +253,7 @@ extern "C"
         void zm831_ui_show_image(cv::Mat & img, int x, int y, lv_opa_t opa);
         zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
 
-        sleep(2);
+        sleep(1);
 
         void zm831_ui_show_clear();
         zm831_ui_show_clear();

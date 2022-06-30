@@ -341,7 +341,7 @@ extern "C"
     }
 
     pthread_mutex_lock(&zm831->ui_mutex);
-    lv_canvas_fill_bg(zm831->canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
     pthread_mutex_unlock(&zm831->ui_mutex);
 
     LIBMAIX_INFO_PRINTF("cv_nn_find_ball_app_exit");

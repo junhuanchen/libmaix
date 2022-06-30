@@ -218,6 +218,7 @@ extern "C"
 {
     void zm831_load_json_conf();
     void zm831_save_json_conf();
+    lv_obj_t *zm831_ui_get_canvas();
     void zm831_ui_show_clear();
     void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);
     int zm831_home_app_select(int id);
