@@ -211,12 +211,17 @@ extern "C"
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_YELLOW;
+      self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.font = zm831->ft_font.font;
 
       zm831_home_setup_ui(&self->ui->face_app, setup_scr_face_app, 10000);
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->face_app_imgbtn_back, function_0x06_btn_event_app_cb);
+      pthread_mutex_unlock(&zm831->ui_mutex);
+
+      pthread_mutex_lock(&zm831->ui_mutex);
+      lv_canvas_draw_text(zm831_ui_get_canvas(), 20, 120, 120, &self->label_dsc, "模型加载中...", LV_LABEL_ALIGN_AUTO);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       // self->init = true;

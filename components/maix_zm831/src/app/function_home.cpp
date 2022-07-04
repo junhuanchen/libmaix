@@ -13,14 +13,14 @@ extern "C"
     // Write codes screen
     ui->home = lv_scr_act();
 
-	//Write style LV_OBJ_PART_MAIN for home
-	static lv_style_t style_home_main;
-	lv_style_reset(&style_home_main);
+    //Write style LV_OBJ_PART_MAIN for home
+    static lv_style_t style_home_main;
+    lv_style_reset(&style_home_main);
 
-	//Write style state: LV_STATE_DEFAULT for style_home_main
-	lv_style_set_bg_color(&style_home_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
-	lv_style_set_bg_opa(&style_home_main, LV_STATE_DEFAULT, 0);
-	lv_obj_add_style(ui->home, LV_OBJ_PART_MAIN, &style_home_main);
+    //Write style state: LV_STATE_DEFAULT for style_home_main
+    lv_style_set_bg_color(&style_home_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+    lv_style_set_bg_opa(&style_home_main, LV_STATE_DEFAULT, 0);
+    lv_obj_add_style(ui->home, LV_OBJ_PART_MAIN, &style_home_main);
 
     //Write codes home_home
     ui->home_home = lv_tileview_create(ui->home, NULL);
