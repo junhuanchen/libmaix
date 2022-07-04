@@ -12,6 +12,15 @@ extern "C"
     // Write codes camera
     ui->photo_app = lv_scr_act();
 
+    //Write style LV_OBJ_PART_MAIN for photo_app
+    static lv_style_t style_photo_app_main;
+    lv_style_reset(&style_photo_app_main);
+
+    //Write style state: LV_STATE_DEFAULT for style_photo_app_main
+    lv_style_set_bg_color(&style_photo_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
+    lv_style_set_bg_opa(&style_photo_app_main, LV_STATE_DEFAULT, 0);
+    lv_obj_add_style(ui->photo_app, LV_OBJ_PART_MAIN, &style_photo_app_main);
+
     // Write codes photo_app_label_top_title
     ui->photo_app_label_top_title = lv_label_create(ui->photo_app, NULL);
     lv_label_set_text(ui->photo_app_label_top_title, "实时拍照");
@@ -198,7 +207,7 @@ extern "C"
       if (access("/root/camera", 0))
         system("mkdir /root/camera");
 
-      zm831_home_setup_ui(&self->ui->photo_app, setup_scr_camera, 1000);
+      zm831_home_setup_ui(&self->ui->photo_app, setup_scr_camera, 500);
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->photo_app_imgbtn_back, function_0x01_btn_event_app_cb);

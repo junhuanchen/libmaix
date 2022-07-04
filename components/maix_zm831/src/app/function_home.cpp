@@ -13,6 +13,15 @@ extern "C"
     // Write codes screen
     ui->home = lv_scr_act();
 
+	//Write style LV_OBJ_PART_MAIN for home
+	static lv_style_t style_home_main;
+	lv_style_reset(&style_home_main);
+
+	//Write style state: LV_STATE_DEFAULT for style_home_main
+	lv_style_set_bg_color(&style_home_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
+	lv_style_set_bg_opa(&style_home_main, LV_STATE_DEFAULT, 0);
+	lv_obj_add_style(ui->home, LV_OBJ_PART_MAIN, &style_home_main);
+
     //Write codes home_home
     ui->home_home = lv_tileview_create(ui->home, NULL);
     static lv_point_t home_home_valid_pos[] = {{0, 0},{0, 1},{0, 2},{0, 3},{0, 4},{0, 5},};
@@ -1801,7 +1810,7 @@ extern "C"
     }
     if (function_home_app.ui->home_imgbtn_face == btn && event == LV_EVENT_PRESSED)
     {
-      zm831_home_app_select(2);
+      zm831_home_app_select(6);
       return;
     }
   }
