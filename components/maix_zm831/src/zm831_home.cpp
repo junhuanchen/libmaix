@@ -7,21 +7,24 @@ extern "C"
 
   // ==============================================================================================
 
-  extern zm831_home_app get_qrcode_zbar_app();
-  extern zm831_home_app get_nn_yolo_face_app();
-  extern zm831_home_app get_qrcode_quirc_app();
-  extern zm831_home_app get_find_apriltag_app();
-  extern zm831_home_app get_imlib_find_blobs_app();
-  extern zm831_home_app get_imlib_cube_color_app();
-  extern zm831_home_app get_cv_nn_find_ball_app();
-  extern zm831_home_app get_nn_classifier_resnet_app();
-  extern zm831_home_app get_nn_retinaface_app();
-  extern zm831_home_app get_nn_classifier_custom_app();
-  extern zm831_home_app get_speech_asr_app();
+  // extern zm831_home_app get_qrcode_zbar_app();
+  // extern zm831_home_app get_nn_yolo_face_app();
+  // extern zm831_home_app get_qrcode_quirc_app();
+  // extern zm831_home_app get_find_apriltag_app();
+  // extern zm831_home_app get_imlib_find_blobs_app();
+  // extern zm831_home_app get_imlib_cube_color_app();
+  // extern zm831_home_app get_cv_nn_find_ball_app();
+  // extern zm831_home_app get_nn_classifier_resnet_app();
+  // extern zm831_home_app get_nn_retinaface_app();
+  // extern zm831_home_app get_nn_classifier_custom_app();
+  // extern zm831_home_app get_speech_asr_app();
 
   extern zm831_home_app get_function_home_app();
   extern zm831_home_app get_function_0x01_app();
   extern zm831_home_app get_function_0x02_app();
+  extern zm831_home_app get_function_0x03_app();
+  extern zm831_home_app get_function_0x04_app();
+  extern zm831_home_app get_function_0x05_app();
   extern zm831_home_app get_function_0x06_app();
 
   uint8_t zm831_home_app_index = 0; // current app index
@@ -29,20 +32,20 @@ extern "C"
       get_function_home_app,
       get_function_0x01_app,
       get_function_0x02_app,
-      get_function_0x02_app,
-      get_function_0x02_app,
-      get_function_0x02_app,
+      get_function_0x03_app,
+      get_function_0x04_app,
+      get_function_0x05_app,
       get_function_0x06_app,
-      get_nn_classifier_resnet_app,
-      get_nn_classifier_custom_app,
-      get_nn_retinaface_app,
-      get_cv_nn_find_ball_app,
-      get_imlib_cube_color_app,
-      get_qrcode_zbar_app,
-      get_qrcode_quirc_app,
-      get_nn_yolo_face_app,
-      get_find_apriltag_app,
-      get_imlib_find_blobs_app,
+      // get_nn_classifier_resnet_app,
+      // get_nn_classifier_custom_app,
+      // get_nn_retinaface_app,
+      // get_cv_nn_find_ball_app,
+      // get_imlib_cube_color_app,
+      // get_qrcode_zbar_app,
+      // get_qrcode_quirc_app,
+      // get_nn_yolo_face_app,
+      // get_find_apriltag_app,
+      // get_imlib_find_blobs_app,
       // get_speech_asr_app,
   };
 
@@ -153,6 +156,10 @@ extern "C"
     }
     zm831_home_app_reload(zm831_home_app_lists[id]());
     zm831_home_app_index = id;
+
+    zm831->config_json["last_select"] = (int)id;
+    zm831_save_json_conf();
+
     return 0;
   }
 
@@ -175,6 +182,10 @@ extern "C"
           if (ret)
           {
             zm831_home_app_reload(get_function_home_app()); // return app index
+            if (app_run->exit) // init fail to exit
+            {
+              app_run->exit(app_run), app_run->exit = NULL;
+            }
             continue;
           }
           app_run->load = NULL;

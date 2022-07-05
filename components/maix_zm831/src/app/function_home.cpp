@@ -1808,6 +1808,26 @@ extern "C"
       zm831_home_app_select(1);
       return;
     }
+    if (function_home_app.ui->home_imgbtn_color == btn && event == LV_EVENT_PRESSED)
+    {
+      zm831_home_app_select(2);
+      return;
+    }
+    if (function_home_app.ui->home_imgbtn_qrcode == btn && event == LV_EVENT_PRESSED)
+    {
+      zm831_home_app_select(3);
+      return;
+    }
+    if (function_home_app.ui->home_imgbtn_ball == btn && event == LV_EVENT_PRESSED)
+    {
+      zm831_home_app_select(4);
+      return;
+    }
+    if (function_home_app.ui->home_imgbtn_road == btn && event == LV_EVENT_PRESSED)
+    {
+      zm831_home_app_select(5);
+      return;
+    }
     if (function_home_app.ui->home_imgbtn_face == btn && event == LV_EVENT_PRESSED)
     {
       zm831_home_app_select(6);
@@ -1820,10 +1840,14 @@ extern "C"
     auto self = (_function_home_ *)app->userdata;
     if (!self->init)
     {
-      zm831_home_setup_ui(&self->ui->home, setup_scr_screen, 500);
+      zm831_home_setup_ui(&self->ui->home, setup_scr_screen, 250);
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->home_imgbtn_photo, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_color, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_qrcode, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_ball, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_road, function_home_btn_event_app_cb);
       lv_obj_set_event_cb(self->ui->home_imgbtn_face, function_home_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
