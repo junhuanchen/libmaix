@@ -84,6 +84,7 @@ extern "C"
   {
     lv_ui *ui = &zm831->ui;
 
+    lv_draw_line_dsc_t line_dsc;
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
     time_t now;
@@ -124,6 +125,12 @@ extern "C"
 
     if (!self->init)
     {
+
+      lv_draw_line_dsc_init(&self->line_dsc);
+      self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+      self->line_dsc.width = 3;
+      self->line_dsc.opa = LV_OPA_90;
+
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
       self->rect_dsc.bg_opa = LV_OPA_50;
@@ -182,7 +189,7 @@ extern "C"
       cv::Mat gray;
       cv::cvtColor(rgb(cv::Rect(self->line_roi.x, self->line_roi.y, self->line_roi.w, self->line_roi.h)), gray, cv::COLOR_RGB2GRAY);
 
-      printf("gray: %p, %d, %d\r\n", gray.data, gray.cols, gray.rows);
+      // printf("gray: %p, %d, %d\r\n", gray.data, gray.cols, gray.rows);
 
       image_t imlib_img, *img = &imlib_img;
       {
@@ -198,7 +205,7 @@ extern "C"
 
       {
         bool invert = false;
-        unsigned int x_stride = 5 ;
+        unsigned int x_stride = 5;
         unsigned int y_stride = 5;
         unsigned int area_threshold = 200;
         unsigned int pixels_threshold = 200;
@@ -218,37 +225,59 @@ extern "C"
         list_push_back(&gray_line_thresholds, &gray_line_threshold);
 
         imlib_find_blobs(&out, img, &self->line_roi, x_stride, y_stride, &gray_line_thresholds, invert,
-                area_threshold, pixels_threshold, merge, margin,
-                NULL, NULL, NULL, NULL, x_hist_bins_max, y_hist_bins_max);
+                         area_threshold, pixels_threshold, merge, margin,
+                         NULL, NULL, NULL, NULL, x_hist_bins_max, y_hist_bins_max);
 
         list_clear(&gray_line_thresholds);
         find_blobs_list_lnk_data_t max_blobs_data;
         int max_size = 0;
-        if(list_size(&out) > 0)
+        if (list_size(&out) > 0)
         {
-            for (size_t m = 0; list_size(&out); m++) {
-                find_blobs_list_lnk_data_t lnk_data;
-                list_pop_front(&out, &lnk_data);
-                if(lnk_data.rect.w * lnk_data.rect.h > max_size)
-                {
-                    max_blobs_data = lnk_data;
-                    max_size = lnk_data.rect.w * lnk_data.rect.h;
-                    printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
-                    printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
-                    lastcx = (int)max_blobs_data.centroid_x;
-                }
+          for (size_t m = 0; list_size(&out); m++)
+          {
+            find_blobs_list_lnk_data_t lnk_data;
+            list_pop_front(&out, &lnk_data);
+            if (lnk_data.rect.w * lnk_data.rect.h > max_size)
+            {
+              max_blobs_data = lnk_data;
+              max_size = lnk_data.rect.w * lnk_data.rect.h;
+
+              // printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
+              // printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
+
+              pthread_mutex_lock(&zm831->ui_mutex);
+              // lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h, &self->rect_dsc);
+
+              int x = max_blobs_data.centroid_x, y = max_blobs_data.centroid_y;
+
+              const lv_point_t points[] = {
+                  {x, y - 5},
+                  {x, y},
+                  {x - 5, y},
+                  {x + 5, y},
+                  {x, y},
+                  {x, y + 5},
+              };
+
+              lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
+
+              pthread_mutex_unlock(&zm831->ui_mutex);
+
+              lastcx = (int)max_blobs_data.centroid_x;
             }
+          }
         }
         else
         {
-            if(lastcx < 112)
-            {
-                lastcx = 0;
-            }
-            else
-            {
-                lastcx = 224;
-            }
+          if (lastcx < 112)
+          {
+            lastcx = 0;
+          }
+          else
+          {
+            lastcx = 224;
+          }
         }
         list_clear(&out);
       }
