@@ -78,6 +78,8 @@ extern "C"
     lv_imgbtn_set_checkable(ui->road_app_imgbtn_back, true);
   }
 
+#include "imlib.h"
+
   static struct _function_0x05_
   {
     lv_ui *ui = &zm831->ui;
@@ -85,6 +87,13 @@ extern "C"
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
     time_t now;
+
+    rectangle_t line_roi = {
+        .x = 0,
+        .y = 0,
+        .w = 224,
+        .h = 50,
+    };
 
     bool init = false;
   } function_0x05_app;
@@ -131,6 +140,8 @@ extern "C"
       lv_obj_set_event_cb(self->ui->road_app_imgbtn_back, function_0x05_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
+      fb_realloc_init1(1 * 1024 * 1024);
+
       self->init = true;
     }
 
@@ -143,6 +154,7 @@ extern "C"
     auto self = (_function_0x05_ *)app->userdata;
     if (self->init)
     {
+      fb_alloc_close0();
 
       zm831_home_clear_ui(&self->ui->road_app);
 
@@ -159,9 +171,87 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      if (self->now < time(NULL))
+      {
+        zm831_ui_show_clear();
+      }
       // CALC_FPS("function_0x05_app_loop"); // 224x224x3
       // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
 
+      cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+      cv::Mat gray;
+      cv::cvtColor(rgb(cv::Rect(self->line_roi.x, self->line_roi.y, self->line_roi.w, self->line_roi.h)), gray, cv::COLOR_RGB2GRAY);
+
+      printf("gray: %p, %d, %d\r\n", gray.data, gray.cols, gray.rows);
+
+      image_t imlib_img, *img = &imlib_img;
+      {
+        img->w = gray.cols;
+        img->h = gray.rows;
+        img->data = (uint8_t *)gray.data;
+        img->size = img->w * img->h * 1;
+        img->is_data_alloc = NULL;
+        img->pixfmt = PIXFORMAT_GRAYSCALE;
+      }
+
+      fb_alloc_mark();
+
+      {
+        bool invert = false;
+        unsigned int x_stride = 5 ;
+        unsigned int y_stride = 5;
+        unsigned int area_threshold = 200;
+        unsigned int pixels_threshold = 200;
+        bool merge = false;
+        int margin = 0;
+        unsigned int x_hist_bins_max = 0;
+        unsigned int y_hist_bins_max = 0;
+        list_t out;
+        int lastcx;
+
+        list_t gray_line_thresholds;
+        imlib_list_init(&gray_line_thresholds, sizeof(color_thresholds_list_lnk_data_t));
+        color_thresholds_list_lnk_data_t gray_line_threshold = {
+            .LMin = 0,
+            .LMax = 73,
+        };
+        list_push_back(&gray_line_thresholds, &gray_line_threshold);
+
+        imlib_find_blobs(&out, img, &self->line_roi, x_stride, y_stride, &gray_line_thresholds, invert,
+                area_threshold, pixels_threshold, merge, margin,
+                NULL, NULL, NULL, NULL, x_hist_bins_max, y_hist_bins_max);
+
+        list_clear(&gray_line_thresholds);
+        find_blobs_list_lnk_data_t max_blobs_data;
+        int max_size = 0;
+        if(list_size(&out) > 0)
+        {
+            for (size_t m = 0; list_size(&out); m++) {
+                find_blobs_list_lnk_data_t lnk_data;
+                list_pop_front(&out, &lnk_data);
+                if(lnk_data.rect.w * lnk_data.rect.h > max_size)
+                {
+                    max_blobs_data = lnk_data;
+                    max_size = lnk_data.rect.w * lnk_data.rect.h;
+                    printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
+                    printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
+                    lastcx = (int)max_blobs_data.centroid_x;
+                }
+            }
+        }
+        else
+        {
+            if(lastcx < 112)
+            {
+                lastcx = 0;
+            }
+            else
+            {
+                lastcx = 224;
+            }
+        }
+        list_clear(&out);
+      }
       // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
     }
     return 0;
