@@ -48,7 +48,7 @@ extern "C"
 
   // ==============================================================================================
 
-  void nn_resent_get_result(libmaix_nn_layer_t *nn_out, float *max_p, int *max_idx)
+  static void nn_resent_get_result(libmaix_nn_layer_t *nn_out, float *max_p, int *max_idx)
   {
       int stride = 1;
       int i;

@@ -153,6 +153,7 @@ extern "C"
   void zm831_home_clear_ui(lv_obj_t **lvgl_screen)
   {
     pthread_mutex_lock(&zm831->ui_mutex);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
     lv_ui *ui = &zm831->ui;
     lv_obj_clean(*lvgl_screen);
     pthread_mutex_unlock(&zm831->ui_mutex);
