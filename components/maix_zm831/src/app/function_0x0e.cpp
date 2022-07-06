@@ -106,9 +106,28 @@ extern "C"
     lv_imgbtn_set_checkable(ui->five_road_app_imgbtn_change_color, true);
   }
 
+#include "imlib.h"
+
   static struct _function_0x0e_
   {
     lv_ui *ui = &zm831->ui;
+
+    color_thresholds_list_lnk_data_t gray_line_threshold = {
+        .LMin = 0,
+        .LMax = 10,
+        .AMin = -9,
+        .AMax = 20,
+        .BMin = -4,
+        .BMax = 22,
+    };
+
+    rectangle_t line_roi[5] = {
+        {.x = 0 , .y = 200, .w = 48, .h = 40},
+        {.x = 48, .y = 200, .w = 48, .h = 40},
+        {.x = 96, .y = 200, .w = 48, .h = 40},
+        {.x =144, .y = 200, .w = 48, .h = 40},
+        {.x =192, .y = 200, .w = 48, .h = 40},
+    };
 
     bool init = false;
   } function_0x0e_app;

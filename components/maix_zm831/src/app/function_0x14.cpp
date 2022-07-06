@@ -133,9 +133,39 @@ extern "C"
     lv_imgbtn_set_src(ui->cube_app_imgbtn_press, LV_BTN_STATE_RELEASED, &_study_alpha_63x63);
     lv_imgbtn_set_checkable(ui->cube_app_imgbtn_press, true);
   }
+  
+#include "imlib.h"
+
   static struct _function_0x14_
   {
     lv_ui *ui = &zm831->ui;
+
+    rectangle_t twenty_roi[10] = {
+            {.x = 46 , .y = 46 , .w = 148, .h = 148},
+            {.x = 64 , .y = 64 , .w = 13 , .h = 13 },
+            {.x = 113, .y = 64 , .w = 13 , .h = 13 },
+            {.x = 163, .y = 64 , .w = 13 , .h = 13 },
+            {.x = 64 , .y = 113, .w = 13 , .h = 13 },
+            {.x = 113, .y = 113, .w = 13 , .h = 13 },
+            {.x = 163, .y = 113, .w = 13 , .h = 13 },
+            {.x = 64 , .y = 163, .w = 13 , .h = 13 },
+            {.x = 113, .y = 163, .w = 13 , .h = 13 },
+            {.x = 163, .y = 163, .w = 13 , .h = 13 },
+        };
+    // [(0, 0, 15, 15),(15, 0, 30, 15),(30, 0, 45, 15), 
+    // (0, 15, 15, 30), (15, 15, 30, 30),(30, 15, 45, 30),
+    // (0, 30, 15, 45),  (15, 30, 30, 45),   (30, 30, 45, 45)]
+    rectangle_t twenty_roi_ui[9] = {
+            {.x = 0  , .y = 0  , .w = 15 , .h = 15 },
+            {.x = 15 , .y = 0  , .w = 15 , .h = 15 },
+            {.x = 30 , .y = 0  , .w = 15 , .h = 15 },
+            {.x = 0  , .y = 15 , .w = 15 , .h = 15 },
+            {.x = 15 , .y = 15 , .w = 15 , .h = 15 },
+            {.x = 30 , .y = 15 , .w = 15 , .h = 15 },
+            {.x = 0  , .y = 30 , .w = 15 , .h = 15 },
+            {.x = 15 , .y = 30 , .w = 15 , .h = 15 },
+            {.x = 30 , .y = 30 , .w = 15 , .h = 15 },
+        };
 
     bool init = false;
   } function_0x14_app;
@@ -199,6 +229,7 @@ extern "C"
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       // CALC_FPS("function_0x14_app_loop"); // 224x224
+
     }
     return 0;
   }
