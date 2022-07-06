@@ -92,7 +92,7 @@ extern "C"
     rectangle_t line_roi = {
         .x = 0,
         .y = 0,
-        .w = 224,
+        .w = 320,
         .h = 50,
     };
 
@@ -125,6 +125,18 @@ extern "C"
 
     if (!self->init)
     {
+
+      if (NULL != zm831->ai)
+      {
+        libmaix_cam_destroy(&zm831->ai);
+        if (NULL == zm831->ai)
+        {
+          zm831->ai = libmaix_cam_create(1, 320, 240, 0, 0);
+          if (NULL == zm831->ai)
+            return -1;
+          zm831->ai->start_capture(zm831->ai);
+        }
+      }
 
       lv_draw_line_dsc_init(&self->line_dsc);
       self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
@@ -164,6 +176,18 @@ extern "C"
       fb_alloc_close0();
 
       zm831_home_clear_ui(&self->ui->road_app);
+
+      if (NULL != zm831->ai)
+      {
+        libmaix_cam_destroy(&zm831->ai);
+        if (NULL == zm831->ai)
+        {
+          zm831->ai = libmaix_cam_create(1, zm831->ai_w, zm831->ai_h, 0, 0);
+          if (NULL == zm831->ai)
+            return -1;
+          zm831->ai->start_capture(zm831->ai);
+        }
+      }
 
       self->init = false;
     }
@@ -242,8 +266,8 @@ extern "C"
               max_blobs_data = lnk_data;
               max_size = lnk_data.rect.w * lnk_data.rect.h;
 
-              // printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
-              // printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
+              printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
+              printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
 
               pthread_mutex_lock(&zm831->ui_mutex);
               // lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
