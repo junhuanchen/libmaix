@@ -181,17 +181,17 @@ extern "C"
   static void function_0x01_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
   {
     // printf("btn %p event %d\n", btn, event);
-    if (function_0x01_app.ui->photo_app_imgbtn_press == btn && event == LV_EVENT_RELEASED)
+    if (function_0x01_app.ui->photo_app_imgbtn_press == btn && event == LV_EVENT_SHORT_CLICKED)
     {
       function_0x01_app.is_capture = true;
       return;
     }
-    if (function_0x01_app.ui->photo_app_imgbtn_back == btn && event == LV_EVENT_RELEASED)
+    if (function_0x01_app.ui->photo_app_imgbtn_back == btn && event == LV_EVENT_SHORT_CLICKED)
     {
       zm831_home_app_select(0);
       return;
     }
-    if (function_0x01_app.ui->photo_app_imgbtn_clear == btn && event == LV_EVENT_RELEASED)
+    if (function_0x01_app.ui->photo_app_imgbtn_clear == btn && event == LV_EVENT_SHORT_CLICKED)
     {
       function_0x01_app.is_clear = true;
       return;

@@ -112,7 +112,7 @@ extern "C"
 
   static void function_0x05_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
   {
-    if (function_0x05_app.ui->road_app_imgbtn_back == btn && event == LV_EVENT_RELEASED)
+    if (function_0x05_app.ui->road_app_imgbtn_back == btn && event == LV_EVENT_SHORT_CLICKED)
     {
       zm831_home_app_select(0);
       return;

@@ -19,6 +19,12 @@ extern "C"
   // extern zm831_home_app get_nn_classifier_custom_app();
   // extern zm831_home_app get_speech_asr_app();
 
+  const _get_zm831_home_app_func_ get_function_0x0f_app = NULL;
+  const _get_zm831_home_app_func_ get_function_0x10_app = NULL;
+  const _get_zm831_home_app_func_ get_function_0x11_app = NULL;
+  const _get_zm831_home_app_func_ get_function_0x12_app = NULL;
+  const _get_zm831_home_app_func_ get_function_0x13_app = NULL;
+
   extern zm831_home_app get_function_home_app();
   extern zm831_home_app get_function_0x01_app();
   extern zm831_home_app get_function_0x02_app();
@@ -26,6 +32,21 @@ extern "C"
   extern zm831_home_app get_function_0x04_app();
   extern zm831_home_app get_function_0x05_app();
   extern zm831_home_app get_function_0x06_app();
+  extern zm831_home_app get_function_0x07_app();
+  extern zm831_home_app get_function_0x08_app();
+  extern zm831_home_app get_function_0x09_app();
+  extern zm831_home_app get_function_0x0a_app();
+  extern zm831_home_app get_function_0x0b_app();
+  extern zm831_home_app get_function_0x0c_app();
+  extern zm831_home_app get_function_0x0d_app();
+  extern zm831_home_app get_function_0x0e_app();
+  // extern zm831_home_app get_function_0x0f_app();
+  // extern zm831_home_app get_function_0x10_app();
+  // extern zm831_home_app get_function_0x11_app();
+  // extern zm831_home_app get_function_0x12_app();
+  // extern zm831_home_app get_function_0x13_app();
+  extern zm831_home_app get_function_0x14_app();
+  extern zm831_home_app get_function_0x15_app();
 
   uint8_t zm831_home_app_index = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] = {
@@ -36,6 +57,21 @@ extern "C"
       get_function_0x04_app,
       get_function_0x05_app,
       get_function_0x06_app,
+      get_function_0x07_app,
+      get_function_0x08_app,
+      get_function_0x09_app,
+      get_function_0x0a_app,
+      get_function_0x0b_app,
+      get_function_0x0c_app,
+      get_function_0x0d_app,
+      get_function_0x0e_app,
+      get_function_0x0f_app,
+      get_function_0x10_app,
+      get_function_0x11_app,
+      get_function_0x12_app,
+      get_function_0x13_app,
+      get_function_0x14_app,
+      get_function_0x15_app,
       // get_nn_classifier_resnet_app,
       // get_nn_classifier_custom_app,
       // get_nn_retinaface_app,
@@ -144,14 +180,15 @@ extern "C"
   {
     if (id == zm831_home_app_index)
       return 0;
-    if (id < 0 || id >= sizeof(zm831_home_app_lists) / sizeof(zm831_home_app_lists[0]))
+    // LIBMAIX_INFO_PRINTF("id: %d\n", id);
+    if (id < 0 || id >= (sizeof(zm831_home_app_lists) / sizeof(zm831_home_app_lists[0])))
     {
-      LIBMAIX_ERROR_PRINTF("zm831_home_app_select: id out of range");
+      LIBMAIX_INFO_PRINTF("zm831_home_app_select: id out of range");
       return -1;
     }
     if (zm831_home_app_lists[id] == NULL)
     {
-      LIBMAIX_ERROR_PRINTF("zm831_home_app_select: id not found");
+      LIBMAIX_INFO_PRINTF("zm831_home_app_select: id not found");
       return -1;
     }
     zm831_home_app_reload(zm831_home_app_lists[id]());
@@ -182,7 +219,7 @@ extern "C"
           if (ret)
           {
             zm831_home_app_reload(get_function_home_app()); // return app index
-            if (app_run->exit) // init fail to exit
+            if (app_run->exit)                              // init fail to exit
             {
               app_run->exit(app_run), app_run->exit = NULL;
             }

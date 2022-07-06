@@ -284,7 +284,7 @@ extern "C"
         {
             zm831->canvas = lv_canvas_create(lv_scr_act(), NULL);
             if (zm831->canvas == NULL) {
-                LIBMAIX_ERROR_PRINTF("zm831->canvas == NULL !!!");
+                LIBMAIX_INFO_PRINTF("zm831->canvas == NULL !!!");
                 return NULL;
             }
             lv_canvas_set_buffer(zm831->canvas, zm831->canvas_buffer, zm831->ui_w, zm831->ui_h, LV_IMG_CF_TRUE_COLOR_ALPHA);
@@ -667,7 +667,7 @@ extern "C"
         }
         catch (json5pp::syntax_error e)
         {
-            LIBMAIX_ERROR_PRINTF("load_json_conf %s : %s", conf.c_str(), e.what());
+            LIBMAIX_INFO_PRINTF("load_json_conf %s : %s", conf.c_str(), e.what());
         }
 
         if (zm831->config_json.is_null())

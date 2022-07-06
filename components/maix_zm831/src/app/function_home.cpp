@@ -27,7 +27,7 @@ extern "C"
     static lv_point_t home_home_valid_pos[] = {{0, 0},{0, 1},{0, 2},{0, 3},{0, 4},{0, 5},};
     lv_tileview_set_valid_positions(ui->home_home, home_home_valid_pos, 6);
     lv_tileview_set_edge_flash(ui->home_home, true);
-    lv_tileview_set_anim_time(ui->home_home, 10);
+    lv_tileview_set_anim_time(ui->home_home, 2);
 
     //Write style LV_TILEVIEW_PART_BG for home_home
     static lv_style_t style_home_home_bg;
@@ -1803,35 +1803,113 @@ extern "C"
 
   static void function_home_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
   {
-    if (function_home_app.ui->home_imgbtn_photo == btn && event == LV_EVENT_PRESSED)
+    if (event == LV_EVENT_SHORT_CLICKED)
     {
-      zm831_home_app_select(1);
-      return;
-    }
-    if (function_home_app.ui->home_imgbtn_color == btn && event == LV_EVENT_PRESSED)
-    {
-      zm831_home_app_select(2);
-      return;
-    }
-    if (function_home_app.ui->home_imgbtn_qrcode == btn && event == LV_EVENT_PRESSED)
-    {
-      zm831_home_app_select(3);
-      return;
-    }
-    if (function_home_app.ui->home_imgbtn_ball == btn && event == LV_EVENT_PRESSED)
-    {
-      zm831_home_app_select(4);
-      return;
-    }
-    if (function_home_app.ui->home_imgbtn_road == btn && event == LV_EVENT_PRESSED)
-    {
-      zm831_home_app_select(5);
-      return;
-    }
-    if (function_home_app.ui->home_imgbtn_face == btn && event == LV_EVENT_PRESSED)
-    {
-      zm831_home_app_select(6);
-      return;
+      if (function_home_app.ui->home_imgbtn_photo == btn)
+      {
+        zm831_home_app_select(0x01);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_color == btn)
+      {
+        zm831_home_app_select(0x02);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_qrcode == btn)
+      {
+        zm831_home_app_select(0x03);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_ball == btn)
+      {
+        zm831_home_app_select(0x04);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_road == btn)
+      {
+        zm831_home_app_select(0x05);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_face == btn)
+      {
+        zm831_home_app_select(0x06);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_classific == btn)
+      {
+        zm831_home_app_select(0x07);
+        return;
+      }
+      if (function_home_app.ui->home_Imgbtn_tagcode == btn)
+      {
+        zm831_home_app_select(0x08);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_colo_s == btn)
+      {
+        zm831_home_app_select(0x09);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_face_study == btn)
+      {
+        zm831_home_app_select(0x0a);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_gesture == btn)
+      {
+        zm831_home_app_select(0x0b);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_classific_study == btn)
+      {
+        zm831_home_app_select(0x0c);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_traffic == btn)
+      {
+        zm831_home_app_select(0x0d);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_five_road == btn)
+      {
+        zm831_home_app_select(0x0e);
+        return;
+      }
+      // if (function_home_app.ui->home_imgbtn_speech_interaction == btn)
+      // {
+      //   zm831_home_app_select(0x0f);
+      //   return;
+      // }
+      // if (function_home_app.ui->home_imgbtn_speech_interaction == btn)
+      // {
+      //   zm831_home_app_select(0x10);
+      //   return;
+      // }
+      // if (function_home_app.ui->home_imgbtn_speech_interaction == btn)
+      // {
+      //   zm831_home_app_select(0x11);
+      //   return;
+      // }
+      // if (function_home_app.ui->home_imgbtn_speech_interaction == btn)
+      // {
+      //   zm831_home_app_select(0x12);
+      //   return;
+      // }
+      // if (function_home_app.ui->home_imgbtn_speech_interaction == btn)
+      // {
+      //   zm831_home_app_select(0x13);
+      //   return;
+      // }
+      if (function_home_app.ui->home_imgbtn_cube == btn)
+      {
+        zm831_home_app_select(0x14);
+        return;
+      }
+      if (function_home_app.ui->home_imgbtn_number == btn)
+      {
+        zm831_home_app_select(0x15);
+        return;
+      }
     }
   }
 
@@ -1849,6 +1927,16 @@ extern "C"
       lv_obj_set_event_cb(self->ui->home_imgbtn_ball, function_home_btn_event_app_cb);
       lv_obj_set_event_cb(self->ui->home_imgbtn_road, function_home_btn_event_app_cb);
       lv_obj_set_event_cb(self->ui->home_imgbtn_face, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_classific, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_Imgbtn_tagcode, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_colo_s, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_face_study, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_gesture, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_classific_study, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_traffic, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_five_road, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_cube, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_number, function_home_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
