@@ -686,12 +686,6 @@ extern "C"
     void maix_zm831_main(int argc, char *argv[])
     {
         zm831_load_json_conf(zm831->config_file, zm831->config_json, json5pp::object({
-            // {"foo", 123},
-            // {"bar",
-            //     json5pp::array({
-            //     1, "baz", true,
-            //     })
-            // },
             {"last_select", 0},
             {"language", "zh-cn"},
         }));

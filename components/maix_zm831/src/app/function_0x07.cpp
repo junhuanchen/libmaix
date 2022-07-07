@@ -103,14 +103,14 @@ extern "C"
     libmaix_nn_layer_t out_fmap = {
         .w = 7,
         .h = 7,
-        .c = (12 + 5) * 5,
+        .c = (3 + 5) * 5,
         .dtype = LIBMAIX_NN_DTYPE_FLOAT,
     };
     libmaix_nn_t *nn;
     libmaix_nn_model_path_t model_path;
     libmaix_nn_opt_param_t opt_param;
     // -------------- yolo2 decode -----------------------
-    const char *labels[12] = {"Express","Recipient","Food"};
+    const char *labels[3] = {"Express","Recipient","Food"};
     const float anchors[10] = {2.28, 2.09, 3.11, 3.22, 1.94, 1.25, 1.22, 0.94, 1.47, 1.5};
     libmaix_nn_decoder_t *yolo2_decoder;
     libmaix_nn_decoder_yolo2_result_t yolo2_result;
