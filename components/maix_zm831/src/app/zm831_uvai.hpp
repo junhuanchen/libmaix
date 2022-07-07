@@ -365,7 +365,7 @@ typedef struct
     // ui designed
     lv_ui ui;
     // sys
-    const char *config_file = "/root/zm831.conf";
+    const char *config_file = "/root/zm831_home.json";
     json5pp::value config_json;
 
     int exit, signal;
@@ -422,8 +422,8 @@ typedef zm831_home_app (*_get_zm831_home_app_func_)();
 
 extern "C"
 {
-    void zm831_load_json_conf();
-    void zm831_save_json_conf();
+    void zm831_save_json_conf(const std::string &path, json5pp::value &cfg);
+    void zm831_load_json_conf(const std::string &path, json5pp::value &cfg, json5pp::value old);
     lv_obj_t *zm831_ui_get_canvas();
     void zm831_ui_show_clear();
     void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);

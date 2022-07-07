@@ -196,7 +196,7 @@ extern "C"
     zm831_home_app_index = id;
 
     zm831->config_json["last_select"] = (int)id;
-    zm831_save_json_conf();
+    zm831_save_json_conf(zm831->config_file, zm831->config_json);
 
     return 0;
   }
@@ -258,7 +258,7 @@ extern "C"
   //       zm831->exit = 1;
   //     }
   //     zm831->config_json["last_select"] = (int)cnt;
-  //     zm831_save_json_conf();
+  //     zm831_save_json_conf(zm831->config_file, zm831->config_json);
   //     zm831_home_app_select(cnt);
   //   }
   // }
@@ -294,7 +294,7 @@ extern "C"
     }
 
     // zm831->config_json["last_select"] = (int)cnt;
-    // zm831_save_json_conf();
+    // zm831_save_json_conf(zm831->config_file, zm831->config_json);
 
     zm831->ai_th_usec = 40000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
 
