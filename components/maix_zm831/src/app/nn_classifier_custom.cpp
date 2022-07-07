@@ -25,7 +25,7 @@ extern "C"
     libmaix_nn_model_path_t model_path;
     libmaix_nn_opt_param_t opt_param;
 
-    const char* classifier_pth = "classifier.bin";
+    const char* classifier_pth = "/root/classifier.bin";
     int class_num = 3;
     int sample_num = 8;
     int feature_length = 512;

@@ -239,7 +239,7 @@ extern "C"
    * @param score 输出人脸对比最高的分数
    * @return int 返回人脸对比的 id 索引号,无人脸时返回 -1.
    */
-  int nn_get_face_recognize_scores_max(zm831_home_app *app, float *face_feature, float *score)
+  static int nn_get_face_recognize_scores_max(zm831_home_app *app, float *face_feature, float *score)
   {
     auto self = (_nn_retinaface_ *)app->userdata;
     float face_scores[self->face_sum] = {0};

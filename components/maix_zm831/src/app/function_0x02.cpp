@@ -77,7 +77,7 @@ extern "C"
     lv_imgbtn_set_checkable(ui->color_app_imgbtn_back, true);
   }
 
-#include "imlib.h"
+  #include "imlib.h"
 
   static struct _function_0x02_
   {
@@ -128,6 +128,8 @@ extern "C"
   {
     auto self = (_function_0x02_ *)app->userdata;
 
+    fb_realloc_init1(1 * 1024 * 1024);
+
     if (!self->init)
     {
       lv_draw_rect_dsc_init(&self->rect_dsc);
@@ -146,8 +148,6 @@ extern "C"
       lv_obj_set_event_cb(self->ui->color_app_imgbtn_back, function_0x02_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
-      fb_realloc_init1(1 * 1024 * 1024);
-
       self->init = true;
     }
 
@@ -158,12 +158,12 @@ extern "C"
   int function_0x02_app_exit(zm831_home_app *app)
   {
     auto self = (_function_0x02_ *)app->userdata;
+
+    fb_alloc_close0();
+
     if (self->init)
     {
-      fb_alloc_close0();
-
       zm831_home_clear_ui(&self->ui->color_app);
-
       self->init = false;
     }
     LIBMAIX_INFO_PRINTF("function_0x02_app_exit");
