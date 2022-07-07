@@ -85,8 +85,8 @@ extern "C"
     lv_draw_label_dsc_t label_dsc;
     time_t now;
 
-    const char *model_path_param = "/home/res/yolo2_face_int8.param";
-    const char *model_path_bin = "/home/res/yolo2_face_int8.bin";
+    const char *model_path_param = "/home/res/awnn_yolo_number.param";
+    const char *model_path_bin = "/home/res/awnn_yolo_number.bin";
     const char *inputs_names[1] = {"input0"};
     const char *outputs_names[1] = {"output0"};
     const float opt_param_mean = 127.5;
@@ -100,15 +100,15 @@ extern "C"
     libmaix_nn_layer_t out_fmap = {
         .w = 7,
         .h = 7,
-        .c = 30,
+        .c = 75, // (classes_num + 5) * anchors_num,
         .dtype = LIBMAIX_NN_DTYPE_FLOAT,
     };
     libmaix_nn_t *nn;
     libmaix_nn_model_path_t model_path;
     libmaix_nn_opt_param_t opt_param;
     // -------------- yolo2 decode -----------------------
-    const char *labels[1] = {"face"};
-    const float anchors[10] = {1.19, 1.98, 2.79, 4.59, 4.53, 8.92, 8.06, 5.29, 10.32, 10.65};
+    const char *labels[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+    const float anchors[10] = {1.82, 1.88, 1.25, 1.15, 0.76, 0.76, 3.03, 2.84, 1.52, 1.52};
     libmaix_nn_decoder_t *yolo2_decoder;
     libmaix_nn_decoder_yolo2_result_t yolo2_result;
     libmaix_nn_decoder_yolo2_config_t yolo2_config = {

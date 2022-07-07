@@ -86,8 +86,8 @@ extern "C"
     lv_draw_label_dsc_t label_dsc;
     time_t now;
 
-    const char *model_path_param = "/home/res/yolo2_face_int8.param";
-    const char *model_path_bin = "/home/res/yolo2_face_int8.bin";
+    const char *model_path_param = "/home/res/traffic_awnn.param";
+    const char *model_path_bin = "/home/res/traffic_awnn.bin";
     const char *inputs_names[1] = {"input0"};
     const char *outputs_names[1] = {"output0"};
     const float opt_param_mean = 127.5;
@@ -101,15 +101,15 @@ extern "C"
     libmaix_nn_layer_t out_fmap = {
         .w = 7,
         .h = 7,
-        .c = 30,
+        .c = (12 + 5) * 5,
         .dtype = LIBMAIX_NN_DTYPE_FLOAT,
     };
     libmaix_nn_t *nn;
     libmaix_nn_model_path_t model_path;
     libmaix_nn_opt_param_t opt_param;
     // -------------- yolo2 decode -----------------------
-    const char *labels[1] = {"face"};
-    const float anchors[10] = {1.19, 1.98, 2.79, 4.59, 4.53, 8.92, 8.06, 5.29, 10.32, 10.65};
+    const char *labels[12] = {"Left", "Front", "Right", "Roundabout", "People", "Stop", "No_entry", "No_left_turns", "Parking", "No_right_turns", "Trumpet", "Prohibited_to_go_straight"};
+    const float anchors[10] = {2.55, 3.38, 1.06, 1.15, 1.71, 2.25, 0.77, 0.74, 1.53, 1.93};
     libmaix_nn_decoder_t *yolo2_decoder;
     libmaix_nn_decoder_yolo2_result_t yolo2_result;
     libmaix_nn_decoder_yolo2_config_t yolo2_config = {

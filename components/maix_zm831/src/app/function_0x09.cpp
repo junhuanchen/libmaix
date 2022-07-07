@@ -135,6 +135,8 @@ extern "C"
 
   }
 
+#include "imlib.h"
+
   static struct _function_0x09_
   {
     lv_ui *ui = &zm831->ui;
@@ -153,6 +155,31 @@ extern "C"
 
   // ==============================================================================================
 
+  static statistics_t get_roi_color_lab(image_t * arg_img, rectangle_t roi)
+  {
+      fb_alloc_mark();
+      //定义直方图通道
+      histogram_t hist;
+      hist.LBinCount = COLOR_L_MAX - COLOR_L_MIN + 1;
+      hist.ABinCount = COLOR_A_MAX - COLOR_A_MIN + 1;
+      hist.BBinCount = COLOR_B_MAX - COLOR_B_MIN + 1;
+      //分配直方图通道内存
+      hist.LBins = (float *)fb_alloc(hist.LBinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      hist.ABins = (float *)fb_alloc(hist.ABinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      hist.BBins = (float *)fb_alloc(hist.BBinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      //获取直方图
+      imlib_get_histogram(&hist, arg_img, &roi, NULL, false, NULL);
+      //定义统计值
+      statistics_t stats;
+      //进行直方图统计
+      imlib_get_statistics(&stats, (pixformat_t)arg_img->pixfmt, &hist);
+      fb_free(hist.BBins);
+      fb_free(hist.ABins);
+      fb_free(hist.LBins);
+      fb_alloc_free_till_mark();
+      return stats;
+  }
+
   static void function_0x09_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
   {
     // printf("btn %p event %d\n", btn, event);
@@ -169,9 +196,6 @@ extern "C"
 
     if (!self->init)
     {
-      if (access("/root/camera", 0))
-        system("mkdir /root/camera");
-
       zm831_home_setup_ui(&self->ui->color_study_app, setup_scr_color_study_app, 500);
 
       pthread_mutex_lock(&zm831->ui_mutex);

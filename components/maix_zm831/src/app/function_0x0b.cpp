@@ -86,8 +86,8 @@ void setup_scr_gesture_app(lv_ui *ui){
     lv_draw_label_dsc_t label_dsc;
     time_t now;
 
-    const char *model_path_param = "/home/res/yolo2_face_int8.param";
-    const char *model_path_bin = "/home/res/yolo2_face_int8.bin";
+    const char *model_path_param = "/home/res/ZM_hand_awnn.param";
+    const char *model_path_bin = "/home/res/ZM_hand_awnn.bin";
     const char *inputs_names[1] = {"input0"};
     const char *outputs_names[1] = {"output0"};
     const float opt_param_mean = 127.5;
@@ -101,15 +101,15 @@ void setup_scr_gesture_app(lv_ui *ui){
     libmaix_nn_layer_t out_fmap = {
         .w = 7,
         .h = 7,
-        .c = 30,
+        .c = (6 + 5) * 5,
         .dtype = LIBMAIX_NN_DTYPE_FLOAT,
     };
     libmaix_nn_t *nn;
     libmaix_nn_model_path_t model_path;
     libmaix_nn_opt_param_t opt_param;
     // -------------- yolo2 decode -----------------------
-    const char *labels[1] = {"face"};
-    const float anchors[10] = {1.19, 1.98, 2.79, 4.59, 4.53, 8.92, 8.06, 5.29, 10.32, 10.65};
+    const char *labels[6] = {"Scissors", "Stone" ,"Paper" ,"OK" ,"Good","six"};
+    const float anchors[10] = {4.47, 5.04, 2.19, 2.86, 2.94, 4.41, 1.46, 1.95, 3.46, 3.47};
     libmaix_nn_decoder_t *yolo2_decoder;
     libmaix_nn_decoder_yolo2_result_t yolo2_result;
     libmaix_nn_decoder_yolo2_config_t yolo2_config = {

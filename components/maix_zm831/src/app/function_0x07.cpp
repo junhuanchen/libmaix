@@ -88,12 +88,12 @@ extern "C"
     lv_draw_label_dsc_t label_dsc;
     time_t now;
 
-    const char *model_path_param = "/home/res/resnet.param";
-    const char *model_path_bin = "/home/res/resnet.bin";
+    const char *model_path_param = "/home/res/ZM_three_awnn.param";
+    const char *model_path_bin = "/home/res/ZM_three_awnn.bin";
     const char *inputs_names[1] = {"input0"};
     const char *outputs_names[1] = {"output0"};
     const float opt_param_mean = 127.5;
-    const float opt_param_norm = 0.00784313725490196;
+    const float opt_param_norm = 0.0078125;
     libmaix_nn_layer_t input = {
         .w = 224,
         .h = 224,
@@ -101,15 +101,32 @@ extern "C"
         .dtype = LIBMAIX_NN_DTYPE_UINT8,
     };
     libmaix_nn_layer_t out_fmap = {
-        .w = 1,
-        .h = 1,
-        .c = 1000,
+        .w = 7,
+        .h = 7,
+        .c = (12 + 5) * 5,
         .dtype = LIBMAIX_NN_DTYPE_FLOAT,
-        .layout = LIBMAIX_NN_LAYOUT_CHW,
     };
     libmaix_nn_t *nn;
     libmaix_nn_model_path_t model_path;
     libmaix_nn_opt_param_t opt_param;
+    // -------------- yolo2 decode -----------------------
+    const char *labels[12] = {"Express","Recipient","Food"};
+    const float anchors[10] = {2.28, 2.09, 3.11, 3.22, 1.94, 1.25, 1.22, 0.94, 1.47, 1.5};
+    libmaix_nn_decoder_t *yolo2_decoder;
+    libmaix_nn_decoder_yolo2_result_t yolo2_result;
+    libmaix_nn_decoder_yolo2_config_t yolo2_config = {
+        .classes_num = sizeof(labels) / sizeof(anchors[0]),
+        .threshold = 0.5,
+        .nms_value = 0.3,
+        .anchors_num = (sizeof(anchors) / sizeof(anchors[0])) / 2,
+        .anchors = (float *)anchors,
+        .net_in_width = 224,
+        .net_in_height = 224,
+        .net_out_width = 7,
+        .net_out_height = 7,
+        .input_width = 224,
+        .input_height = 224
+    };
 
     bool init = false;
   } function_0x07_app;
@@ -125,41 +142,54 @@ extern "C"
 
   // ==============================================================================================
 
-  static void nn_resent_get_result(libmaix_nn_layer_t *nn_out, float *max_p, int *max_idx)
+  static int max_index(float *a, int n)
   {
-      int stride = 1;
-      int i;
-      float sum = 0;
-      float *data = (float*)nn_out->data;
-      float largest_i = data[0];
-      int n = nn_out->c;
-  /*********************************************************/
-  // softmax,
-      for (i = 0; i < n; ++i)
-      {
-          if (data[i * stride] > largest_i)
-              largest_i = data[i * stride];
-      }
-      for (i = 0; i < n; ++i)
-      {
-          float value = expf(data[i * stride] - largest_i);
-          sum += value;
-          data[i * stride] = value;
-      }
-      for (i = 0; i < n; ++i)
+    int i, max_i = 0;
+    float max = a[0];
+
+    for (i = 1; i < n; ++i)
     {
-          data[i * stride] /= sum;
-    }
-  /*********************************************************/
-  // 找出最大值
-      for (int i = 0; i < n; ++i)
+      if (a[i] > max)
       {
-          if (data[i] > *max_p)
-          {
-              *max_p = data[i];
-              *max_idx = i;
-          }
+        max = a[i];
+        max_i = i;
       }
+    }
+    return max_i;
+  }
+
+  static void libmaix_nn_decoder_yolo2_draw(zm831_home_app *app, struct libmaix_nn_decoder *obj, libmaix_nn_decoder_yolo2_result_t *result)
+  {
+    auto self = (_function_0x07_ *)app->userdata;
+
+    region_layer_t *rl = (region_layer_t *)obj->data;
+    char *label = NULL;
+    uint32_t image_width = rl->config->input_width;
+    uint32_t image_height = rl->config->input_height;
+    float threshold = rl->config->threshold;
+    libmaix_nn_decoder_yolo2_box_t *boxes = result->boxes;
+
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+    for (int i = 0; i < result->boxes_num; ++i)
+    {
+      int class_id = max_index(rl->probs[i], rl->config->classes_num);
+      float prob = result->probs[i][class_id];
+      if (prob > threshold)
+      {
+        libmaix_nn_decoder_yolo2_box_t *b = boxes + i;
+        uint32_t x = b->x * image_width - (b->w * image_width / 2);
+        uint32_t y = b->y * image_height - (b->h * image_height / 2);
+        uint32_t w = b->w * image_width;
+        uint32_t h = b->h * image_height;
+        printf("%d %d %d %d %f %s\n", x, y, w, h, prob, self->labels[class_id]);
+        std::ostringstream prob2str;
+        prob2str << prob;
+        lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_AUTO);
+      }
+    }
+    pthread_mutex_unlock(&zm831->ui_mutex);
   }
 
   static void function_0x07_btn_event_app_cb(lv_obj_t *btn, lv_event_t event)
@@ -175,7 +205,8 @@ extern "C"
   int function_0x07_app_load(zm831_home_app *app)
   {
     auto self = (_function_0x07_ *)app->userdata;
-lv_draw_rect_dsc_init(&self->rect_dsc);
+
+    lv_draw_rect_dsc_init(&self->rect_dsc);
     self->rect_dsc.radius = 5;
     self->rect_dsc.bg_opa = LV_OPA_TRANSP;
     self->rect_dsc.border_width = 5;
@@ -241,6 +272,23 @@ lv_draw_rect_dsc_init(&self->rect_dsc);
       return -1;
     }
 
+    LIBMAIX_INFO_PRINTF("-- yolo2 decoder create\n");
+    self->yolo2_decoder = libmaix_nn_decoder_yolo2_create(libmaix_nn_decoder_yolo2_init,
+                                                          libmaix_nn_decoder_yolo2_deinit,
+                                                          libmaix_nn_decoder_yolo2_decode);
+    if (!self->yolo2_decoder)
+    {
+      LIBMAIX_INFO_PRINTF("no mem\n");
+      return -1;
+    }
+    LIBMAIX_INFO_PRINTF("-- yolo2 decoder init\n");
+    err = self->yolo2_decoder->init(self->yolo2_decoder, (void *)&self->yolo2_config);
+    if (err != LIBMAIX_ERR_NONE)
+    {
+      LIBMAIX_INFO_PRINTF("decoder init error:%d\n", err);
+      return -1;
+    }
+
     if (!self->init)
     {
       zm831_home_setup_ui(&self->ui->classific_app, setup_scr_classific_app, 500);
@@ -259,6 +307,12 @@ lv_draw_rect_dsc_init(&self->rect_dsc);
   {
     auto self = (_function_0x07_ *)app->userdata;
 
+    if (self->yolo2_decoder)
+    {
+      self->yolo2_decoder->deinit(self->yolo2_decoder);
+      libmaix_nn_decoder_yolo2_destroy(&self->yolo2_decoder);
+      self->yolo2_decoder = NULL;
+    }
     if (self->input.buff_quantization)
     {
       free(self->input.buff_quantization);
@@ -290,16 +344,26 @@ lv_draw_rect_dsc_init(&self->rect_dsc);
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      
       self->input.data = ai_rgb->data;
       err = self->nn->forward(self->nn, &self->input, &self->out_fmap);
-      if (err == LIBMAIX_ERR_NONE)
+      if (err != LIBMAIX_ERR_NONE)
       {
-        float max_p = 0;
-        int max_idx = 0;
-        nn_resent_get_result(&self->out_fmap, &max_p, &max_idx);
-        printf("nn_resent_get_result: %f, %d\r\n", max_p, max_idx);
-        // printf("nn_resent_get_result: %f, %d, %s\r\n", max_p, max_idx, classes_label[max_idx]);
+        printf("libmaix_nn forward fail: %s\n", libmaix_get_err_msg(err));
       }
+
+      err = self->yolo2_decoder->decode(self->yolo2_decoder, &self->out_fmap, (void *)&self->yolo2_result);
+      if (err != LIBMAIX_ERR_NONE)
+      {
+        printf("yolo2 decode fail: %s\n", libmaix_get_err_msg(err));
+      }
+
+      if (self->yolo2_result.boxes_num > 0)
+      {
+        libmaix_nn_decoder_yolo2_draw(app, self->yolo2_decoder, &self->yolo2_result);
+        // LIBMAIX_INFO_PRINTF("yolo2_result.boxes_num %d", self->yolo2_result.boxes_num);
+      }
+
     }
     return 0;
   }
