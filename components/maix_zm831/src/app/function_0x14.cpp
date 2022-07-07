@@ -140,7 +140,7 @@ extern "C"
   {
     lv_ui *ui = &zm831->ui;
 
-    rectangle_t twenty_roi[10] = {
+    rectangle_t roi[10] = {
             {.x = 46 , .y = 46 , .w = 148, .h = 148},
             {.x = 64 , .y = 64 , .w = 13 , .h = 13 },
             {.x = 113, .y = 64 , .w = 13 , .h = 13 },
@@ -155,7 +155,7 @@ extern "C"
     // [(0, 0, 15, 15),(15, 0, 30, 15),(30, 0, 45, 15), 
     // (0, 15, 15, 30), (15, 15, 30, 30),(30, 15, 45, 30),
     // (0, 30, 15, 45),  (15, 30, 30, 45),   (30, 30, 45, 45)]
-    rectangle_t twenty_roi_ui[9] = {
+    rectangle_t roi_ui[9] = {
             {.x = 0  , .y = 0  , .w = 15 , .h = 15 },
             {.x = 15 , .y = 0  , .w = 15 , .h = 15 },
             {.x = 30 , .y = 0  , .w = 15 , .h = 15 },
@@ -166,6 +166,10 @@ extern "C"
             {.x = 15 , .y = 30 , .w = 15 , .h = 15 },
             {.x = 30 , .y = 30 , .w = 15 , .h = 15 },
         };
+
+    lv_draw_rect_dsc_t rect_dsc;
+    lv_draw_label_dsc_t label_dsc;
+    time_t now;
 
     bool init = false;
   } function_0x14_app;
@@ -195,9 +199,21 @@ extern "C"
   {
     auto self = (_function_0x14_ *)app->userdata;
 
+    fb_realloc_init1(1 * 1024 * 1024);
+
     if (!self->init)
     {
       zm831_home_setup_ui(&self->ui->cube_app, setup_scr_cube_app, 500);
+
+      lv_draw_rect_dsc_init(&self->rect_dsc);
+      self->rect_dsc.radius = 5;
+      self->rect_dsc.bg_opa = LV_OPA_50;
+      self->rect_dsc.border_width = 2;
+      self->rect_dsc.border_opa = LV_OPA_50;
+      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+
+      lv_draw_label_dsc_init(&self->label_dsc);
+      self->label_dsc.color = LV_COLOR_YELLOW;
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->cube_app_imgbtn_back, function_0x14_btn_event_app_cb);
@@ -212,6 +228,9 @@ extern "C"
   int function_0x14_app_exit(zm831_home_app *app)
   {
     auto self = (_function_0x14_ *)app->userdata;
+
+    fb_alloc_close0();
+
     if (self->init)
     {
       zm831_home_clear_ui(&self->ui->cube_app);
@@ -230,6 +249,71 @@ extern "C"
     {
       // CALC_FPS("function_0x14_app_loop"); // 224x224
 
+      image_t imlib_img, *img = &imlib_img;
+      {
+        img->w = ai_rgb->width;
+        img->h = ai_rgb->height;
+        img->data = (uint8_t *)ai_rgb->data;
+        img->size = ai_rgb->width * ai_rgb->height * 3;
+        img->is_data_alloc = NULL;
+        img->pixfmt = PIXFORMAT_RGB888;
+      }
+
+      fb_alloc_mark();
+
+      //定义直方图通道
+      histogram_t hist;
+      hist.LBinCount = COLOR_L_MAX-COLOR_L_MIN + 1;
+      hist.ABinCount = COLOR_A_MAX-COLOR_A_MIN + 1;
+      hist.BBinCount = COLOR_B_MAX-COLOR_B_MIN + 1;
+      //分配直方图通道内存
+      hist.LBins = fb_alloc(hist.LBinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      hist.ABins = fb_alloc(hist.ABinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      hist.BBins = fb_alloc(hist.BBinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      simple_color_t tmp_lab[9];
+      for( int i = 0; i < 10; ++ i){
+          if(!i){
+          //     libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi[i].x, roi[i].y, roi[i].x + roi[i].w, 
+          //                                                     roi[i].y + roi[i].h, self->io->libmaix_cv_colou[4], 1);
+              continue;
+          } 
+          //获取直方图
+          imlib_get_histogram(&hist, img, &self->roi[i], NULL, false, NULL);
+          //进行直方图统计
+          statistics_t stats;
+          imlib_get_statistics(&stats, (pixformat_t)img->pixfmt, &hist);
+          //get color
+          int piexs = COLOR_LAB_TO_RGB888(stats.LMode, stats.AMode, stats.BMode);
+          // self->io->libmaix_cv_colou[6].rgb888.b = COLOR_RGB888_TO_R8(piexs);
+          // self->io->libmaix_cv_colou[6].rgb888.g = COLOR_RGB888_TO_G8(piexs);
+          // self->io->libmaix_cv_colou[6].rgb888.r = COLOR_RGB888_TO_B8(piexs);
+          // self->io->libmaix_cv_colou[6].rgb888.a = 255;
+
+          // agre_data[AGRE_NUM + ((i - 1) * 3) + 1 ] = COLOR_RGB888_TO_R8(piexs);
+          // agre_data[AGRE_NUM + ((i - 1) * 3) + 2 ] = COLOR_RGB888_TO_G8(piexs);
+          // agre_data[AGRE_NUM + ((i - 1) * 3) + 3 ] = COLOR_RGB888_TO_B8(piexs);
+
+          int point[2];
+          point[0] = self->roi[i].x + self->roi[i].w;
+          point[1] = self->roi[i].y + self->roi[i].h;
+
+          // //do ui
+          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi[i].x, roi[i].y, roi[i].x + roi[i].w, 
+          //                                                 roi[i].y + roi[i].h, self->io->libmaix_cv_colou[1], 1);
+          // point[0] = roi_ui[i-1].x + roi_ui[i-1].w;
+          // point[1] = roi_ui[i-1].y + roi_ui[i-1].h;
+          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1], 
+          //                                                     self->io->libmaix_cv_colou[6], -1);
+
+          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1], 
+          //                                                     self->io->libmaix_cv_colou[4], 1);
+      }
+      //释放直方图通道内存
+      fb_free(hist.BBins);
+      fb_free(hist.ABins);
+      fb_free(hist.LBins);
+
+      fb_alloc_free_till_mark();
     }
     return 0;
   }
