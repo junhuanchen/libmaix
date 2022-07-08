@@ -136,6 +136,7 @@ extern "C"
   static struct _function_0x01_
   {
     lv_ui *ui = &zm831->ui;
+    lv_draw_rect_dsc_t rect_dsc;
     bool is_capture = false;
     bool is_clear = false;
 
@@ -207,6 +208,13 @@ extern "C"
       if (access("/root/camera", 0))
         system("mkdir /root/camera");
 
+      lv_draw_rect_dsc_init(&self->rect_dsc);
+      self->rect_dsc.radius = 5;
+      self->rect_dsc.bg_opa = LV_OPA_0;
+      self->rect_dsc.border_width = 5;
+      self->rect_dsc.border_opa = LV_OPA_80;
+      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+
       zm831_home_setup_ui(&self->ui->photo_app, setup_scr_camera, 500);
 
       pthread_mutex_lock(&zm831->ui_mutex);
@@ -261,6 +269,10 @@ extern "C"
 
         void zm831_ui_show_image(cv::Mat & img, int x, int y, lv_opa_t opa);
         zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
+
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_draw_rect(zm831_ui_get_canvas(), 8, 8, 224, 224, &self->rect_dsc);
+        pthread_mutex_unlock(&zm831->ui_mutex);
 
         sleep(1);
 
