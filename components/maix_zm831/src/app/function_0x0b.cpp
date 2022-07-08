@@ -19,7 +19,7 @@ void setup_scr_gesture_app(lv_ui *ui){
 
 	//Write style state: LV_STATE_DEFAULT for style_gesture_app_main
 	lv_style_set_bg_color(&style_gesture_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
-	lv_style_set_bg_opa(&style_gesture_app_main, LV_STATE_DEFAULT, 139);
+	lv_style_set_bg_opa(&style_gesture_app_main, LV_STATE_DEFAULT, 0);
 	lv_obj_add_style(ui->gesture_app, LV_OBJ_PART_MAIN, &style_gesture_app_main);
 
 	//Write codes gesture_app_label_top_title

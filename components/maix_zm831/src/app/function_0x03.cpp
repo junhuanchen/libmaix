@@ -18,7 +18,7 @@ extern "C"
 
     //Write style state: LV_STATE_DEFAULT for style_qrcode_app_main
     lv_style_set_bg_color(&style_qrcode_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
-    lv_style_set_bg_opa(&style_qrcode_app_main, LV_STATE_DEFAULT, 139);
+    lv_style_set_bg_opa(&style_qrcode_app_main, LV_STATE_DEFAULT, 0);
     lv_obj_add_style(ui->qrcode_app, LV_OBJ_PART_MAIN, &style_qrcode_app_main);
 
     //Write codes qrcode_app_label_top_title
@@ -94,7 +94,8 @@ extern "C"
     zbar_image_scanner_t *scanner;
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    time_t now;
+    lv_draw_line_dsc_t line_dsc;
+    uint32_t old;
 
     bool init = false;
   } function_0x03_app;
@@ -131,6 +132,11 @@ extern "C"
         return -1;
       }
 
+      lv_draw_line_dsc_init(&self->line_dsc);
+      self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+      self->line_dsc.width = 3;
+      self->line_dsc.opa = LV_OPA_90;
+
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
       self->rect_dsc.bg_opa = LV_OPA_50;
@@ -139,7 +145,7 @@ extern "C"
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_YELLOW;
+      self->label_dsc.color = LV_COLOR_GREEN;
 
       zm831_home_setup_ui(&self->ui->qrcode_app, setup_scr_qrcode_app, 500);
 
@@ -199,42 +205,49 @@ extern "C"
       /* extract results */
       const zbar_symbol_t *symbol = zbar_image_first_symbol(image);
 
-      if (self->now < time(NULL))
+      int now = zm831_get_ms();
+      if (now - self->old > 200000) // 200ms
       {
-        pthread_mutex_lock(&zm831->ui_mutex);
-        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-        pthread_mutex_unlock(&zm831->ui_mutex);
+        self->old = now;
+        zm831_ui_show_clear();
       }
 
       for (; symbol; symbol = zbar_symbol_next(symbol))
       {
-        point_t corners[4];
-        corners[0].x = zbar_symbol_get_loc_x(symbol, 0);
-        corners[0].y = zbar_symbol_get_loc_y(symbol, 0);
-        corners[1].x = zbar_symbol_get_loc_x(symbol, 1);
-        corners[1].y = zbar_symbol_get_loc_y(symbol, 1);
-        corners[2].x = zbar_symbol_get_loc_x(symbol, 2);
-        corners[2].y = zbar_symbol_get_loc_y(symbol, 2);
-        corners[3].x = zbar_symbol_get_loc_x(symbol, 3);
-        corners[3].y = zbar_symbol_get_loc_y(symbol, 3);
+        lv_point_t corners[5];
+        corners[0].x = ai2vi(zbar_symbol_get_loc_x(symbol, 0));
+        corners[0].y = ai2vi(zbar_symbol_get_loc_y(symbol, 0));
+        corners[1].x = ai2vi(zbar_symbol_get_loc_x(symbol, 1));
+        corners[1].y = ai2vi(zbar_symbol_get_loc_y(symbol, 1));
+        corners[2].x = ai2vi(zbar_symbol_get_loc_x(symbol, 2));
+        corners[2].y = ai2vi(zbar_symbol_get_loc_y(symbol, 2));
+        corners[3].x = ai2vi(zbar_symbol_get_loc_x(symbol, 3));
+        corners[3].y = ai2vi(zbar_symbol_get_loc_y(symbol, 3));
+        corners[4].x = corners[0].x;
+        corners[4].y = corners[0].y;
 
         zbar_symbol_type_t typ = zbar_symbol_get_type(symbol);
         const char *data = zbar_symbol_get_data(symbol);
         // if (typ == ZBAR_QRCODE)
         {
-          printf("decoded %s symbol \"%s\" | ", zbar_get_symbol_name(typ), data);
-          for(int i = 0, s = strlen(data); i < s; i++)
-          {
-            printf("%02X ", data[i]);
-          }
-          printf("\n");
+          // printf("decoded %s symbol \"%s\" | ", zbar_get_symbol_name(typ), data);
+          // for(int i = 0, s = strlen(data); i < s; i++)
+          // {
+          //   printf("%02X ", data[i]);
+          // }
+          // printf("\n");
 
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_rect(zm831_ui_get_canvas(), corners[0].x, corners[0].y, ai2vi(corners[2].x - corners[0].x), ai2vi(corners[2].y - corners[0].y), &self->rect_dsc);
-          lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y, 120, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
+          lv_canvas_draw_line(zm831_ui_get_canvas(), corners, sizeof(corners) / sizeof(corners[0]), &self->line_dsc);
+          // lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y, corners[2].x - corners[0].x, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
           pthread_mutex_unlock(&zm831->ui_mutex);
-          self->now = time(NULL);
+
+          auto tmp = string_format("\x03%s", data);
+          zm831_protocol_send((uint8_t *)tmp.c_str(), tmp.length());
+
+          self->old = now;
+
           break;// only one QR code
         }
       }

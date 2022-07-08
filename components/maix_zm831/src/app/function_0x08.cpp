@@ -19,7 +19,7 @@ extern "C"
 
     // Write style state: LV_STATE_DEFAULT for style_tagcode_app_main
     lv_style_set_bg_color(&style_tagcode_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
-    lv_style_set_bg_opa(&style_tagcode_app_main, LV_STATE_DEFAULT, 139);
+    lv_style_set_bg_opa(&style_tagcode_app_main, LV_STATE_DEFAULT, 0);
     lv_obj_add_style(ui->tagcode_app, LV_OBJ_PART_MAIN, &style_tagcode_app_main);
 
     // Write codes tagcode_app_label_top_title

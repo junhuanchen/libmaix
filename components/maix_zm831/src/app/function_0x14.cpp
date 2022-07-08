@@ -19,7 +19,7 @@ extern "C"
 
     // Write style state: LV_STATE_DEFAULT for style_cube_app_main
     lv_style_set_bg_color(&style_cube_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
-    lv_style_set_bg_opa(&style_cube_app_main, LV_STATE_DEFAULT, 139);
+    lv_style_set_bg_opa(&style_cube_app_main, LV_STATE_DEFAULT, 0);
     lv_obj_add_style(ui->cube_app, LV_OBJ_PART_MAIN, &style_cube_app_main);
 
     // Write codes cube_app_label_top_title
@@ -133,7 +133,7 @@ extern "C"
     lv_imgbtn_set_src(ui->cube_app_imgbtn_press, LV_BTN_STATE_RELEASED, &_study_alpha_63x63);
     lv_imgbtn_set_checkable(ui->cube_app_imgbtn_press, true);
   }
-  
+
   #include "imlib.h"
 
   static struct _function_0x14_
@@ -152,7 +152,7 @@ extern "C"
             {.x = 113, .y = 163, .w = 13 , .h = 13 },
             {.x = 163, .y = 163, .w = 13 , .h = 13 },
         };
-    // [(0, 0, 15, 15),(15, 0, 30, 15),(30, 0, 45, 15), 
+    // [(0, 0, 15, 15),(15, 0, 30, 15),(30, 0, 45, 15),
     // (0, 15, 15, 30), (15, 15, 30, 30),(30, 15, 45, 30),
     // (0, 30, 15, 45),  (15, 30, 30, 45),   (30, 30, 45, 45)]
     rectangle_t roi_ui[9] = {
@@ -273,10 +273,10 @@ extern "C"
       simple_color_t tmp_lab[9];
       for( int i = 0; i < 10; ++ i){
           if(!i){
-          //     libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi[i].x, roi[i].y, roi[i].x + roi[i].w, 
+          //     libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi[i].x, roi[i].y, roi[i].x + roi[i].w,
           //                                                     roi[i].y + roi[i].h, self->io->libmaix_cv_colou[4], 1);
               continue;
-          } 
+          }
           //获取直方图
           imlib_get_histogram(&hist, img, &self->roi[i], NULL, false, NULL);
           //进行直方图统计
@@ -298,14 +298,14 @@ extern "C"
           point[1] = self->roi[i].y + self->roi[i].h;
 
           // //do ui
-          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi[i].x, roi[i].y, roi[i].x + roi[i].w, 
+          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi[i].x, roi[i].y, roi[i].x + roi[i].w,
           //                                                 roi[i].y + roi[i].h, self->io->libmaix_cv_colou[1], 1);
           // point[0] = roi_ui[i-1].x + roi_ui[i-1].w;
           // point[1] = roi_ui[i-1].y + roi_ui[i-1].h;
-          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1], 
+          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1],
           //                                                     self->io->libmaix_cv_colou[6], -1);
 
-          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1], 
+          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1],
           //                                                     self->io->libmaix_cv_colou[4], 1);
       }
       //释放直方图通道内存

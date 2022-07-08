@@ -19,7 +19,7 @@ extern "C"
 
     // Write style state: LV_STATE_DEFAULT for style_road_app_main
     lv_style_set_bg_color(&style_road_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
-    lv_style_set_bg_opa(&style_road_app_main, LV_STATE_DEFAULT, 139);
+    lv_style_set_bg_opa(&style_road_app_main, LV_STATE_DEFAULT, 0);
     lv_obj_add_style(ui->road_app, LV_OBJ_PART_MAIN, &style_road_app_main);
 
     // Write codes road_app_label_top_title

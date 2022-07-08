@@ -19,7 +19,7 @@ extern "C"
 
     // Write style state: LV_STATE_DEFAULT for style_traffic_app_main
     lv_style_set_bg_color(&style_traffic_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
-    lv_style_set_bg_opa(&style_traffic_app_main, LV_STATE_DEFAULT, 139);
+    lv_style_set_bg_opa(&style_traffic_app_main, LV_STATE_DEFAULT, 0);
     lv_obj_add_style(ui->traffic_app, LV_OBJ_PART_MAIN, &style_traffic_app_main);
 
     // Write codes traffic_app_label_top_title
@@ -342,7 +342,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      
+
       self->input.data = ai_rgb->data;
       err = self->nn->forward(self->nn, &self->input, &self->out_fmap);
       if (err != LIBMAIX_ERR_NONE)

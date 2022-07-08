@@ -19,7 +19,7 @@ extern "C"
 
     // Write style state: LV_STATE_DEFAULT for style_five_road_app_main
     lv_style_set_bg_color(&style_five_road_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
-    lv_style_set_bg_opa(&style_five_road_app_main, LV_STATE_DEFAULT, 139);
+    lv_style_set_bg_opa(&style_five_road_app_main, LV_STATE_DEFAULT, 0);
     lv_obj_add_style(ui->five_road_app, LV_OBJ_PART_MAIN, &style_five_road_app_main);
 
     // Write codes five_road_app_label_top_title
@@ -212,7 +212,7 @@ extern "C"
       // CALC_FPS("function_0x0e_app_loop"); // 224x224
       list_t thresholds;
       imlib_list_init(&thresholds, sizeof(color_thresholds_list_lnk_data_t));
-      
+
       image_t imlib_img, *img = &imlib_img;
       {
         img->w = ai_rgb->width;
@@ -258,7 +258,7 @@ extern "C"
                       max_blobs_data = lnk_data;
                   }
               }
-              // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.x+max_blobs_data.rect.w, 
+              // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.x+max_blobs_data.rect.w,
               //                     max_blobs_data.rect.y+max_blobs_data.rect.h,self->io->libmaix_cv_colou[4], 1);
 
               // //imlib_draw_cross(&self->io->imlib_img, (int)max_blobs_data.centroid_x, (int)max_blobs_data.centroid_y, -1, 5, 1);
@@ -272,7 +272,7 @@ extern "C"
           {
               Part[i] = 0;
           }
-          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, fourteen_roi[i].x, fourteen_roi[i].y, fourteen_roi[i].x+fourteen_roi[i].w, 
+          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, fourteen_roi[i].x, fourteen_roi[i].y, fourteen_roi[i].x+fourteen_roi[i].w,
           //                     fourteen_roi[i].y+fourteen_roi[i].h, self->io->libmaix_cv_colou[4], 1);
       }
 
