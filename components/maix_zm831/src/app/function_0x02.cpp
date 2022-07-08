@@ -97,9 +97,11 @@ extern "C"
         {.LMin = 50, .LMax = 100, .AMin = -2, .AMax = 40, .BMin = 40, .BMax = 90},  //黄
     };
 
+    uint8_t data_cmd[5] = { 0x02, };
+    uint32_t old;
+
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    time_t now;
 
     bool init = false;
   } function_0x02_app;
@@ -136,7 +138,7 @@ extern "C"
       self->rect_dsc.radius = 5;
       self->rect_dsc.bg_opa = LV_OPA_10;
       self->rect_dsc.border_width = 2;
-      self->rect_dsc.border_opa = LV_OPA_10;
+      self->rect_dsc.border_opa = LV_OPA_50;
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
@@ -212,8 +214,14 @@ extern "C"
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
 
-        if (self->now < time(NULL))
+        int now = zm831_get_ms();
+        if (now - self->old > 200000) // 200ms
         {
+          self->old = now;
+          // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
+          // printf("\r\n");
+          memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
+          zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
           zm831_ui_show_clear();
         }
 
@@ -235,16 +243,7 @@ extern "C"
             lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
             pthread_mutex_unlock(&zm831->ui_mutex);
 
-            uint8_t cmd[5];
-            cmd[0] = 0x02;
-            cmd[1] = lnk_data.rect.x;
-            cmd[2] = lnk_data.rect.y;
-            cmd[3] = lnk_data.rect.w;
-            cmd[4] = lnk_data.rect.h;
-            extern int zm831_protocol_send(uint8_t * data, int len);
-            zm831_protocol_send(cmd, sizeof(cmd));
-
-            self->now = time(NULL);
+            self->data_cmd[i + 1] += 1;
 
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }

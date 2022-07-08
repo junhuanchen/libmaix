@@ -40,6 +40,25 @@ extern "C"
     LIBMAIX_DEBUG_PRINTF("zm831_ctrl_exit");
   }
 
+  int zm831_protocol_send(uint8_t *data, int len)
+  {
+    if (len > (64 - 6)) return -1;
+    uint8_t buffer[64] = { 0x00 };
+    int pos = 0;
+    buffer[pos++] = 0x86;
+    buffer[pos++] = 0xAB;
+    buffer[pos++] = (len >> 8) & 0xFF;
+    buffer[pos++] = len & 0xFF;
+    memcpy(buffer + pos, data, len);
+    pos += len;
+    uint8_t sum = 0;
+    for (int i = 0; i < pos; i++) sum += buffer[i];
+    buffer[pos++] = sum;
+    buffer[pos++] = 0xCF;
+    write(zm831->dev_ttyS1, buffer, pos);
+    return 0;
+  }
+
   void zm831_protocol_recv(char *buf, int len)
   {
     char data = buf[0];
@@ -170,25 +189,6 @@ extern "C"
       }
     }
     // LIBMAIX_INFO_PRINTF("\n data_sta %d data 0x%02X", data_sta, data);
-  }
-
-  int zm831_protocol_send(uint8_t *data, int len)
-  {
-    if (len > (64 - 6)) return -1;
-    uint8_t buffer[64] = { 0x00 };
-    int pos = 0;
-    buffer[pos++] = 0x86;
-    buffer[pos++] = 0xAB;
-    buffer[pos++] = (len >> 8) & 0xFF;
-    buffer[pos++] = len & 0xFF;
-    memcpy(buffer + pos, data, len);
-    pos += len;
-    uint8_t sum = 0;
-    for (int i = 0; i < pos; i++) sum += buffer[i];
-    buffer[pos++] = sum;
-    buffer[pos++] = 0xCF;
-    write(zm831->dev_ttyS1, buffer, pos);
-    return 0;
   }
 
   void zm831_ctrl_loop()

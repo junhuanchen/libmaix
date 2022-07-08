@@ -429,6 +429,8 @@ extern "C"
     void zm831_ui_show_image(cv::Mat &img, int x, int y, lv_opa_t opa);
     int zm831_home_app_select(int id);
     void zm831_home_app_stop();
+    uint32_t zm831_get_ms();
+    int zm831_protocol_send(uint8_t * data, int len);
 }
 
 #endif /*_zm831_uv_*/

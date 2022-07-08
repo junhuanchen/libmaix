@@ -22,6 +22,13 @@ extern "C"
 
     // static struct timeval old, now;
 
+    uint32_t zm831_get_ms()
+    {
+        static struct timeval tmp;
+        gettimeofday(&tmp, NULL);
+        return (tmp.tv_sec * 1000) + (uint32_t)tmp.tv_usec;
+    }
+
     static void cap_set()
     {
         return;
