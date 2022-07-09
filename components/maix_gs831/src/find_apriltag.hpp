@@ -98,10 +98,34 @@ extern "C"
     return 0;
   }
 
+  static inline uint32_t gs831_get_ms()
+  {
+      static struct timespec tmp;
+      clock_gettime(CLOCK_MONOTONIC, &tmp);
+      return (tmp.tv_sec * 1000) + (uint32_t)tmp.tv_nsec / 1000000;
+  }
+
   int find_apriltag_app_loop(_find_apriltag_ *self, uint8_t *data, uint32_t width, uint32_t height)
   {
     if (self->td && self->tf)
     {
+      struct apriltag_data {
+        uint8_t head;
+        uint8_t len;
+        uint8_t retain_0;
+        uint8_t retain_1;
+        uint32_t tm;
+        uint32_t id;
+        float decision_margin;
+        float center[2];
+        float points[4][2];
+        float rotation[3][3];
+        uint8_t retain_2;
+        uint8_t retain_3;
+        uint8_t sum;
+        uint8_t end;
+      } upload_data = { 0x55, sizeof(struct apriltag_data), 0, 0, gs831_get_ms(), 0, 0, { 0, 0 }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } }, { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }, 0, 0, 0, 0x0A };
+
       cv::Mat gray(height, width, CV_8UC1, data);
 
       // Make an image_u8_t header for the Mat data
@@ -120,22 +144,51 @@ extern "C"
         apriltag_detection_t *det;
         zarray_get(detections, i, &det);
 
-        auto text = string_format("[(%d,%.0f),(%d,%d)]\r\n", det->id, det->decision_margin, (int)det->c[0], (int)det->c[1]);
-
-        write(gs831->dev_ttyS1, text.c_str(), text.length());
-
         cv::line(gray, cv::Point(det->p[0][0], det->p[0][1]),
                   cv::Point(det->p[1][0], det->p[1][1]),
-                  cv::Scalar(0, 0xff, 0), 2);
-        cv::line(gray, cv::Point(det->p[0][0], det->p[0][1]),
-                  cv::Point(det->p[3][0], det->p[3][1]),
-                  cv::Scalar(0, 0, 0xff), 2);
+                  cv::Scalar(0xff, 0, 0), 2);
         cv::line(gray, cv::Point(det->p[1][0], det->p[1][1]),
                   cv::Point(det->p[2][0], det->p[2][1]),
                   cv::Scalar(0xff, 0, 0), 2);
         cv::line(gray, cv::Point(det->p[2][0], det->p[2][1]),
                   cv::Point(det->p[3][0], det->p[3][1]),
                   cv::Scalar(0xff, 0, 0), 2);
+        cv::line(gray, cv::Point(det->p[3][0], det->p[3][1]),
+                  cv::Point(det->p[0][0], det->p[0][1]),
+                  cv::Scalar(0xff, 0, 0), 2);
+
+        upload_data.id = det->id;
+        upload_data.decision_margin = det->decision_margin;
+        upload_data.center[0] = det->c[0];
+        upload_data.center[1] = det->c[1];
+        upload_data.points[0][0] = det->p[0][0];
+        upload_data.points[0][1] = det->p[0][1];
+        upload_data.points[1][0] = det->p[1][0];
+        upload_data.points[1][1] = det->p[1][1];
+        upload_data.points[2][0] = det->p[2][0];
+        upload_data.points[2][1] = det->p[2][1];
+        upload_data.points[3][0] = det->p[3][0];
+        upload_data.points[3][1] = det->p[3][1];
+
+        uint8_t *ptr = (uint8_t *)&upload_data;
+        // uint8_t sum = 0;
+        for (int i = 0; i < upload_data.len - 2; i++) upload_data.sum += ptr[i];
+        // upload_data.sum = sum;
+        write(gs831->dev_ttyS, ptr, upload_data.len);
+
+        break;
+
+        // cv::Matx<double, 3, 3> R_inv = R.t();
+
+        // auto text = string_format("[(%d,%.0f),(%d,%d)]\r\n", det->id, det->decision_margin, (int)det->c[0], (int)det->c[1]);
+
+        // write(gs831->dev_ttyS, text.c_str(), text.length());
+
+        // printf("detection %d: id=%d, hamming=%d, decision_margin=%f, "
+        //        "p[0]=(%f,%f), p[1]=(%f,%f), p[2]=(%f,%f), p[3]=(%f,%f)\n",
+        //        i, det->id, det->hamming, det->decision_margin,
+        //        det->p[0][0], det->p[0][1], det->p[1][0], det->p[1][1],
+        //        det->p[2][0], det->p[2][1], det->p[3][0], det->p[3][1]);
 
         // int fontface = cv::FONT_HERSHEY_SCRIPT_SIMPLEX;
         // double fontscale = 1.0;
@@ -152,5 +205,5 @@ extern "C"
 
     return 0;
   }
-  
+
 }

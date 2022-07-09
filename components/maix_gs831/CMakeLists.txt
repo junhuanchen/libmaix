@@ -41,11 +41,14 @@ if(CONFIG_COMPONENT_MAIX_GS831_ENABLE)
             "../libmaix/lib/arch/v83x/lib/libjpeg.so"
             "../libmaix/lib/arch/v83x/lib/libpng12.so"
             "../libmaix/lib/arch/v83x/lib/libwebp.so"
-            # "../libmaix/lib/arch/v83x/opencv4/libopencv_videoio.so"
-            # "../libmaix/lib/arch/v83x/opencv4/libopencv_highgui.so"
+            "../libmaix/lib/arch/v83x/opencv4/libopencv_videoio.so"
+            "../libmaix/lib/arch/v83x/opencv4/libopencv_highgui.so"
             "../libmaix/lib/arch/v83x/opencv4/libopencv_imgcodecs.so"
             "../libmaix/lib/arch/v83x/opencv4/libopencv_imgproc.so"
             "../libmaix/lib/arch/v83x/opencv4/libopencv_core.so"
+            "../libmaix/lib/arch/v83x/opencv4/libopencv_calib3d.so"
+            "../libmaix/lib/arch/v83x/opencv4/libopencv_features2d.so"
+            "../libmaix/lib/arch/v83x/opencv4/libopencv_flann.so"
         )
     else()
 

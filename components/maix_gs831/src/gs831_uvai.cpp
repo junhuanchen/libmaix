@@ -8,13 +8,6 @@ extern "C"
 
     // static struct timeval old, now;
 
-    uint32_t gs831_get_ms()
-    {
-        static struct timeval tmp;
-        gettimeofday(&tmp, NULL);
-        return (tmp.tv_sec * 1000) + (uint32_t)tmp.tv_usec;
-    }
-
     static void cap_set()
     {
         return;
@@ -205,7 +198,7 @@ extern "C"
             {"last_select", 0},
             {"language", "zh-cn"},
         }));
-        
+
         void gs831_ctrl_load();
         void gs831_home_load();
         void gs831_ctrl_loop();

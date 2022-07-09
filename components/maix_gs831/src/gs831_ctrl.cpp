@@ -19,13 +19,13 @@ extern "C"
         .data_bits = 8,
         .stop_bits = 1,
         .parity = 'n'};
-    gs831->dev_ttyS1 = linux_uart_init((char *)"/dev/ttyS0", &uart_dev_parm);
-    if (gs831->dev_ttyS1 < 0)
+    gs831->dev_ttyS = linux_uart_init((char *)"/dev/ttyS0", &uart_dev_parm);
+    if (gs831->dev_ttyS < 0)
     {
       perror(" uart /dev/ttyS1 open err!");
       abort();
     }
-    write(gs831->dev_ttyS1, "gs831!\r\n", sizeof("gs831!\r\n"));
+    write(gs831->dev_ttyS, "gs831!\r\n", sizeof("gs831!\r\n"));
 
     gs831->timeout.tv_sec = 0;
     gs831->timeout.tv_usec = 0;
@@ -35,7 +35,7 @@ extern "C"
 
   void gs831_ctrl_exit()
   {
-    close(gs831->dev_ttyS1);
+    close(gs831->dev_ttyS);
     close(gs831->input_event0);
     LIBMAIX_DEBUG_PRINTF("gs831_ctrl_exit");
   }
@@ -47,12 +47,12 @@ extern "C"
     int ret = 0;
 
     // serial
-    FD_SET(gs831->dev_ttyS1, &gs831->readfd);
-    ret = select(gs831->dev_ttyS1 + 1, &gs831->readfd, NULL, NULL, &gs831->timeout);
-    if (ret != -1 && FD_ISSET(gs831->dev_ttyS1, &gs831->readfd))
+    FD_SET(gs831->dev_ttyS, &gs831->readfd);
+    ret = select(gs831->dev_ttyS + 1, &gs831->readfd, NULL, NULL, &gs831->timeout);
+    if (ret != -1 && FD_ISSET(gs831->dev_ttyS, &gs831->readfd))
     {
       char tmp[2] = {0};
-      int readByte = read(gs831->dev_ttyS1, &tmp, 1);
+      int readByte = read(gs831->dev_ttyS, &tmp, 1);
       if (readByte != -1)
       {
         printf("readByte %d %X\n", readByte, tmp);

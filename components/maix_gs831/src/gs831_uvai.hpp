@@ -81,7 +81,7 @@ typedef struct
     pthread_mutex_t vi_mutex, ai_mutex, ui_mutex;
     // hw
     struct timeval timeout;
-    int input_event0, dev_ttyS1;
+    int input_event0, dev_ttyS;
     fd_set readfd;
     std::list<gs831_pack_t> recvPacks;
     // vi
@@ -125,7 +125,6 @@ typedef gs831_home_app (*_get_gs831_home_app_func_)();
 
 extern "C"
 {
-    uint32_t gs831_get_ms();
     int gs831_protocol_send(uint8_t * data, int len);
 }
 

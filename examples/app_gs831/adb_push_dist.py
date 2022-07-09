@@ -32,9 +32,12 @@ if "No such file or directory" in shell("adb shell ls /root/res/*"):
 # adb_push('./res/**/*') # slow
 # adb_push('./res/*') # slow
 
-if "No such file or directory" in shell("adb shell ls /root/dist/*"):
+if "No such file or directory" in shell("adb shell ls /root/maix_dist/*"):
   print("first push dist")
   print(shell("adb push dist /root/"))
 
 adb_push('./dist/**/*')
 adb_push('./dist/*')
+
+# print(shell("adb shell 'rm -rf /root/maix_dist && mv /root/dist /root/maix_dist && sync && reboot'"))
+
