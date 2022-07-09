@@ -109,9 +109,9 @@ extern "C"
   {
     lv_ui *ui = &zm831->ui;
 
+    lv_draw_line_dsc_t line_dsc;
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    time_t now;
 
     const char *model_path_param = "/home/res/ball.param";
     const char *model_path_bin = "/home/res/ball.bin";
@@ -135,14 +135,19 @@ extern "C"
     libmaix_nn_model_path_t model_path;
     libmaix_nn_opt_param_t opt_param;
 
-    int threshold_target = 0; // < thresholds.size()
+    lv_color_t bgra_lab_color[4] = {
+        {0, 0, 255, 255},  // red
+        {0, 255, 0, 255},  // green
+        {255, 0, 0, 255},  // blue
+        {0, 255, 255, 255} // yellow
+    };
+
+    int old, target = 0; // < thresholds.size()
     std::vector<std::vector<int>> thresholds[4] = {
-        // mv lab to cv lab need (int((l) / 100), a + 128, b + 128)
-        // {{21, 78, 34, 77, -8, 55}, {18, 61, 25, 61, -2, 50}},
-        // {{6, 86, -47, -9, 12, 46}},
-        // {{10, 60, 5, 41, -70, -24}, {20, 55, 8, 42, -88, -24}},
-        // {{50, 100, -2, 40, 40, 90}},
-        {{mv2cvL(5), mv2cvA(3), mv2cvB(-81), mv2cvL(82), mv2cvA(57), mv2cvA(-30)}} // blue
+        {{mv2cvL(5), mv2cvA(30), mv2cvB(-29), mv2cvL(50), mv2cvA(85), mv2cvA(72)}}, // 红
+        {{mv2cvL(20), mv2cvA(-60), mv2cvB(-18), mv2cvL(74), mv2cvA(-8), mv2cvA(62)}}, // 绿
+        {{mv2cvL(5), mv2cvA(3), mv2cvB(-81), mv2cvL(82), mv2cvA(57), mv2cvA(-30)}}, // 蓝
+        {{mv2cvL(50), mv2cvA(-1), mv2cvB(40), mv2cvL(100), mv2cvA(40), mv2cvA(90)}}, // 黄
     };
 
     bool init = false;
@@ -209,8 +214,7 @@ extern "C"
       cv::bitwise_not(mask, mask);
     }
 
-    extern void zm831_ui_show_image(cv::Mat & img, int x, int y, lv_opa_t opa);
-    zm831_ui_show_image(mask, 8, 8, LV_OPA_100);
+    // zm831_ui_show_image(mask, 8, 8, LV_OPA_100);
 
     cv::Mat se = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(x_stride, y_stride), cv::Point(-1, -1));
     cv::morphologyEx(mask, mask, cv::MORPH_OPEN, se);
@@ -273,8 +277,7 @@ extern "C"
         // show ball image
         cv::Mat ball = cv_resize_with_padding(mask(cv::Rect(rects.x, rects.y, rects.width, rects.height)), 32, 32);
 
-        extern void zm831_ui_show_image(cv::Mat & ball, int x, int y, lv_opa_t opa);
-        zm831_ui_show_image(ball, 0, 0, LV_OPA_100);
+        // zm831_ui_show_image(ball, 0, 0, LV_OPA_100);
 
         self->input.data = ball.data;
         libmaix_err_t err = self->nn->forward(self->nn, &self->input, &self->out_fmap);
@@ -326,15 +329,20 @@ extern "C"
     if (!self->init)
     {
 
+      lv_draw_line_dsc_init(&self->line_dsc);
+      self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+      self->line_dsc.width = 2;
+      self->line_dsc.opa = LV_OPA_70;
+
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_50;
+      self->rect_dsc.bg_opa = LV_OPA_10;
       self->rect_dsc.border_width = 2;
-      self->rect_dsc.border_opa = LV_OPA_50;
+      self->rect_dsc.border_opa = LV_OPA_80;
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_YELLOW;
+      self->label_dsc.color = LV_COLOR_GREEN;
 
       libmaix_err_t err = LIBMAIX_ERR_NONE;
 
@@ -442,35 +450,75 @@ extern "C"
     {
       try
       {
+        if (!zm831->recvPacks.empty())
+        {
+          auto pack = zm831->recvPacks.front();
+          // for(auto i = 0; i < pack.data.size(); i++) printf("%02x ", pack.data[i]);
+          // printf("\n");
+          if (pack.type == 0x04)
+          {
+            if (pack.data.size() > 7 && 0 <= pack.data[7] && pack.data[7] < 4)
+            {
+              self->target = pack.data[7];
+              // printf("target: %d\n", self->target);
+            }
+          }
+          zm831->recvPacks.pop_front();
+        }
+
+        int now = zm831_get_ms();
+        if (now - self->old > 200) // 200ms
+        {
+          self->old = now;
+          // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
+          // printf("\r\n");
+          // memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
+          // zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
+          zm831_ui_show_clear();
+        }
+
         // LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
         cv::Mat lab, rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
         cvtColor(rgb, lab, cv::COLOR_RGB2Lab);
-        auto result = cv_nn_find_ball(app, lab, self->thresholds[self->threshold_target], 2, 2, 500, 10, 22, 22, 0, 0);
-        for (size_t i = 0; i < result.size(); i++)
+        auto result = cv_nn_find_ball(app, lab, self->thresholds[self->target], 2, 2, 500, 10, 22, 22, 0, 0);
+
+        pthread_mutex_lock(&zm831->ui_mutex);
+        // std::cout << result.size() << std::endl;
+        for (const auto& tmp : result)
         {
-          std::cout << result[i].size() << " ";
-          for (size_t j = 0; j < result[i].size(); j++)
+          switch (tmp[7])
           {
-            std::cout << result[i][j] << " ";
+            case 1:
+              self->rect_dsc.border_color = self->rect_dsc.bg_color = self->bgra_lab_color[self->target];
+              self->line_dsc.color = self->bgra_lab_color[self->target];
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), ai2vi(tmp[0]), ai2vi(tmp[1]), ai2vi(tmp[2]), ai2vi(tmp[3]), &self->rect_dsc);
+              lv_canvas_draw_arc(zm831_ui_get_canvas(), ai2vi(tmp[8]), ai2vi(tmp[9]), tmp[10] / 2 , 0, 360, &self->line_dsc);
+
+              // auto tmp = string_format("\x04%s", data);
+              // zm831_protocol_send((uint8_t *)tmp.c_str(), tmp.length());
+
+              break;
+            case 2:
+              self->old = now;
+              self->rect_dsc.bg_color = self->bgra_lab_color[self->target];
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), ai2vi(tmp[0]), ai2vi(tmp[1]), ai2vi(tmp[2]), ai2vi(tmp[3]), &self->rect_dsc);
+
+              // auto tmp = string_format("\x04%c", data);
+              // zm831_protocol_send((uint8_t *)tmp.c_str(), tmp.length());
+
+              break;
+            case 0:
+              break;
+            default:
+              break;
           }
-          std::cout << std::endl;
         }
+        pthread_mutex_unlock(&zm831->ui_mutex);
       }
       catch(const std::exception& e)
       {
         std::cerr << e.what() << '\n';
       }
-    }
-
-    usleep(zm831->ai_th_usec);
-
-    if (!zm831->recvPacks.empty()){
-      zm831_pack_t pack = zm831->recvPacks.front();
-      zm831->recvPacks.pop_front();
-      LIBMAIX_INFO_PRINTF("recv pack type: %d\n", pack.type);
-      auto tmp = pack.data;
-      for (int i = 0; i < tmp.size(); i++) printf(" 0x%02X", tmp[i]);
-      printf("\n");
     }
 
     return 0;

@@ -65,6 +65,7 @@ extern "C"
     static char data_buf[64] = { 0 }, *data_pos = NULL;
     static uint16_t data_sta, data_tmp, data_len;
 
+    // printf("%02X %d\n", data, data_sta);
     if (data_pos - data_buf > 64) {
       data_pos = data_buf;
       data_sta = 0;
@@ -173,12 +174,13 @@ extern "C"
           uint8_t data_sum = 0;
           int data_len = (data_pos - data_buf);
           for (int i = 0, len = data_len - 2; i < len; i++) data_sum += data_buf[i];
+          // LIBMAIX_INFO_PRINTF("data_sum: %02X\n", data_sum);
           if (data_sum == data_buf[data_len - 2]) { // sum check pass
-            LIBMAIX_INFO_PRINTF("\n data_sum 0x%02X data_len %d", data_sum, data_len);
+            // LIBMAIX_INFO_PRINTF("\n data_sum 0x%02X data_len %d", data_sum, data_len);
             // for(int i = 0; i < data_len; i++) LIBMAIX_INFO_PRINTF(" 0x%02X", data_buf[i]);
             extern int zm831_home_app_index;
             if (zm831->recvPacks.size() > 16) { // limit recv pack size
-              zm831->recvPacks.pop_back();
+              zm831->recvPacks.pop_front();
             }
             auto tmp = std::vector<uint8_t>(data_len);
             memcpy(tmp.data(), data_buf, data_len);

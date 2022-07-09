@@ -142,7 +142,7 @@ extern "C"
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_YELLOW;
+      self->label_dsc.color = LV_COLOR_GREEN;
 
       zm831_home_setup_ui(&self->ui->color_app, setup_scr_color_app, 500);
 
@@ -215,7 +215,7 @@ extern "C"
         unsigned int y_hist_bins_max = 0;
 
         int now = zm831_get_ms();
-        if (now - self->old > 200000) // 200ms
+        if (now - self->old > 200) // 200ms
         {
           self->old = now;
           // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);

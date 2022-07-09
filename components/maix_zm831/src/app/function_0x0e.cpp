@@ -173,7 +173,7 @@ extern "C"
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_YELLOW;
+      self->label_dsc.color = LV_COLOR_GREEN;
 
       zm831_home_setup_ui(&self->ui->five_road_app, setup_scr_five_road_app, 500);
 

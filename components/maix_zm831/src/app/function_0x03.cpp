@@ -206,7 +206,7 @@ extern "C"
       const zbar_symbol_t *symbol = zbar_image_first_symbol(image);
 
       int now = zm831_get_ms();
-      if (now - self->old > 200000) // 200ms
+      if (now - self->old > 200) // 200ms
       {
         self->old = now;
         zm831_ui_show_clear();

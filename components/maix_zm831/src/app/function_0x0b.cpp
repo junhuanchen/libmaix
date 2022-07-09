@@ -212,7 +212,7 @@ void setup_scr_gesture_app(lv_ui *ui){
     self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
     lv_draw_label_dsc_init(&self->label_dsc);
-    self->label_dsc.color = LV_COLOR_YELLOW;
+    self->label_dsc.color = LV_COLOR_GREEN;
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 

@@ -24,9 +24,9 @@ extern "C"
 
     uint32_t zm831_get_ms()
     {
-        static struct timeval tmp;
-        gettimeofday(&tmp, NULL);
-        return (tmp.tv_sec * 1000) + (uint32_t)tmp.tv_usec;
+        static struct timespec tmp;
+        clock_gettime(CLOCK_MONOTONIC, &tmp);
+        return (tmp.tv_sec * 1000) + (uint32_t)tmp.tv_nsec / 1000000;
     }
 
     static void cap_set()
@@ -696,7 +696,7 @@ extern "C"
             {"last_select", 0},
             {"language", "zh-cn"},
         }));
-        
+
         void zm831_ctrl_load();
         void zm831_home_load();
         void zm831_ctrl_loop();
