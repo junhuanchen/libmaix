@@ -486,27 +486,30 @@ extern "C"
         // std::cout << result.size() << std::endl;
         for (const auto& tmp : result)
         {
+          int x = ai2vi(tmp[0]), y = ai2vi(tmp[1]), w = ai2vi(tmp[2]), h = ai2vi(tmp[3]);
           switch (tmp[7])
           {
             case 1:
+            {
               self->rect_dsc.border_color = self->rect_dsc.bg_color = self->bgra_lab_color[self->target];
               self->line_dsc.color = self->bgra_lab_color[self->target];
-              lv_canvas_draw_rect(zm831_ui_get_canvas(), ai2vi(tmp[0]), ai2vi(tmp[1]), ai2vi(tmp[2]), ai2vi(tmp[3]), &self->rect_dsc);
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
               lv_canvas_draw_arc(zm831_ui_get_canvas(), ai2vi(tmp[8]), ai2vi(tmp[9]), tmp[10] / 2 , 0, 360, &self->line_dsc);
-
-              // auto tmp = string_format("\x04%s", data);
-              // zm831_protocol_send((uint8_t *)tmp.c_str(), tmp.length());
-
+              int area = (tmp[10] / 2) * (tmp[10] / 2) * 3.14;
+              char data[] = { 0x04, self->target, x, y, (area > 255) ? 255 : area, 0x00 };
+              zm831_protocol_send((uint8_t *)data, sizeof(data));
               break;
+            }
             case 2:
-              self->old = now;
+            {
+              // self->old = now;
               self->rect_dsc.bg_color = self->bgra_lab_color[self->target];
-              lv_canvas_draw_rect(zm831_ui_get_canvas(), ai2vi(tmp[0]), ai2vi(tmp[1]), ai2vi(tmp[2]), ai2vi(tmp[3]), &self->rect_dsc);
-
-              // auto tmp = string_format("\x04%c", data);
-              // zm831_protocol_send((uint8_t *)tmp.c_str(), tmp.length());
-
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
+              int area = (w - x) * (h - y);
+              char data[] = { 0x04, self->target, x, y, (area > 255) ? 255 : area, 0x00 };
+              zm831_protocol_send((uint8_t *)data, sizeof(data));
               break;
+            }
             case 0:
               break;
             default:

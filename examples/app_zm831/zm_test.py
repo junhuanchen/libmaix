@@ -2,15 +2,27 @@ import serial
 import time
 import sys
 
+def convert_hex(string):
+    res = []
+    result = []
+    for item in string:
+        res.append(item)
+    for i in res:
+        result.append(hex(i))
+    return result
+
 ser = serial.Serial("/dev/ttyUSB0", 115200)    # 连接串口
 
-ser.write(b'\x86\xAB\x00\x0B\xE8\x15\x02\x00\x00\x3B\xCF')
+while True:
+  print(convert_hex(ser.read_until(b'\xCF')))
 
-time.sleep(1)
+# ser.write(b'\x86\xAB\x00\x0B\xE8\x15\x02\x00\x00\x3B\xCF')
 
-ser.write(b'\x86\xAB\x00\x0B\xE8\x15\x04\x00\x00\x3D\xCF')
+# time.sleep(1)
 
-time.sleep(1)
+# ser.write(b'\x86\xAB\x00\x0B\xE8\x15\x04\x00\x00\x3D\xCF')
+
+# time.sleep(1)
 
 # ser.write(b'\x86\xAB\x00\x0B\xE8\x15\x04\x00\x00\x3E\xCF')
 

@@ -243,7 +243,7 @@ extern "C"
           // lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y, corners[2].x - corners[0].x, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
           pthread_mutex_unlock(&zm831->ui_mutex);
 
-          auto tmp = string_format("\x03%s", data);
+          auto tmp = string_format("\x03%s\x00", data);
           zm831_protocol_send((uint8_t *)tmp.c_str(), tmp.length());
 
           self->old = now;
