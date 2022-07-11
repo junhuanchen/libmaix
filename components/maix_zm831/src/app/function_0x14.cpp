@@ -134,38 +134,37 @@ extern "C"
     lv_imgbtn_set_checkable(ui->cube_app_imgbtn_press, true);
   }
 
-  #include "imlib.h"
+#include "imlib.h"
 
   static struct _function_0x14_
   {
     lv_ui *ui = &zm831->ui;
 
-    rectangle_t roi[10] = {
-            {.x = 46 , .y = 46 , .w = 148, .h = 148},
-            {.x = 64 , .y = 64 , .w = 13 , .h = 13 },
-            {.x = 113, .y = 64 , .w = 13 , .h = 13 },
-            {.x = 163, .y = 64 , .w = 13 , .h = 13 },
-            {.x = 64 , .y = 113, .w = 13 , .h = 13 },
-            {.x = 113, .y = 113, .w = 13 , .h = 13 },
-            {.x = 163, .y = 113, .w = 13 , .h = 13 },
-            {.x = 64 , .y = 163, .w = 13 , .h = 13 },
-            {.x = 113, .y = 163, .w = 13 , .h = 13 },
-            {.x = 163, .y = 163, .w = 13 , .h = 13 },
-        };
-    // [(0, 0, 15, 15),(15, 0, 30, 15),(30, 0, 45, 15),
-    // (0, 15, 15, 30), (15, 15, 30, 30),(30, 15, 45, 30),
-    // (0, 30, 15, 45),  (15, 30, 30, 45),   (30, 30, 45, 45)]
+    const int roi_x = 30, roi_y = 30;
+
     rectangle_t roi_ui[9] = {
-            {.x = 0  , .y = 0  , .w = 15 , .h = 15 },
-            {.x = 15 , .y = 0  , .w = 15 , .h = 15 },
-            {.x = 30 , .y = 0  , .w = 15 , .h = 15 },
-            {.x = 0  , .y = 15 , .w = 15 , .h = 15 },
-            {.x = 15 , .y = 15 , .w = 15 , .h = 15 },
-            {.x = 30 , .y = 15 , .w = 15 , .h = 15 },
-            {.x = 0  , .y = 30 , .w = 15 , .h = 15 },
-            {.x = 15 , .y = 30 , .w = 15 , .h = 15 },
-            {.x = 30 , .y = 30 , .w = 15 , .h = 15 },
-        };
+        {.x = roi_x + 0, .y = roi_y + 0, .w = 60, .h = 60},
+        {.x = roi_x + 60, .y = roi_y + 0, .w = 60, .h = 60},
+        {.x = roi_x + 120, .y = roi_y + 0, .w = 60, .h = 60},
+        {.x = roi_x + 0, .y = roi_y + 60, .w = 60, .h = 60},
+        {.x = roi_x + 60, .y = roi_y + 60, .w = 60, .h = 60},
+        {.x = roi_x + 120, .y = roi_y + 60, .w = 60, .h = 60},
+        {.x = roi_x + 0, .y = roi_y + 120, .w = 60, .h = 60},
+        {.x = roi_x + 60, .y = roi_y + 120, .w = 60, .h = 60},
+        {.x = roi_x + 120, .y = roi_y + 120, .w = 60, .h = 60},
+    };
+
+    rectangle_t roi_ai[9] = {
+        {.x = vi2ai(roi_x + 0), .y = vi2ai(roi_y + 0), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 60), .y = vi2ai(roi_y + 0), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 120), .y = vi2ai(roi_y + 0), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 0), .y = vi2ai(roi_y + 60), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 60), .y = vi2ai(roi_y + 60), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 120), .y = vi2ai(roi_y + 60), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 0), .y = vi2ai(roi_y + 120), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 60), .y = vi2ai(roi_y + 120), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 120), .y = vi2ai(roi_y + 120), .w = vi2ai(60), .h = vi2ai(60)},
+    };
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
@@ -207,10 +206,10 @@ extern "C"
 
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_50;
-      self->rect_dsc.border_width = 2;
-      self->rect_dsc.border_opa = LV_OPA_50;
-      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+      self->rect_dsc.bg_opa = LV_OPA_10;
+      self->rect_dsc.border_width = 5;
+      self->rect_dsc.border_opa = LV_OPA_90;
+      self->rect_dsc.border_color = {0x10, 0x10, 0x10, 0xFF};
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
@@ -247,7 +246,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      // CALC_FPS("function_0x14_app_loop"); // 224x224
+      CALC_FPS("function_0x14_app_loop"); // 224x224
 
       image_t imlib_img, *img = &imlib_img;
       {
@@ -263,58 +262,45 @@ extern "C"
 
       //定义直方图通道
       histogram_t hist;
-      hist.LBinCount = COLOR_L_MAX-COLOR_L_MIN + 1;
-      hist.ABinCount = COLOR_A_MAX-COLOR_A_MIN + 1;
-      hist.BBinCount = COLOR_B_MAX-COLOR_B_MIN + 1;
+      hist.LBinCount = COLOR_L_MAX - COLOR_L_MIN + 1;
+      hist.ABinCount = COLOR_A_MAX - COLOR_A_MIN + 1;
+      hist.BBinCount = COLOR_B_MAX - COLOR_B_MIN + 1;
       //分配直方图通道内存
-      hist.LBins = fb_alloc(hist.LBinCount * sizeof(float), FB_ALLOC_NO_HINT);
-      hist.ABins = fb_alloc(hist.ABinCount * sizeof(float), FB_ALLOC_NO_HINT);
-      hist.BBins = fb_alloc(hist.BBinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      hist.LBins = (float *)fb_alloc(hist.LBinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      hist.ABins = (float *)fb_alloc(hist.ABinCount * sizeof(float), FB_ALLOC_NO_HINT);
+      hist.BBins = (float *)fb_alloc(hist.BBinCount * sizeof(float), FB_ALLOC_NO_HINT);
       simple_color_t tmp_lab[9];
-      for( int i = 0; i < 10; ++ i){
-          if(!i){
-          //     libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi[i].x, roi[i].y, roi[i].x + roi[i].w,
-          //                                                     roi[i].y + roi[i].h, self->io->libmaix_cv_colou[4], 1);
-              continue;
-          }
-          //获取直方图
-          imlib_get_histogram(&hist, img, &self->roi[i], NULL, false, NULL);
-          //进行直方图统计
-          statistics_t stats;
-          imlib_get_statistics(&stats, (pixformat_t)img->pixfmt, &hist);
-          //get color
-          int piexs = COLOR_LAB_TO_RGB888(stats.LMode, stats.AMode, stats.BMode);
-          // self->io->libmaix_cv_colou[6].rgb888.b = COLOR_RGB888_TO_R8(piexs);
-          // self->io->libmaix_cv_colou[6].rgb888.g = COLOR_RGB888_TO_G8(piexs);
-          // self->io->libmaix_cv_colou[6].rgb888.r = COLOR_RGB888_TO_B8(piexs);
-          // self->io->libmaix_cv_colou[6].rgb888.a = 255;
 
-          // agre_data[AGRE_NUM + ((i - 1) * 3) + 1 ] = COLOR_RGB888_TO_R8(piexs);
-          // agre_data[AGRE_NUM + ((i - 1) * 3) + 2 ] = COLOR_RGB888_TO_G8(piexs);
-          // agre_data[AGRE_NUM + ((i - 1) * 3) + 3 ] = COLOR_RGB888_TO_B8(piexs);
+      char data[] = {0x0e,
+                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                     0x00};
 
-          int point[2];
-          point[0] = self->roi[i].x + self->roi[i].w;
-          point[1] = self->roi[i].y + self->roi[i].h;
+      pthread_mutex_lock(&zm831->ui_mutex);
+      lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+      for (int i = 0; i < 9; ++i)
+      {
 
-          // //do ui
-          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi[i].x, roi[i].y, roi[i].x + roi[i].w,
-          //                                                 roi[i].y + roi[i].h, self->io->libmaix_cv_colou[1], 1);
-          // point[0] = roi_ui[i-1].x + roi_ui[i-1].w;
-          // point[1] = roi_ui[i-1].y + roi_ui[i-1].h;
-          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1],
-          //                                                     self->io->libmaix_cv_colou[6], -1);
+        //获取直方图
+        imlib_get_histogram(&hist, img, &self->roi_ai[i], NULL, false, NULL);
+        //进行直方图统计
+        statistics_t stats;
+        imlib_get_statistics(&stats, (pixformat_t)img->pixfmt, &hist);
+        // get color
+        int piexs = COLOR_LAB_TO_RGB888(stats.LMode, stats.AMode, stats.BMode);
 
-          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1],
-          //                                                     self->io->libmaix_cv_colou[4], 1);
+        // int point[2];
+        // point[0] = self->roi_ai[i].x + self->roi_ai[i].w;
+        // point[1] = self->roi_ai[i].y + self->roi_ai[i].h;
 
-          char data[] = { 0x0e,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-          0x00 };
-          zm831_protocol_send((uint8_t *)data, sizeof(data));
+        self->rect_dsc.bg_color = self->rect_dsc.border_color = {COLOR_RGB888_TO_B8(piexs), COLOR_RGB888_TO_G8(piexs), COLOR_RGB888_TO_R8(piexs), 0x8F};
+        lv_canvas_draw_rect(zm831_ui_get_canvas(), self->roi_ui[i].x, self->roi_ui[i].y, self->roi_ui[i].w, self->roi_ui[i].h, &self->rect_dsc);
+        // printf("%d %d %d\n", COLOR_RGB888_TO_R8(piexs), COLOR_RGB888_TO_G8(piexs), COLOR_RGB888_TO_B8(piexs));
       }
+      pthread_mutex_unlock(&zm831->ui_mutex);
+
+      zm831_protocol_send((uint8_t *)data, sizeof(data));
 
       //释放直方图通道内存
       fb_free(hist.BBins);
