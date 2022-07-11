@@ -122,11 +122,11 @@ extern "C"
     };
 
     rectangle_t roi[5] = {
-        {.x = 0 , .y = 200, .w = 32, .h = 24},
-        {.x = 48, .y = 200, .w = 32, .h = 24},
-        {.x = 96, .y = 200, .w = 32, .h = 24},
-        {.x =144, .y = 200, .w = 32, .h = 24},
-        {.x =192, .y = 200, .w = 32, .h = 24},
+        {.x =  0, .y = 200, .w = 64, .h = 24},
+        {.x = 64, .y = 200, .w = 64, .h = 24},
+        {.x =128, .y = 200, .w = 64, .h = 24},
+        {.x =192, .y = 200, .w = 64, .h = 24},
+        {.x =256, .y = 200, .w = 64, .h = 24},
     };
 
     lv_draw_rect_dsc_t rect_dsc;
@@ -165,6 +165,18 @@ extern "C"
 
     if (!self->init)
     {
+      if (NULL != zm831->ai)
+      {
+        libmaix_cam_destroy(&zm831->ai);
+        if (NULL == zm831->ai)
+        {
+          zm831->ai = libmaix_cam_create(1, 320, 240, 0, 0);
+          if (NULL == zm831->ai)
+            return -1;
+          zm831->ai->start_capture(zm831->ai);
+        }
+      }
+
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
       self->rect_dsc.bg_opa = LV_OPA_50;
@@ -196,6 +208,19 @@ extern "C"
     if (self->init)
     {
       zm831_home_clear_ui(&self->ui->five_road_app);
+
+      if (NULL != zm831->ai)
+      {
+        libmaix_cam_destroy(&zm831->ai);
+        if (NULL == zm831->ai)
+        {
+          zm831->ai = libmaix_cam_create(1, zm831->ai_w, zm831->ai_h, 0, 0);
+          if (NULL == zm831->ai)
+            return -1;
+          zm831->ai->start_capture(zm831->ai);
+        }
+      }
+
       self->init = false;
     }
     LIBMAIX_INFO_PRINTF("function_0x0e_app_exit");
