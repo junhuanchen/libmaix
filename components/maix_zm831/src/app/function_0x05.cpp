@@ -269,6 +269,10 @@ extern "C"
               printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
               printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
 
+              // int area = (max_blobs_data.rect.w * max_blobs_data.rect.h);
+              // char data[] = { 0x04, x, y, (area > 255) ? 255 : area, 0x00 };
+              // zm831_protocol_send((uint8_t *)data, sizeof(data));
+
               pthread_mutex_lock(&zm831->ui_mutex);
               // lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
               lv_canvas_draw_rect(zm831_ui_get_canvas(), max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h, &self->rect_dsc);

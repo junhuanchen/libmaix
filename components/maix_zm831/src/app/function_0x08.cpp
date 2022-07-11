@@ -310,10 +310,16 @@ extern "C"
               {ai2vi(det->p[3][0]), ai2vi(det->p[3][1])},
               {ai2vi(det->p[0][0]), ai2vi(det->p[0][1])},
           };
+          int area = (abs(ai2vi(det->p[3][0]) - ai2vi(det->p[1][0])) * abs(ai2vi(det->p[3][1]) - ai2vi(det->p[1][1])));
+          char data[] = { 0x08, det->id, ai2vi(det->c[0]), ai2vi(det->c[1]), (area > 255) ? 255 : (uint8_t)(area), 0x00 };
 
+          // printf("area: %d %f %f\r\n", area, det->p[0][0], det->p[0][1]);
+
+          zm831_protocol_send((uint8_t *)data, sizeof(data));
           lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
 
           lv_canvas_draw_text(zm831_ui_get_canvas(), det->c[0], det->c[1], 100, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
+
           self->now = time(NULL);
         }
         pthread_mutex_unlock(&zm831->ui_mutex);
