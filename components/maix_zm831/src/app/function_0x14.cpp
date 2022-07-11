@@ -307,7 +307,15 @@ extern "C"
 
           // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, roi_ui[i-1].x, roi_ui[i-1].y, point[0], point[1],
           //                                                     self->io->libmaix_cv_colou[4], 1);
+
+          char data[] = { 0x0e,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+          0x00 };
+          zm831_protocol_send((uint8_t *)data, sizeof(data));
       }
+
       //释放直方图通道内存
       fb_free(hist.BBins);
       fb_free(hist.ABins);

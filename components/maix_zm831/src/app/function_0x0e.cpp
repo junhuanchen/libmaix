@@ -274,6 +274,8 @@ extern "C"
           }
           // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, fourteen_roi[i].x, fourteen_roi[i].y, fourteen_roi[i].x+fourteen_roi[i].w,
           //                     fourteen_roi[i].y+fourteen_roi[i].h, self->io->libmaix_cv_colou[4], 1);
+          char data[] = { 0x0e, Part[0], Part[1], Part[2], Part[3], Part[4], 0x00 };
+          zm831_protocol_send((uint8_t *)data, sizeof(data));
       }
 
 
