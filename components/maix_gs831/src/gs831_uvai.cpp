@@ -194,11 +194,6 @@ extern "C"
 
     void maix_gs831_main(int argc, char *argv[])
     {
-        gs831_load_json_conf(gs831->config_file, gs831->config_json, json5pp::object({
-            {"last_select", 0},
-            {"language", "zh-cn"},
-        }));
-
         void gs831_ctrl_load();
         void gs831_home_load();
         void gs831_ctrl_loop();
@@ -229,6 +224,5 @@ extern "C"
         gs831_ctrl_exit();
         gs831_vi_exit();
         gs831->exit = 1;
-        gs831_save_json_conf(gs831->config_file, gs831->config_json);
     }
 }

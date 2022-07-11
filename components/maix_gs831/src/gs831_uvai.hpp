@@ -74,7 +74,7 @@ struct gs831_pack_t
 typedef struct
 {
     // sys
-    const char *config_file = "/root/gs831_home.json";
+    const char *config_file = "/root/gs831.json";
     json5pp::value config_json;
 
     int exit, signal;
@@ -126,6 +126,8 @@ typedef gs831_home_app (*_get_gs831_home_app_func_)();
 extern "C"
 {
     int gs831_protocol_send(uint8_t * data, int len);
+    void gs831_load_json_conf(const std::string &path, json5pp::value &cfg, json5pp::value old);
+    void gs831_save_json_conf(const std::string &path, json5pp::value &cfg);
 }
 
 #endif /*_gs831_uv_*/

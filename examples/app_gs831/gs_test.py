@@ -173,7 +173,8 @@ while True:
       # print(len(data), data)
       if sum == data[-2]:
         res = struct.unpack('<BBBBIIffffffffffffffffffffBBbB', data)
-        print(res[4:-4])
+        # print(res[4:-4])
+        print("%02.03f %02.03f %02.03f %02.03f %02.03f %02.03f %02.03f %02.03f %02.03f" % (res[17:-4]))
       continue
 
 sys.exit(0)
