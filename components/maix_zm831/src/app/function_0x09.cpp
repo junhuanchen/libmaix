@@ -140,7 +140,7 @@ extern "C"
   {
     lv_ui *ui = &zm831->ui;
 
-    lv_color_t bgra_lab_color[4] = {
+    lv_color_t lab_colors[4] = {
         {0, 0, 255, 255},  // red
         {0, 255, 0, 255},  // green
         {255, 0, 0, 255},  // blue
@@ -154,12 +154,22 @@ extern "C"
         {.LMin = 50, .LMax = 100, .AMin = -2, .AMax = 40, .BMin = 40, .BMax = 90},  //黄
     };
 
+    rectangle_t goal_roi = {
+        .x = vi2ai(80),
+        .y = vi2ai(80),
+        .w = vi2ai(80),
+        .h = vi2ai(80),
+    };
+
     uint8_t data_cmd[5] = { 0x09, };
-    uint32_t old;
+    uint32_t old, color_learn_id = 0;
+    bool is_study_color = false;
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    time_t now;
+
+    const char *config_file = "/root/function_0x09.json";
+    json5pp::value config_json;
 
     bool init = false;
   } function_0x09_app;
@@ -216,6 +226,76 @@ extern "C"
 
     fb_realloc_init1(1 * 1024 * 1024);
 
+    zm831_load_json_conf(self->config_file, self->config_json, json5pp::object({
+        {
+          "lab_thresholds", json5pp::array({
+            json5pp::array({self->lab_thresholds[0].LMin, self->lab_thresholds[0].LMax, self->lab_thresholds[0].AMin, self->lab_thresholds[0].AMax, self->lab_thresholds[0].BMin, self->lab_thresholds[0].BMax}),
+            json5pp::array({self->lab_thresholds[1].LMin, self->lab_thresholds[1].LMax, self->lab_thresholds[1].AMin, self->lab_thresholds[1].AMax, self->lab_thresholds[1].BMin, self->lab_thresholds[1].BMax}),
+            json5pp::array({self->lab_thresholds[2].LMin, self->lab_thresholds[2].LMax, self->lab_thresholds[2].AMin, self->lab_thresholds[2].AMax, self->lab_thresholds[2].BMin, self->lab_thresholds[2].BMax}),
+            json5pp::array({self->lab_thresholds[3].LMin, self->lab_thresholds[3].LMax, self->lab_thresholds[3].AMin, self->lab_thresholds[3].AMax, self->lab_thresholds[3].BMin, self->lab_thresholds[3].BMax})
+          }),
+        },
+        {
+          "lab_colors", json5pp::array({
+            json5pp::array({self->lab_colors[0].ch.red, self->lab_colors[0].ch.green, self->lab_colors[0].ch.blue, self->lab_colors[0].ch.alpha}),
+            json5pp::array({self->lab_colors[1].ch.red, self->lab_colors[1].ch.green, self->lab_colors[1].ch.blue, self->lab_colors[1].ch.alpha}),
+            json5pp::array({self->lab_colors[2].ch.red, self->lab_colors[2].ch.green, self->lab_colors[2].ch.blue, self->lab_colors[2].ch.alpha}),
+            json5pp::array({self->lab_colors[3].ch.red, self->lab_colors[3].ch.green, self->lab_colors[3].ch.blue, self->lab_colors[3].ch.alpha})
+          }),
+        }
+    }));
+
+    {
+      int cfgsum = 0;
+      {
+        auto result = self->config_json["lab_thresholds"];
+        if (result.is_array()) {
+          auto arr = result.as_array();
+          if (arr.size() == 4) {
+            for (int i = 0; i < 4; i++) {
+              auto item = arr[i];
+              if (item.is_array()) {
+                auto arr = item.as_array();
+                self->lab_thresholds[i].LMin = arr[0].as_integer();
+                self->lab_thresholds[i].LMax = arr[1].as_integer();
+                self->lab_thresholds[i].AMin = arr[2].as_integer();
+                self->lab_thresholds[i].AMax = arr[3].as_integer();
+                self->lab_thresholds[i].BMin = arr[4].as_integer();
+                self->lab_thresholds[i].BMax = arr[5].as_integer();
+                cfgsum += 1;
+              }
+            }
+          }
+        }
+      }
+      {
+        auto result = self->config_json["lab_colors"];
+        if (result.is_array()) {
+          auto arr = result.as_array();
+          if (arr.size() == 4) {
+            for (int i = 0; i < 4; i++) {
+              auto item = arr[i];
+              if (item.is_array()) {
+                auto arr = item.as_array();
+                self->lab_colors[i].ch.red = arr[0].as_integer();
+                self->lab_colors[i].ch.green = arr[1].as_integer();
+                self->lab_colors[i].ch.blue = arr[2].as_integer();
+                self->lab_colors[i].ch.alpha = arr[3].as_integer();
+                cfgsum += 1;
+              }
+            }
+          }
+        }
+      }
+      if (cfgsum == 8) {
+        LIBMAIX_INFO_PRINTF("function_0x09_app_load conf success");
+      } else {
+        LIBMAIX_INFO_PRINTF("function_0x09_app_load conf error need reset");
+        system(string_format("rm -f %s", self->config_file).c_str());
+      }
+      zm831_save_json_conf(self->config_file, self->config_json);
+    }
+
     if (!self->init)
     {
       lv_draw_rect_dsc_init(&self->rect_dsc);
@@ -246,6 +326,8 @@ extern "C"
 
     fb_alloc_close0();
 
+    zm831_save_json_conf(self->config_file, self->config_json);
+
     if (self->init)
     {
       zm831_home_clear_ui(&self->ui->color_study_app);
@@ -273,6 +355,50 @@ extern "C"
       }
 
       fb_alloc_mark();
+
+      if (!zm831->recvPacks.empty())
+      {
+        auto pack = zm831->recvPacks.front();
+        // for(auto i = 0; i < pack.data.size(); i++) printf("%02x ", pack.data[i]);
+        // printf("\n");
+        if (pack.type == 0x09)
+        {
+          self->is_study_color = true;
+        }
+        zm831->recvPacks.pop_front();
+      }
+
+      if (self->is_study_color)
+      {
+        self->is_study_color = false;
+
+        statistics_t stats = get_roi_color_lab(img, self->goal_roi);
+        self->lab_thresholds[self->color_learn_id] = (color_thresholds_list_lnk_data_t){
+            .LMin = stats.LMin,
+            .LMax = stats.LMax,
+            .AMin = stats.AMin,
+            .AMax = stats.AMax,
+            .BMin = stats.BMin,
+            .BMax = stats.BMax,
+        };
+
+        int piexs = COLOR_LAB_TO_RGB888(stats.LMode, stats.AMode, stats.BMode);
+        self->lab_colors[self->color_learn_id].ch.red = COLOR_RGB888_TO_R8(piexs);
+        self->lab_colors[self->color_learn_id].ch.green = COLOR_RGB888_TO_G8(piexs);
+        self->lab_colors[self->color_learn_id].ch.blue = COLOR_RGB888_TO_B8(piexs);
+        self->lab_colors[self->color_learn_id].ch.alpha = 0xFF;
+
+        self->rect_dsc.border_color = self->lab_colors[self->color_learn_id];
+        self->rect_dsc.bg_color = self->lab_colors[self->color_learn_id];
+
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_draw_rect(zm831_ui_get_canvas(), 80, 80, 80, 80, &self->rect_dsc);
+        pthread_mutex_unlock(&zm831->ui_mutex);
+
+        zm831_save_json_conf(self->config_file, self->config_json);
+
+        self->color_learn_id = (self->color_learn_id + 1) % 4;
+      }
 
       rectangle_t roi = {.x = 0, .y = 0, .w = (int16_t)img->w, .h = (int16_t)img->h};
 
@@ -313,8 +439,8 @@ extern "C"
           imlib_find_blobs(&out, img, &roi, x_stride, y_stride, &thresholds, invert, area_threshold,
                            pixels_threshold, merge, margin, NULL, NULL, NULL, NULL, x_hist_bins_max, y_hist_bins_max);
           list_clear(&thresholds);
-          self->rect_dsc.border_color = self->bgra_lab_color[i];
-          self->rect_dsc.bg_color = self->bgra_lab_color[i];
+          self->rect_dsc.border_color = self->lab_colors[i];
+          self->rect_dsc.bg_color = self->lab_colors[i];
           for (size_t m = 0; list_size(&out); m++)
           {
             find_blobs_list_lnk_data_t lnk_data;
