@@ -220,8 +220,8 @@ extern "C"
           self->old = now;
           // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
           // printf("\r\n");
-          memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
           zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
+          memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
           zm831_ui_show_clear();
         }
 
