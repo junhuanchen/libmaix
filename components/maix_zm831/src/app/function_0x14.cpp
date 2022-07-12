@@ -11,7 +11,7 @@ extern "C"
   {
 
     // Write codes cube_app
-    ui->cube_app = lv_obj_create(NULL, NULL);
+    ui->cube_app = lv_scr_act();
 
     // Write style LV_OBJ_PART_MAIN for cube_app
     static lv_style_t style_cube_app_main;
@@ -246,6 +246,11 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      // pthread_mutex_lock(&zm831->ui_mutex);
+      // printf("lv_obj_is_visible %d\n", lv_obj_is_visible(zm831_ui_get_canvas()));
+      // // lv_canvas_draw_rect(zm831_ui_get_canvas(), 8, 8, 224, 224, &self->rect_dsc);
+      // pthread_mutex_unlock(&zm831->ui_mutex);
+
       // CALC_FPS("function_0x14_app_loop"); // 224x224
 
       image_t imlib_img, *img = &imlib_img;
@@ -269,7 +274,6 @@ extern "C"
       hist.LBins = (float *)fb_alloc(hist.LBinCount * sizeof(float), FB_ALLOC_NO_HINT);
       hist.ABins = (float *)fb_alloc(hist.ABinCount * sizeof(float), FB_ALLOC_NO_HINT);
       hist.BBins = (float *)fb_alloc(hist.BBinCount * sizeof(float), FB_ALLOC_NO_HINT);
-      simple_color_t tmp_lab[9];
 
       char data[] = {0x0e,
                      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -290,6 +294,7 @@ extern "C"
         int piexs = COLOR_LAB_TO_RGB888(stats.LMode, stats.AMode, stats.BMode);
         self->rect_dsc.bg_color = self->rect_dsc.border_color = {COLOR_RGB888_TO_B8(piexs), COLOR_RGB888_TO_G8(piexs), COLOR_RGB888_TO_R8(piexs), 0x8F};
         lv_canvas_draw_rect(zm831_ui_get_canvas(), self->roi_ui[i].x, self->roi_ui[i].y, self->roi_ui[i].w, self->roi_ui[i].h, &self->rect_dsc);
+        // CALC_FPS("function_0x14_app_loop"); // 224x224
         ptr[i * 3 + 0] = COLOR_RGB888_TO_B8(piexs);
         ptr[i * 3 + 1] = COLOR_RGB888_TO_G8(piexs);
         ptr[i * 3 + 2] = COLOR_RGB888_TO_R8(piexs);

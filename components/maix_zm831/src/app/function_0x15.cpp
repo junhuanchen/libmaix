@@ -11,7 +11,7 @@ extern "C"
   {
 
     // Write codes number_app
-    ui->number_app = lv_obj_create(NULL, NULL);
+    ui->number_app = lv_scr_act();
 
     // Write style LV_OBJ_PART_MAIN for number_app
     static lv_style_t style_number_app_main;

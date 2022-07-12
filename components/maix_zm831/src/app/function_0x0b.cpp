@@ -11,7 +11,7 @@ extern "C"
 void setup_scr_gesture_app(lv_ui *ui){
 
 	//Write codes gesture_app
-	ui->gesture_app = lv_obj_create(NULL, NULL);
+	ui->gesture_app = lv_scr_act();
 
 	//Write style LV_OBJ_PART_MAIN for gesture_app
 	static lv_style_t style_gesture_app_main;

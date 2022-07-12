@@ -11,7 +11,7 @@ extern "C"
   {
 
     // Write codes classific_study_app
-    ui->classific_study_app = lv_obj_create(NULL, NULL);
+    ui->classific_study_app = lv_scr_act();
 
     // Write style LV_OBJ_PART_MAIN for classific_study_app
     static lv_style_t style_classific_study_app_main;

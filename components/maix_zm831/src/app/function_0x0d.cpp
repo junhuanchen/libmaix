@@ -11,7 +11,7 @@ extern "C"
   {
 
     // Write codes traffic_app
-    ui->traffic_app = lv_obj_create(NULL, NULL);
+    ui->traffic_app = lv_scr_act();
 
     // Write style LV_OBJ_PART_MAIN for traffic_app
     static lv_style_t style_traffic_app_main;

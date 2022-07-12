@@ -11,7 +11,7 @@ extern "C"
   {
 
     // Write codes five_road_app
-    ui->five_road_app = lv_obj_create(NULL, NULL);
+    ui->five_road_app = lv_scr_act();
 
     // Write style LV_OBJ_PART_MAIN for five_road_app
     static lv_style_t style_five_road_app_main;
