@@ -246,7 +246,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      CALC_FPS("function_0x14_app_loop"); // 224x224
+      // CALC_FPS("function_0x14_app_loop"); // 224x224
 
       image_t imlib_img, *img = &imlib_img;
       {
