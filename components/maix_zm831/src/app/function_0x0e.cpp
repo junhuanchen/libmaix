@@ -131,7 +131,7 @@ extern "C"
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    time_t now;
+    int old;
 
     bool init = false;
   } function_0x0e_app;
@@ -179,7 +179,7 @@ extern "C"
 
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_50;
+      self->rect_dsc.bg_opa = LV_OPA_20;
       self->rect_dsc.border_width = 2;
       self->rect_dsc.border_opa = LV_OPA_50;
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
@@ -250,21 +250,23 @@ extern "C"
 
       list_push_back(&thresholds, &self->gray_line_threshold);
 
-      if (self->now < time(NULL))
+      int now = zm831_get_ms();
+      if (now - self->old > 200) // 200ms
       {
+        self->old = now;
         zm831_ui_show_clear();
       }
 
-      int Part[5];
+      uint8_t area_part[5] = { 0 };
       bool invert = false;
-      unsigned int x_stride = 5;
-      unsigned int y_stride = 5;
-      unsigned int area_threshold = 10;
-      unsigned int pixels_threshold = 10;
+      uint32_t x_stride = 5;
+      uint32_t y_stride = 5;
+      uint32_t area_threshold = 10;
+      uint32_t pixels_threshold = 10;
       bool merge = true;
       int margin = 0;
-      unsigned int x_hist_bins_max = 0;
-      unsigned int y_hist_bins_max = 0;
+      uint32_t x_hist_bins_max = 0;
+      uint32_t y_hist_bins_max = 0;
       list_t out;
       for(int i = 0; i < 5 ; ++ i){
           imlib_find_blobs(&out, img, &self->roi[i], x_stride, y_stride, &thresholds, invert,
@@ -283,26 +285,25 @@ extern "C"
                       max_blobs_data = lnk_data;
                   }
               }
-              // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.x+max_blobs_data.rect.w,
-              //                     max_blobs_data.rect.y+max_blobs_data.rect.h,self->io->libmaix_cv_colou[4], 1);
-
-              // //imlib_draw_cross(&self->io->imlib_img, (int)max_blobs_data.centroid_x, (int)max_blobs_data.centroid_y, -1, 5, 1);
-              // libmaix_cv_image_draw_line(self->io->zhongming_ui_data.ui_root_img, (int)max_blobs_data.centroid_x-5, (int)max_blobs_data.centroid_y, (int)max_blobs_data.centroid_x+5, (int)max_blobs_data.centroid_y,self->io->libmaix_cv_colou[4],2);
-              // libmaix_cv_image_draw_line(self->io->zhongming_ui_data.ui_root_img, (int)max_blobs_data.centroid_x, (int)max_blobs_data.centroid_y-5, (int)max_blobs_data.centroid_x, (int)max_blobs_data.centroid_y+5,self->io->libmaix_cv_colou[4],2);
-
-              Part[i] = 1;
-              self->now = time(NULL);
+              area_part[i] = 1;
+              self->old = now;
           }
           else
           {
-              Part[i] = 0;
+              area_part[i] = 0;
           }
-          // libmaix_cv_image_draw_rectangle(self->io->zhongming_ui_data.ui_root_img, fourteen_roi[i].x, fourteen_roi[i].y, fourteen_roi[i].x+fourteen_roi[i].w,
-          //                     fourteen_roi[i].y+fourteen_roi[i].h, self->io->libmaix_cv_colou[4], 1);
-          char data[] = { 0x0e, Part[0], Part[1], Part[2], Part[3], Part[4], 0x00 };
-          zm831_protocol_send((uint8_t *)data, sizeof(data));
       }
 
+      char data[] = { 0x0e, area_part[0], area_part[1], area_part[2], area_part[3], area_part[4], 0x00 };
+      zm831_protocol_send((uint8_t *)data, sizeof(data));
+
+      pthread_mutex_lock(&zm831->ui_mutex);
+      lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+      for (size_t i = 0; i < sizeof(area_part); i++)
+      {
+        if (area_part[i]) lv_canvas_draw_rect(zm831_ui_get_canvas(), self->roi[i].x - 40, self->roi[i].y - 100, self->roi[i].w, self->roi[i].h, &self->rect_dsc);
+      }
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       list_clear(&thresholds);
       fb_alloc_free_till_mark();

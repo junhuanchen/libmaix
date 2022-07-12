@@ -87,7 +87,7 @@ extern "C"
     lv_draw_line_dsc_t line_dsc;
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    time_t now;
+    uint32_t old;
 
     rectangle_t line_roi = {
         .x = 0,
@@ -202,8 +202,10 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      if (self->now < time(NULL))
+      int now = zm831_get_ms();
+      if (now - self->old > 200) // 200ms
       {
+        self->old = now;
         zm831_ui_show_clear();
       }
       // CALC_FPS("function_0x05_app_loop"); // 224x224x3
@@ -257,6 +259,7 @@ extern "C"
         int max_size = 0;
         if (list_size(&out) > 0)
         {
+          self->old = now;
           for (size_t m = 0; list_size(&out); m++)
           {
             find_blobs_list_lnk_data_t lnk_data;
@@ -275,22 +278,23 @@ extern "C"
 
               pthread_mutex_lock(&zm831->ui_mutex);
               // lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-              lv_canvas_draw_rect(zm831_ui_get_canvas(), max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h, &self->rect_dsc);
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), max_blobs_data.rect.x, 100 + max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h, &self->rect_dsc);
 
               int x = max_blobs_data.centroid_x, y = max_blobs_data.centroid_y;
 
               const lv_point_t points[] = {
-                  {x, y - 5},
-                  {x, y},
-                  {x - 5, y},
-                  {x + 5, y},
-                  {x, y},
-                  {x, y + 5},
+                  {x, 100 + y - 5},
+                  {x, 100 + y},
+                  {x - 5, 100 + y},
+                  {x + 5, 100 + y},
+                  {x, 100 + y},
+                  {x, 100 + y + 5},
               };
 
               lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
 
               pthread_mutex_unlock(&zm831->ui_mutex);
+
 
               lastcx = (int)max_blobs_data.centroid_x;
             }

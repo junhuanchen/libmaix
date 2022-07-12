@@ -142,7 +142,7 @@ extern "C"
         {0, 255, 255, 255} // yellow
     };
 
-    int old, target = 0; // < thresholds.size()
+    uint32_t old, target = 0; // < thresholds.size()
     std::vector<std::vector<int>> thresholds[4] = {
         {{mv2cvL(5), mv2cvA(30), mv2cvB(-29), mv2cvL(50), mv2cvA(85), mv2cvA(72)}}, // 红
         {{mv2cvL(20), mv2cvA(-60), mv2cvB(-18), mv2cvL(74), mv2cvA(-8), mv2cvA(62)}}, // 绿
