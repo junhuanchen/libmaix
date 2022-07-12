@@ -2,14 +2,10 @@ import serial
 import time
 import sys
 
-def convert_hex(string):
-    res = []
-    result = []
-    for item in string:
-        res.append(item)
-    for i in res:
-        result.append(hex(i))
-    return result
+def convert_hex(String: bytes) -> str:
+    hexString = String.hex()
+    import re
+    return '-'.join(re.findall(r'.{2}', hexString))
 
 ser = serial.Serial("/dev/ttyUSB0", 115200)    # 连接串口
 
