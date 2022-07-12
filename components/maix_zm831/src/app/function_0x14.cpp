@@ -140,7 +140,7 @@ extern "C"
   {
     lv_ui *ui = &zm831->ui;
 
-    const int roi_x = 30, roi_y = 30;
+    const int roi_x = 30, roi_y = 30, roi_v = 10;
 
     rectangle_t roi_ui[9] = {
         {.x = roi_x + 0, .y = roi_y + 0, .w = 60, .h = 60},
@@ -155,15 +155,15 @@ extern "C"
     };
 
     rectangle_t roi_ai[9] = {
-        {.x = vi2ai(roi_x + 0), .y = vi2ai(roi_y + 0), .w = vi2ai(60), .h = vi2ai(60)},
-        {.x = vi2ai(roi_x + 60), .y = vi2ai(roi_y + 0), .w = vi2ai(60), .h = vi2ai(60)},
-        {.x = vi2ai(roi_x + 120), .y = vi2ai(roi_y + 0), .w = vi2ai(60), .h = vi2ai(60)},
-        {.x = vi2ai(roi_x + 0), .y = vi2ai(roi_y + 60), .w = vi2ai(60), .h = vi2ai(60)},
-        {.x = vi2ai(roi_x + 60), .y = vi2ai(roi_y + 60), .w = vi2ai(60), .h = vi2ai(60)},
-        {.x = vi2ai(roi_x + 120), .y = vi2ai(roi_y + 60), .w = vi2ai(60), .h = vi2ai(60)},
-        {.x = vi2ai(roi_x + 0), .y = vi2ai(roi_y + 120), .w = vi2ai(60), .h = vi2ai(60)},
-        {.x = vi2ai(roi_x + 60), .y = vi2ai(roi_y + 120), .w = vi2ai(60), .h = vi2ai(60)},
-        {.x = vi2ai(roi_x + 120), .y = vi2ai(roi_y + 120), .w = vi2ai(60), .h = vi2ai(60)},
+        {.x = vi2ai(roi_x + 0 + roi_v), .y = vi2ai(roi_y + 0 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
+        {.x = vi2ai(roi_x + 60 + roi_v), .y = vi2ai(roi_y + 0 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
+        {.x = vi2ai(roi_x + 120 + roi_v), .y = vi2ai(roi_y + 0 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
+        {.x = vi2ai(roi_x + 0 + roi_v), .y = vi2ai(roi_y + 60 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
+        {.x = vi2ai(roi_x + 60 + roi_v), .y = vi2ai(roi_y + 60 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
+        {.x = vi2ai(roi_x + 120 + roi_v), .y = vi2ai(roi_y + 60 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
+        {.x = vi2ai(roi_x + 0 + roi_v), .y = vi2ai(roi_y + 120 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
+        {.x = vi2ai(roi_x + 60 + roi_v), .y = vi2ai(roi_y + 120 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
+        {.x = vi2ai(roi_x + 120 + roi_v), .y = vi2ai(roi_y + 120 + roi_v), .w = vi2ai(60 - roi_v), .h = vi2ai(60 - roi_v)},
     };
 
     lv_draw_rect_dsc_t rect_dsc;
@@ -275,13 +275,12 @@ extern "C"
                      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
                      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
                      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                     0x00};
+                     0x00}, *ptr = data + 1;
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
       for (int i = 0; i < 9; ++i)
       {
-
         //获取直方图
         imlib_get_histogram(&hist, img, &self->roi_ai[i], NULL, false, NULL);
         //进行直方图统计
@@ -289,13 +288,11 @@ extern "C"
         imlib_get_statistics(&stats, (pixformat_t)img->pixfmt, &hist);
         // get color
         int piexs = COLOR_LAB_TO_RGB888(stats.LMode, stats.AMode, stats.BMode);
-
-        // int point[2];
-        // point[0] = self->roi_ai[i].x + self->roi_ai[i].w;
-        // point[1] = self->roi_ai[i].y + self->roi_ai[i].h;
-
         self->rect_dsc.bg_color = self->rect_dsc.border_color = {COLOR_RGB888_TO_B8(piexs), COLOR_RGB888_TO_G8(piexs), COLOR_RGB888_TO_R8(piexs), 0x8F};
         lv_canvas_draw_rect(zm831_ui_get_canvas(), self->roi_ui[i].x, self->roi_ui[i].y, self->roi_ui[i].w, self->roi_ui[i].h, &self->rect_dsc);
+        ptr[i * 3 + 0] = COLOR_RGB888_TO_B8(piexs);
+        ptr[i * 3 + 1] = COLOR_RGB888_TO_G8(piexs);
+        ptr[i * 3 + 2] = COLOR_RGB888_TO_R8(piexs);
         // printf("%d %d %d\n", COLOR_RGB888_TO_R8(piexs), COLOR_RGB888_TO_G8(piexs), COLOR_RGB888_TO_B8(piexs));
       }
       pthread_mutex_unlock(&zm831->ui_mutex);
