@@ -214,6 +214,7 @@ extern "C"
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
 
+        int now = zm831_get_ms();
         std::array<uint8_t, 4> cmd;
 
         list_t out;
@@ -236,36 +237,27 @@ extern "C"
 
             cmd[i] += 1;
 
-            self->work++;
-
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
         }
 
-        if (self->data_cmd != cmd) {
-          self->data_cmd = cmd;
-          zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
-        }
-
-        // if (self->work)
-        // {
-        //   self->work--;
-        //   zm831_protocol_send((uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
-        //   memset(data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
-        //   printf("self->work %d\r\n", self->work);
-        //   zm831_ui_show_clear();
-        //   // if (self->work) self->old = now;
+        // if (self->data_cmd != cmd) {
+        //   self->data_cmd = cmd;
+        //   zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+        //   self->work++;
         // }
 
-        int now = zm831_get_ms();
-        if (now - self->old > 100)
-        {
-          self->old = now;
-          self->data_cmd.fill(0);
-          zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
-          zm831_ui_show_clear();
-          self->work = 0;
-        }
+        // if (now - self->old > 1000)
+        // {
+        //   if (self->work)
+        //   {
+        //     self->data_cmd.fill(0);
+        //     zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+        //     self->work = 0;
+        //   }
+        //   self->old = now;
+        //   zm831_ui_show_clear();
+        // }
 
       }
 
