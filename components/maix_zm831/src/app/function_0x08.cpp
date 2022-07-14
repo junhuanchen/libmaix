@@ -128,12 +128,13 @@ extern "C"
     auto self = (_function_0x08_ *)app->userdata;
 
     lv_draw_line_dsc_init(&self->line_dsc);
-    self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+    self->line_dsc.color = {0x00, 0xFF, 0x00, 0x9f};
     self->line_dsc.width = 3;
     self->line_dsc.opa = LV_OPA_90;
 
     lv_draw_label_dsc_init(&self->label_dsc);
-    self->label_dsc.color = LV_COLOR_BLACK;
+    self->label_dsc.color = LV_COLOR_GREEN;
+    self->label_dsc.font = zm831->ft_font.font;
 
     // Initialize tag detector with options
     if (!strcmp(self->famname, "tag36h11"))
