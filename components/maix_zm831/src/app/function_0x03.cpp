@@ -240,29 +240,30 @@ extern "C"
 
           self->data_cmd = string_format("%s", data);
 
+          for (int i = 1; i < self->data_cmd.size(); i++) self->data_cmd[i] = 0; // clear 0x03 after data
+          zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
+          zm831_ui_show_clear();
+
           self->work++;
 
           break;// only one QR code
         }
       }
 
-      int now = zm831_get_ms();
-      if (self->work)
-      {
-        self->work--;
-        zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
-        zm831_ui_show_clear();
-        if (self->work) self->old = now;
-      }
+      // int now = zm831_get_ms();
+      // if (self->work)
+      // {
+      //   self->work--;
+      //   zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
+      //   zm831_ui_show_clear();
+      //   if (self->work) self->old = now;
+      // }
 
-      if (now - self->old > 200)
-      {
-        // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
-        // printf("\r\n");
-        for (int i = 1; i < self->data_cmd.size(); i++) self->data_cmd[i] = 0; // clear 0x03 after data
-        zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
-        zm831_ui_show_clear();
-      }
+      // if (now - self->old > 200)
+      // {
+      //   // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
+      //   // printf("\r\n");
+      // }
 
       /* clean up */
       zbar_image_destroy(image); // use zbar_image_free_data
