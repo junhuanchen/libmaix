@@ -136,9 +136,9 @@ extern "C"
     {
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_10;
+      self->rect_dsc.bg_opa = LV_OPA_50;
       self->rect_dsc.border_width = 2;
-      self->rect_dsc.border_opa = LV_OPA_50;
+      self->rect_dsc.border_opa = LV_OPA_90;
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
@@ -216,6 +216,10 @@ extern "C"
 
         int now = zm831_get_ms();
         std::array<uint8_t, 4> cmd;
+
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+        pthread_mutex_unlock(&zm831->ui_mutex);
 
         list_t out;
         for (int i = 0; i < 4; i++)
