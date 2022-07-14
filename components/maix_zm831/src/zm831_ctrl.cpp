@@ -49,6 +49,8 @@ extern "C"
     buffer[pos++] = 0xAB;
     buffer[pos++] = (len >> 8) & 0xFF;
     buffer[pos++] = len & 0xFF;
+    buffer[pos++] = 0xE8;
+    buffer[pos++] = 0x15;
     memcpy(buffer + pos, data, len);
     pos += len;
     uint8_t sum = 0;

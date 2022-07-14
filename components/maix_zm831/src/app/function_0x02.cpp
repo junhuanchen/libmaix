@@ -215,7 +215,7 @@ extern "C"
         unsigned int y_hist_bins_max = 0;
 
         int now = zm831_get_ms();
-        if (now - self->old > 200) // 200ms
+        if (now - self->old > 50)
         {
           self->old = now;
           // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
