@@ -185,7 +185,7 @@ extern "C"
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
         lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, string_format("%d", (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
         int area = ((float)(w * h) / (240 * 240)) * 100;
-        const int map_id[] = {3, 1, 2};
+        const int map_id[] = {2, 3, 1};
         char data[] = { map_id[class_id], x, y, area, (int)(prob * 100) };
         zm831_protocol_send(0x07, (uint8_t *)data, sizeof(data));
         printf("%d %d %d %d %d %f %s\n", x, y, w, h, map_id[class_id], prob, self->labels[class_id]);
