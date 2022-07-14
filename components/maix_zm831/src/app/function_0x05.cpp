@@ -273,7 +273,7 @@ extern "C"
               printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
 
               // int area = (max_blobs_data.rect.w * max_blobs_data.rect.h);
-              // char data[] = { 0x04, x, y, (area > 255) ? 255 : area, 0x00 };
+              // char data[] = { 0x04, x, y, (area > 255) ? 255 : area };
               // zm831_protocol_send((uint8_t *)data, sizeof(data));
 
               pthread_mutex_lock(&zm831->ui_mutex);

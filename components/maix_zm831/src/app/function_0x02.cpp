@@ -98,7 +98,7 @@ extern "C"
     };
 
     uint8_t data_cmd[5] = { 0x02, };
-    uint32_t old;
+    uint32_t old, have;
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
@@ -214,17 +214,6 @@ extern "C"
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
 
-        int now = zm831_get_ms();
-        if (now - self->old > 200)
-        {
-          self->old = now;
-          // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
-          // printf("\r\n");
-          memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
-          zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
-          zm831_ui_show_clear();
-        }
-
         list_t out;
         for (int i = 0; i < 4; i++)
         {
@@ -245,12 +234,30 @@ extern "C"
 
             self->data_cmd[i + 1] += 1;
 
+            // self->have = 1;
+
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
-          zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
-          memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
-          zm831_ui_show_clear();
         }
+
+        // if (self->have) {
+        //   self->have = 0;
+        // } else {
+        //   int now = zm831_get_ms();
+        //   if (now - self->old > 200)
+        //   {
+        //     self->old = now;
+        //     // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
+        //     // printf("\r\n");
+        //     memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
+        //     zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
+        //     zm831_ui_show_clear();
+        //   } else {
+        //     zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
+        //     memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
+        //     zm831_ui_show_clear();
+        //   }
+        // }
       }
 
       fb_alloc_free_till_mark();

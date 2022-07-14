@@ -311,7 +311,7 @@ extern "C"
               {ai2vi(det->p[0][0]), ai2vi(det->p[0][1])},
           };
           int area = (abs(ai2vi(det->p[3][0]) - ai2vi(det->p[1][0])) * abs(ai2vi(det->p[3][1]) - ai2vi(det->p[1][1])));
-          char data[] = { 0x08, det->id, ai2vi(det->c[0]), ai2vi(det->c[1]), (area > 255) ? 255 : (uint8_t)(area), 0x00 };
+          char data[] = { 0x08, det->id, ai2vi(det->c[0]), ai2vi(det->c[1]), (area > 255) ? 255 : (uint8_t)(area) };
 
           // printf("area: %d %f %f\r\n", area, det->p[0][0], det->p[0][1]);
 
