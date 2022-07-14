@@ -42,8 +42,8 @@ extern "C"
 
   int zm831_protocol_send(uint8_t *data, int len)
   {
-    if (len > (64 - 6)) return -1;
-    uint8_t buffer[64] = { 0x00 };
+    if (len > (255 - 10)) return -1;
+    uint8_t buffer[255] = { 0x00 };
     int pos = 0;
     buffer[pos++] = 0x86;
     buffer[pos++] = 0xAB;
