@@ -148,6 +148,7 @@ extern "C"
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.font = zm831->ft_font.font;
 
       zm831_home_setup_ui(&self->ui->qrcode_app, setup_scr_qrcode_app, 500);
 
@@ -235,7 +236,7 @@ extern "C"
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
           lv_canvas_draw_line(zm831_ui_get_canvas(), corners, sizeof(corners) / sizeof(corners[0]), &self->line_dsc);
-          // lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y, corners[2].x - corners[0].x, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
+          // lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y - 30, corners[2].x - corners[0].x, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
           pthread_mutex_unlock(&zm831->ui_mutex);
 
           self->data_cmd = string_format("%s", data);
