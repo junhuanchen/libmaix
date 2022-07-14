@@ -179,12 +179,11 @@ extern "C"
         uint32_t w = b->w * image_width;
         uint32_t h = b->h * image_height;
         printf("%d %d %d %d %f %s\n", x, y, w, h, prob, self->labels[class_id]);
-        std::ostringstream prob2str;
-        prob2str << prob;
-        lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
-        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, ai2vi(w), &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_AUTO);
-        int area = (w * h / 240 * 240) * 100;
-        char data[] = { x, y, area, prob };
+
+        lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w) + 5, ai2vi(h) + 5, &self->rect_dsc);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), x + 5, y + 5, ai2vi(w), &self->label_dsc, string_format("%d", (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
+        int area = (w * h * 100 / 240 * 240);
+        char data[] = { x, y, area, (int)(prob * 100) };
         zm831_protocol_send(0x06, (uint8_t *)data, sizeof(data));
       }
     }
@@ -211,10 +210,10 @@ extern "C"
       self->rect_dsc.bg_opa = LV_OPA_TRANSP;
       self->rect_dsc.border_width = 5;
       self->rect_dsc.border_opa = LV_OPA_80;
-      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+      self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.color = LV_COLOR_RED;
       self->label_dsc.font = zm831->ft_font.font;
 
       zm831_home_setup_ui(&self->ui->face_app, setup_scr_face_app, 10000);
