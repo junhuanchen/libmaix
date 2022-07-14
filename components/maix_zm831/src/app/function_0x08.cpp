@@ -308,12 +308,17 @@ extern "C"
               {ai2vi(det->p[3][0]), ai2vi(det->p[3][1])},
               {ai2vi(det->p[0][0]), ai2vi(det->p[0][1])},
           };
-          int area = (abs(ai2vi(det->p[3][0]) - ai2vi(det->p[1][0])) * abs(ai2vi(det->p[3][1]) - ai2vi(det->p[1][1])));
-          char data[] = { det->id, ai2vi(det->c[0]), ai2vi(det->c[1]), (area > 255) ? 255 : (uint8_t)(area) };
+
+          int w = abs(ai2vi(det->p[3][0]) - ai2vi(det->p[1][0])), h = abs(ai2vi(det->p[3][1]) - ai2vi(det->p[1][1]));
+          int area = ((float)(w * h) / (240 * 240)) * 100;
+
+          char data[] = { det->id, ai2vi(det->c[0]), ai2vi(det->c[1]), area };
+
           zm831_protocol_send(0x08, (uint8_t *)data, sizeof(data));
+
           lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
 
-          lv_canvas_draw_text(zm831_ui_get_canvas(), det->c[0], det->c[1], 100, &self->label_dsc, string_format("%d", det->id).c_str(), LV_LABEL_ALIGN_LEFT);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), ai2vi(det->p[3][0]), ai2vi(det->p[3][1]) - 30, 100, &self->label_dsc, string_format("NO:%d", det->id).c_str(), LV_LABEL_ALIGN_LEFT);
 
           self->now = time(NULL);
         }
