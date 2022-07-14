@@ -137,6 +137,7 @@ extern "C"
   {
     lv_ui *ui = &zm831->ui;
     lv_draw_rect_dsc_t rect_dsc;
+    lv_draw_label_dsc_t label_dsc;
     bool is_capture = false;
     bool is_clear = false;
 
@@ -215,6 +216,10 @@ extern "C"
       self->rect_dsc.border_opa = LV_OPA_80;
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
 
+      lv_draw_label_dsc_init(&self->label_dsc);
+      self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.font = zm831->ft_font.font;
+
       zm831_home_setup_ui(&self->ui->photo_app, setup_scr_camera, 500);
 
       pthread_mutex_lock(&zm831->ui_mutex);
@@ -276,13 +281,13 @@ extern "C"
 
         sleep(1);
 
-        void zm831_ui_show_clear();
         zm831_ui_show_clear();
       }
 
       {
         pthread_mutex_lock(&zm831->ui_mutex);
-        lv_label_set_text(self->ui->photo_app_label_top_title, string_format("fps: %02d", get_fps()).c_str());
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), 10, 40, 100, &self->label_dsc, string_format("FPS: %02d", get_fps()).c_str(), LV_LABEL_ALIGN_LEFT);
         pthread_mutex_unlock(&zm831->ui_mutex);
       }
 
