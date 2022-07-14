@@ -182,14 +182,13 @@ extern "C"
         uint32_t y = b->y * image_height - (b->h * image_height / 2);
         uint32_t w = b->w * image_width;
         uint32_t h = b->h * image_height;
-        printf("%d %d %d %d %f %s\n", x, y, w, h, prob, self->labels[class_id]);
-        std::ostringstream prob2str;
-        prob2str << prob;
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
-        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_AUTO);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, string_format("%d", (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
         int area = ((float)(w * h) / (240 * 240)) * 100;
-        char data[] = { class_id, x, y, area, (int)(prob * 100) };
+        const int map_id[] = {2, 1, 3};
+        char data[] = { map_id[class_id], x, y, area, (int)(prob * 100) };
         zm831_protocol_send(0x07, (uint8_t *)data, sizeof(data));
+        printf("%d %d %d %d %d %f %s\n", x, y, w, h, map_id[class_id], prob, self->labels[class_id]);
       }
     }
     pthread_mutex_unlock(&zm831->ui_mutex);
@@ -214,10 +213,11 @@ extern "C"
     self->rect_dsc.bg_opa = LV_OPA_TRANSP;
     self->rect_dsc.border_width = 5;
     self->rect_dsc.border_opa = LV_OPA_80;
-    self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+    self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
 
     lv_draw_label_dsc_init(&self->label_dsc);
-    self->label_dsc.color = LV_COLOR_GREEN;
+    self->label_dsc.color = LV_COLOR_RED;
+    self->label_dsc.font = zm831->ft_font.font;
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 
