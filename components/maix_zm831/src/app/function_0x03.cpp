@@ -133,7 +133,7 @@ extern "C"
       }
 
       lv_draw_line_dsc_init(&self->line_dsc);
-      self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+      self->line_dsc.color = {0x00, 0xFF, 0x00, 0x9f};
       self->line_dsc.width = 3;
       self->line_dsc.opa = LV_OPA_90;
 
@@ -142,7 +142,7 @@ extern "C"
       self->rect_dsc.bg_opa = LV_OPA_50;
       self->rect_dsc.border_width = 2;
       self->rect_dsc.border_opa = LV_OPA_50;
-      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+      self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
@@ -243,7 +243,7 @@ extern "C"
           // lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y, corners[2].x - corners[0].x, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
           pthread_mutex_unlock(&zm831->ui_mutex);
 
-          auto tmp = string_format("\x03%s\0", data);
+          auto tmp = string_format("\x03%s", data);
           zm831_protocol_send((uint8_t *)tmp.c_str(), tmp.length());
 
           self->old = now;

@@ -42,19 +42,21 @@ extern "C"
 
   int zm831_protocol_send(uint8_t *data, int len)
   {
-    if (len > (255 - 10)) return -1;
+    int size = len + 9;
+    if (size > (254)) return -1;
     uint8_t buffer[255] = { 0x00 };
     int pos = 0;
     buffer[pos++] = 0x86;
     buffer[pos++] = 0xAB;
-    buffer[pos++] = (len >> 8) & 0xFF;
-    buffer[pos++] = len & 0xFF;
+    buffer[pos++] = (size >> 8) & 0xFF;
+    buffer[pos++] = size & 0xFF;
     buffer[pos++] = 0xE8;
     buffer[pos++] = 0x15;
     memcpy(buffer + pos, data, len);
     pos += len;
     uint8_t sum = 0;
     for (int i = 0; i < pos; i++) sum += buffer[i];
+    buffer[pos++] = 0x00;
     buffer[pos++] = sum;
     buffer[pos++] = 0xCF;
     write(zm831->dev_ttyS1, buffer, pos);
