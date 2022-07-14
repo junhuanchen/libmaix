@@ -181,7 +181,7 @@ void setup_scr_gesture_app(lv_ui *ui){
         uint32_t w = b->w * image_width;
         uint32_t h = b->h * image_height;
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
-        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, string_format("ID%d:%d", class_id, (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, string_format("ID%d:%d", class_id + 1, (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
         int area = ((float)(w * h) / (240 * 240)) * 100;
         char data[] = { class_id + 1, ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(prob * 100) };
         zm831_protocol_send(0x0b, (uint8_t *)data, sizeof(data));
@@ -210,10 +210,11 @@ void setup_scr_gesture_app(lv_ui *ui){
     self->rect_dsc.bg_opa = LV_OPA_TRANSP;
     self->rect_dsc.border_width = 5;
     self->rect_dsc.border_opa = LV_OPA_80;
-    self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+    self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
 
     lv_draw_label_dsc_init(&self->label_dsc);
     self->label_dsc.color = LV_COLOR_GREEN;
+    self->label_dsc.font = zm831->ft_font.font;
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 
