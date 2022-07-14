@@ -214,7 +214,7 @@ extern "C"
       self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_RED;
+      self->label_dsc.color = LV_COLOR_GREEN;
       self->label_dsc.font = zm831->ft_font.font;
 
       zm831_home_setup_ui(&self->ui->face_app, setup_scr_face_app, 10000);

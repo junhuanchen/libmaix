@@ -189,14 +189,12 @@ extern "C"
         uint32_t y = b->y * image_height - (b->h * image_height / 2);
         uint32_t w = b->w * image_width;
         uint32_t h = b->h * image_height;
-        printf("%d %d %d %d %f %s\n", x, y, w, h, prob, self->labels[class_id]);
-        std::ostringstream prob2str;
-        prob2str << prob;
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
-        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_AUTO);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), x, y, 120, &self->label_dsc, string_format("%d", (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
         int area = ((float)(w * h) / (240 * 240)) * 100;
         char data[] = { class_id, x, y, area, (int)(prob * 100) };
         zm831_protocol_send(0x15, (uint8_t *)data, sizeof(data));
+        printf("%d %d %d %d %d %f %s\n", x, y, w, h, class_id, prob, self->labels[class_id]);
       }
     }
     pthread_mutex_unlock(&zm831->ui_mutex);
