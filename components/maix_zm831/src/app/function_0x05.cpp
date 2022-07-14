@@ -139,16 +139,16 @@ extern "C"
       }
 
       lv_draw_line_dsc_init(&self->line_dsc);
-      self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+      self->line_dsc.color = {0x00, 0xFF, 0x00, 0x9f};
       self->line_dsc.width = 3;
       self->line_dsc.opa = LV_OPA_90;
 
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_50;
+      self->rect_dsc.bg_opa = LV_OPA_10;
       self->rect_dsc.border_width = 2;
-      self->rect_dsc.border_opa = LV_OPA_50;
-      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+      self->rect_dsc.border_opa = LV_OPA_80;
+      self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
@@ -272,9 +272,8 @@ extern "C"
               printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
               printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
 
-              // int area = (max_blobs_data.rect.w * max_blobs_data.rect.h);
-              // char data[] = { 0x04, x, y, (area > 255) ? 255 : area };
-              // zm831_protocol_send((uint8_t *)data, sizeof(data));
+              char data[] = { max_blobs_data.centroid_x, max_blobs_data.rect.w };
+              zm831_protocol_send(0x04, (uint8_t *)data, sizeof(data));
 
               pthread_mutex_lock(&zm831->ui_mutex);
               // lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);

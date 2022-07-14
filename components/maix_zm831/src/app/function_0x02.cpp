@@ -77,7 +77,7 @@ extern "C"
     lv_imgbtn_set_checkable(ui->color_app_imgbtn_back, true);
   }
 
-  #include "imlib.h"
+#include "imlib.h"
 
   static struct _function_0x02_
   {
@@ -97,8 +97,8 @@ extern "C"
         {.LMin = 50, .LMax = 100, .AMin = -2, .AMax = 40, .BMin = 40, .BMax = 90},  //黄
     };
 
-    uint8_t data_cmd[5] = { 0x02, };
-    uint32_t old, have;
+    uint32_t old = 0, work = 0;
+    std::array<uint8_t, 4> data_cmd;
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
@@ -214,6 +214,8 @@ extern "C"
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
 
+        std::array<uint8_t, 4> cmd;
+
         list_t out;
         for (int i = 0; i < 4; i++)
         {
@@ -232,32 +234,39 @@ extern "C"
             lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
             pthread_mutex_unlock(&zm831->ui_mutex);
 
-            self->data_cmd[i + 1] += 1;
+            cmd[i] += 1;
 
-            // self->have = 1;
+            self->work++;
 
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
         }
 
-        // if (self->have) {
-        //   self->have = 0;
-        // } else {
-        //   int now = zm831_get_ms();
-        //   if (now - self->old > 200)
-        //   {
-        //     self->old = now;
-        //     // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
-        //     // printf("\r\n");
-        //     memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
-        //     zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
-        //     zm831_ui_show_clear();
-        //   } else {
-        //     zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
-        //     memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
-        //     zm831_ui_show_clear();
-        //   }
+        if (self->data_cmd != cmd) {
+          self->data_cmd = cmd;
+          zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+        }
+
+        // if (self->work)
+        // {
+        //   self->work--;
+        //   zm831_protocol_send((uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
+        //   memset(data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
+        //   printf("self->work %d\r\n", self->work);
+        //   zm831_ui_show_clear();
+        //   // if (self->work) self->old = now;
         // }
+
+        int now = zm831_get_ms();
+        if (now - self->old > 100)
+        {
+          self->old = now;
+          self->data_cmd.fill(0);
+          zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+          zm831_ui_show_clear();
+          self->work = 0;
+        }
+
       }
 
       fb_alloc_free_till_mark();

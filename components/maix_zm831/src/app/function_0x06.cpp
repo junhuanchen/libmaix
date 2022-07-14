@@ -184,8 +184,8 @@ extern "C"
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
         lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, ai2vi(w), &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_AUTO);
         int area = (w * h);
-        char data[] = { 0x06, x, y, (area > 255) ? 255 : area };
-        zm831_protocol_send((uint8_t *)data, sizeof(data));
+        char data[] = { x, y, (area > 255) ? 255 : area };
+        zm831_protocol_send(0x06, (uint8_t *)data, sizeof(data));
       }
     }
     pthread_mutex_unlock(&zm831->ui_mutex);

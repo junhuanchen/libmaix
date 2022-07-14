@@ -161,7 +161,6 @@ extern "C"
         .h = vi2ai(80),
     };
 
-    uint8_t data_cmd[5] = { 0x09, };
     uint32_t old, color_learn_id = 0;
     bool is_study_color = false;
 
@@ -424,11 +423,12 @@ extern "C"
         int now = zm831_get_ms();
         if (now - self->old > 200) // 200ms
         {
+          std::array<uint8_t, 4> data_cmd;
           self->old = now;
           // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
           // printf("\r\n");
-          zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
-          memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
+          // zm831_protocol_send(0x09, self->data_cmd, sizeof(self->data_cmd));
+          // memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
           zm831_ui_show_clear();
         }
 
@@ -450,7 +450,7 @@ extern "C"
             lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
             pthread_mutex_unlock(&zm831->ui_mutex);
 
-            self->data_cmd[i + 1] += 1;
+            // self->data_cmd[i] += 1;
 
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }

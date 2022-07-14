@@ -139,14 +139,12 @@ extern "C"
                 lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
                 pthread_mutex_unlock(&zm831->ui_mutex);
 
-                uint8_t cmd[5];
-                cmd[0] = 0x01;
+                uint8_t cmd[4];
                 cmd[1]= lnk_data.rect.x;
                 cmd[2] = lnk_data.rect.y;
                 cmd[3] = lnk_data.rect.w;
                 cmd[4] = lnk_data.rect.h;
-                extern int zm831_protocol_send(uint8_t *data, int len);
-                zm831_protocol_send(cmd, sizeof(cmd));
+                zm831_protocol_send(0x01, cmd, sizeof(cmd));
 
                 self->now = time(NULL);
 

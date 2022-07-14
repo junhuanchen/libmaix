@@ -294,8 +294,8 @@ extern "C"
           }
       }
 
-      char data[] = { 0x0e, area_part[0], area_part[1], area_part[2], area_part[3], area_part[4] };
-      zm831_protocol_send((uint8_t *)data, sizeof(data));
+      char data[] = { area_part[0], area_part[1], area_part[2], area_part[3], area_part[4] };
+      zm831_protocol_send(0x0e, (uint8_t *)data, sizeof(data));
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);

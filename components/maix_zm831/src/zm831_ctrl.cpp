@@ -40,9 +40,9 @@ extern "C"
     LIBMAIX_DEBUG_PRINTF("zm831_ctrl_exit");
   }
 
-  int zm831_protocol_send(uint8_t *data, int len)
+  int zm831_protocol_send(uint8_t func, uint8_t *data, int len)
   {
-    int size = len + 9;
+    int size = len + 10;
     if (size > (254)) return -1;
     uint8_t buffer[255] = { 0x00 };
     int pos = 0;
@@ -52,6 +52,7 @@ extern "C"
     buffer[pos++] = size & 0xFF;
     buffer[pos++] = 0xE8;
     buffer[pos++] = 0x15;
+    buffer[pos++] = func;
     memcpy(buffer + pos, data, len);
     pos += len;
     uint8_t sum = 0;

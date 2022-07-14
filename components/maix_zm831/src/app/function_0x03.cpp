@@ -95,7 +95,9 @@ extern "C"
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
     lv_draw_line_dsc_t line_dsc;
-    uint32_t old;
+
+    uint32_t old = 0, work = 0;
+    std::string data_cmd;
 
     bool init = false;
   } function_0x03_app;
@@ -205,13 +207,6 @@ extern "C"
       /* extract results */
       const zbar_symbol_t *symbol = zbar_image_first_symbol(image);
 
-      int now = zm831_get_ms();
-      if (now - self->old > 200) // 200ms
-      {
-        self->old = now;
-        zm831_ui_show_clear();
-      }
-
       for (; symbol; symbol = zbar_symbol_next(symbol))
       {
         lv_point_t corners[5];
@@ -243,13 +238,30 @@ extern "C"
           // lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y, corners[2].x - corners[0].x, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
           pthread_mutex_unlock(&zm831->ui_mutex);
 
-          auto tmp = string_format("\x03%s", data);
-          zm831_protocol_send((uint8_t *)tmp.c_str(), tmp.length());
+          self->data_cmd = string_format("%s", data);
 
-          self->old = now;
+          self->work++;
 
           break;// only one QR code
         }
+      }
+
+      int now = zm831_get_ms();
+      if (self->work)
+      {
+        self->work--;
+        zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
+        zm831_ui_show_clear();
+        if (self->work) self->old = now;
+      }
+
+      if (now - self->old > 200)
+      {
+        // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
+        // printf("\r\n");
+        for (int i = 1; i < self->data_cmd.size(); i++) self->data_cmd[i] = 0; // clear 0x03 after data
+        zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
+        zm831_ui_show_clear();
       }
 
       /* clean up */

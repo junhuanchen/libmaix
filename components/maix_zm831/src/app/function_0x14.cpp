@@ -275,11 +275,11 @@ extern "C"
       hist.ABins = (float *)fb_alloc(hist.ABinCount * sizeof(float), FB_ALLOC_NO_HINT);
       hist.BBins = (float *)fb_alloc(hist.BBinCount * sizeof(float), FB_ALLOC_NO_HINT);
 
-      char data[] = {0x0e,
-                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-                     0x00}, *ptr = data + 1;
+      char data[] = {
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+      }, *ptr = data + 1;
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
@@ -302,7 +302,7 @@ extern "C"
       }
       pthread_mutex_unlock(&zm831->ui_mutex);
 
-      zm831_protocol_send((uint8_t *)data, sizeof(data));
+      zm831_protocol_send(0x0e, (uint8_t *)data, sizeof(data));
 
       //释放直方图通道内存
       fb_free(hist.BBins);
