@@ -215,7 +215,7 @@ extern "C"
         unsigned int y_hist_bins_max = 0;
 
         int now = zm831_get_ms();
-        if (now - self->old > 50)
+        if (now - self->old > 200)
         {
           self->old = now;
           // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
@@ -247,6 +247,9 @@ extern "C"
 
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
+          zm831_protocol_send(self->data_cmd, sizeof(self->data_cmd));
+          memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
+          zm831_ui_show_clear();
         }
       }
 
