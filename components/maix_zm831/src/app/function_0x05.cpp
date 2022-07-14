@@ -141,14 +141,14 @@ extern "C"
       lv_draw_line_dsc_init(&self->line_dsc);
       self->line_dsc.color = {0x00, 0xFF, 0x00, 0x9f};
       self->line_dsc.width = 3;
-      self->line_dsc.opa = LV_OPA_90;
+      self->line_dsc.opa = LV_OPA_20;
 
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_10;
+      self->rect_dsc.bg_opa = LV_OPA_0;
       self->rect_dsc.border_width = 2;
-      self->rect_dsc.border_opa = LV_OPA_80;
-      self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
+      self->rect_dsc.border_opa = LV_OPA_20;
+      self->rect_dsc.border_color = {0x00, 0x00, 0x00, 0x7f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
