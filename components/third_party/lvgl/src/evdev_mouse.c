@@ -253,7 +253,7 @@ bool evdev_mouse_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
         printf("CALIBRATE x: %d y: %d\r\n", data->point.x, data->point.y);
 #else
         data->point.x = evdev_root_x;
-        data->point.y = evdev_root_y - 10; // [zm831 touch y coordinate 20220630]
+        data->point.y = evdev_root_y; // [zm831 touch y coordinate 20220630]
         // printf("EVDEV x: %d y: %d\r\n", data->point.x, data->point.y);
 #endif
     }
