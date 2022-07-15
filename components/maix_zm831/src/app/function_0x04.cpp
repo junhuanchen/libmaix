@@ -343,6 +343,7 @@ extern "C"
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.font = zm831->ft_font.font;
 
       libmaix_err_t err = LIBMAIX_ERR_NONE;
 

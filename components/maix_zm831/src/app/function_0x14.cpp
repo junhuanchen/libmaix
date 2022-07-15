@@ -213,6 +213,7 @@ extern "C"
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.font = zm831->ft_font.font;
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->cube_app_imgbtn_back, function_0x14_btn_event_app_cb);

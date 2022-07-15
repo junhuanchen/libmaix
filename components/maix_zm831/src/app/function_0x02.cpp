@@ -143,6 +143,7 @@ extern "C"
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.font = zm831->ft_font.font;
 
       zm831_home_setup_ui(&self->ui->color_app, setup_scr_color_app, 500);
 

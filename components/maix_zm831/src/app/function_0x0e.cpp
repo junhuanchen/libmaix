@@ -131,7 +131,6 @@ extern "C"
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_line_dsc_t line_dsc;
-    int old;
 
     bool init = false;
   } function_0x0e_app;
@@ -252,13 +251,6 @@ extern "C"
 
       list_push_back(&thresholds, &self->gray_line_threshold);
 
-      int now = zm831_get_ms();
-      if (now - self->old > 200) // 200ms
-      {
-        self->old = now;
-        zm831_ui_show_clear();
-      }
-
       uint8_t area_part[5] = { 0 };
       bool invert = false;
       uint32_t x_stride = 5;
@@ -288,7 +280,6 @@ extern "C"
                   }
               }
               area_part[i] = 1;
-              self->old = now;
           }
           else
           {

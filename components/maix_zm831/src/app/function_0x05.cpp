@@ -87,7 +87,6 @@ extern "C"
     lv_draw_line_dsc_t line_dsc;
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    uint32_t old;
 
     rectangle_t line_roi = {
         .x = 0,
@@ -152,6 +151,7 @@ extern "C"
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.font = zm831->ft_font.font;
 
       zm831_home_setup_ui(&self->ui->road_app, setup_scr_road_app, 500);
 
@@ -202,12 +202,6 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      int now = zm831_get_ms();
-      if (now - self->old > 200) // 200ms
-      {
-        self->old = now;
-        zm831_ui_show_clear();
-      }
       // CALC_FPS("function_0x05_app_loop"); // 224x224x3
       // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
 
@@ -240,7 +234,6 @@ extern "C"
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
         list_t out;
-        int lastcx;
 
         list_t gray_line_thresholds;
         imlib_list_init(&gray_line_thresholds, sizeof(color_thresholds_list_lnk_data_t));
@@ -259,7 +252,8 @@ extern "C"
         int max_size = 0;
         if (list_size(&out) > 0)
         {
-          self->old = now;
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
           for (size_t m = 0; list_size(&out); m++)
           {
             find_blobs_list_lnk_data_t lnk_data;
@@ -275,8 +269,6 @@ extern "C"
               uint8_t data[] = { max_blobs_data.centroid_x, max_blobs_data.rect.w };
               zm831_protocol_send(0x04, (uint8_t *)data, sizeof(data));
 
-              pthread_mutex_lock(&zm831->ui_mutex);
-              // lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
               lv_canvas_draw_rect(zm831_ui_get_canvas(), max_blobs_data.rect.x, 100 + max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h, &self->rect_dsc);
 
               int x = max_blobs_data.centroid_x, y = max_blobs_data.centroid_y;
@@ -291,24 +283,10 @@ extern "C"
               };
 
               lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
-
-              pthread_mutex_unlock(&zm831->ui_mutex);
-
-
-              lastcx = (int)max_blobs_data.centroid_x;
+              lv_canvas_draw_text(zm831_ui_get_canvas(), 160, 200, 100, &self->label_dsc, string_format("X: %02d", x).c_str(), LV_LABEL_ALIGN_LEFT);
             }
           }
-        }
-        else
-        {
-          if (lastcx < 112)
-          {
-            lastcx = 0;
-          }
-          else
-          {
-            lastcx = 224;
-          }
+          pthread_mutex_unlock(&zm831->ui_mutex);
         }
         list_clear(&out);
       }
