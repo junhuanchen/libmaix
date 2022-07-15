@@ -260,7 +260,7 @@ extern "C"
         signal(SIGALRM, zm831_signal);
         ualarm(0, 10000); // 10ms
 
-        zm831->ui_th_ms = 30; // 20ms > 5ms
+        zm831->ui_th_ms = 20; // 20ms > 5ms
         int ret = pthread_create(&zm831->ui_thread, NULL, zm831_ui_thread, NULL);
         // (ret != 0) ? -1 : 0;
 
@@ -291,7 +291,8 @@ extern "C"
         if (!lv_debug_check_obj_valid(zm831->canvas))
         {
             zm831->canvas = lv_canvas_create(lv_scr_act(), NULL);
-            if (zm831->canvas == NULL) {
+            if (zm831->canvas == NULL)
+            {
                 LIBMAIX_INFO_PRINTF("zm831->canvas == NULL !!!");
                 return NULL;
             }
@@ -330,191 +331,226 @@ extern "C"
         pthread_mutex_unlock(&zm831->ui_mutex);
     }
 
-    // // =========================================================================================
+    // =========================================================================================
+    /*
+    static struct _zm831_ai_
+    {
+        const char *model_path_param = "/home/res/yolo2_face_int8.param";
+        const char *model_path_bin = "/home/res/yolo2_face_int8.bin";
+        const char *inputs_names[1] = {"input0"};
+        const char *outputs_names[1] = {"output0"};
+        const float opt_param_mean = 127.5;
+        const float opt_param_norm = 0.0078125;
+        libmaix_nn_layer_t input = {
+            .w = 224,
+            .h = 224,
+            .c = 3,
+            .dtype = LIBMAIX_NN_DTYPE_UINT8,
+        };
+        libmaix_nn_layer_t out_fmap = {
+            .w = 7,
+            .h = 7,
+            .c = 30,
+            .dtype = LIBMAIX_NN_DTYPE_FLOAT,
+        };
+        libmaix_nn_t *nn;
+        libmaix_nn_model_path_t model_path;
+        libmaix_nn_opt_param_t opt_param;
+        // -------------- yolo2 decode -----------------------
+        const char *labels[1] = {"face"};
+        const float anchors[10] = {1.19, 1.98, 2.79, 4.59, 4.53, 8.92, 8.06, 5.29, 10.32, 10.65};
+        libmaix_nn_decoder_t *yolo2_decoder;
+        libmaix_nn_decoder_yolo2_result_t yolo2_result;
+        libmaix_nn_decoder_yolo2_config_t yolo2_config = {
+            .classes_num = sizeof(labels) / sizeof(anchors[0]),
+            .threshold = 0.5,
+            .nms_value = 0.3,
+            .anchors_num = (sizeof(anchors) / sizeof(anchors[0])) / 2,
+            .anchors = (float *)anchors,
+            .net_in_width = 224,
+            .net_in_height = 224,
+            .net_out_width = 7,
+            .net_out_height = 7,
+            .input_width = 224,
+            .input_height = 224};
+    } _zm831_ai, *zm831_ai = &_zm831_ai;
 
-    // static struct _zm831_ai_
-    // {
-    //     const char *labels[1] = {"face"};
-    //     const char *inputs_names[1] = {"input0"};
-    //     const char *outputs_names[1] = {"output0"};
-    //     float anchors[10] = {1.19, 1.98, 2.79, 4.59, 4.53, 8.92, 8.06, 5.29, 10.32, 10.65};
-    //     float *output_buffer;
-    //     uint8_t *quantize_buffer;
-    //     libmaix_nn_t *nn;
-    //     libmaix_nn_model_path_t model_path;
-    //     libmaix_nn_opt_param_t opt_param;
-    //     libmaix_nn_layer_t input;
-    //     libmaix_nn_layer_t out_fmap;
-    //     libmaix_nn_decoder_t *yolo2_decoder;
-    //     libmaix_nn_decoder_yolo2_config_t yolo2_config;
-    //     libmaix_nn_decoder_yolo2_result_t yolo2_result;
-    // } _zm831_ai, *zm831_ai = &_zm831_ai;
+    static int max_index(float *a, int n)
+    {
+        int i, max_i = 0;
+        float max = a[0];
 
-    // int zm831_ai_load()
-    // {
-    //     libmaix_err_t err = LIBMAIX_ERR_NONE;
+        for (i = 1; i < n; ++i)
+        {
+            if (a[i] > max)
+            {
+                max = a[i];
+                max_i = i;
+            }
+        }
+        return max_i;
+    }
 
-    //     zm831_ai->yolo2_config = {
-    //         .classes_num = 1,
-    //         .threshold = 0.5,
-    //         .nms_value = 0.3,
-    //         .anchors_num = 5,
-    //         .anchors = zm831_ai->anchors,
-    //         .net_in_width = 224,
-    //         .net_in_height = 224,
-    //         .net_out_width = 7,
-    //         .net_out_height = 7,
-    //         .input_width = 224,
-    //         .input_height = 224
-    //     };
+    static void libmaix_nn_decoder_yolo2_draw(_zm831_ai_ *self, struct libmaix_nn_decoder *obj, libmaix_nn_decoder_yolo2_result_t *result)
+    {
+        region_layer_t *rl = (region_layer_t *)obj->data;
+        char *label = NULL;
+        uint32_t image_width = rl->config->input_width;
+        uint32_t image_height = rl->config->input_height;
+        float threshold = rl->config->threshold;
+        libmaix_nn_decoder_yolo2_box_t *boxes = result->boxes;
 
-    //     printf("zm831_ai->yolo2_config.classes_num: %d\n", zm831_ai->yolo2_config.classes_num);
-    //     printf("zm831_ai->yolo2_config.threshold: %f\n", zm831_ai->yolo2_config.threshold);
-    //     printf("zm831_ai->yolo2_config.nms_value: %f\n", zm831_ai->yolo2_config.nms_value);
-    //     printf("zm831_ai->yolo2_config.anchors_num: %d\n", zm831_ai->yolo2_config.anchors_num);
-    //     printf("zm831_ai->yolo2_config.net_in_width: %d\n", zm831_ai->yolo2_config.net_in_width);
-    //     printf("zm831_ai->yolo2_config.net_in_height: %d\n", zm831_ai->yolo2_config.net_in_height);
-    //     printf("zm831_ai->yolo2_config.net_out_width: %d\n", zm831_ai->yolo2_config.net_out_width);
-    //     printf("zm831_ai->yolo2_config.net_out_height: %d\n", zm831_ai->yolo2_config.net_out_height);
-    //     printf("zm831_ai->yolo2_config.input_width: %d\n", zm831_ai->yolo2_config.input_width);
-    //     printf("zm831_ai->yolo2_config.input_height: %d\n", zm831_ai->yolo2_config.input_height);
-    //     printf("zm831_ai->yolo2_config.anchors: %p\n", zm831_ai->yolo2_config.anchors);
-    //     for(int i = 0; i < zm831_ai->yolo2_config.anchors_num * 2; i++)
-    //         printf("zm831_ai->yolo2_config.anchors[%d]: %f\n", i, zm831_ai->yolo2_config.anchors[i]);
+        for (int i = 0; i < result->boxes_num; ++i)
+        {
+            int class_id = max_index(rl->probs[i], rl->config->classes_num);
+            float prob = result->probs[i][class_id];
+            if (prob > threshold)
+            {
+                libmaix_nn_decoder_yolo2_box_t *b = boxes + i;
+                uint32_t x = b->x * image_width - (b->w * image_width / 2);
+                uint32_t y = b->y * image_height - (b->h * image_height / 2);
+                uint32_t w = b->w * image_width;
+                uint32_t h = b->h * image_height;
+                printf("%d %d %d %d %d %f %s\n", x, y, w, h, prob, self->labels[class_id]);
+            }
+        }
+    }
 
-    //     zm831_ai->opt_param.awnn.input_names = (char **)zm831_ai->inputs_names;
-    //     zm831_ai->opt_param.awnn.output_names = (char **)zm831_ai->outputs_names;
-    //     zm831_ai->opt_param.awnn.input_num = 1;  // len(input_names)
-    //     zm831_ai->opt_param.awnn.output_num = 1; // len(output_names)
+    int zm831_ai_load(_zm831_ai_ *self)
+    {
+        libmaix_err_t err = LIBMAIX_ERR_NONE;
 
-    //     zm831_ai->opt_param.awnn.mean[0] = 127.5;
-    //     zm831_ai->opt_param.awnn.mean[1] = zm831_ai->opt_param.awnn.mean[0];
-    //     zm831_ai->opt_param.awnn.mean[2] = zm831_ai->opt_param.awnn.mean[0];
+        self->opt_param.awnn.input_names = (char **)self->inputs_names;
+        self->opt_param.awnn.output_names = (char **)self->outputs_names;
+        self->opt_param.awnn.input_num = sizeof(self->inputs_names) / sizeof(self->inputs_names[0]);
+        self->opt_param.awnn.output_num = sizeof(self->outputs_names) / sizeof(self->outputs_names[0]);
 
-    //     zm831_ai->opt_param.awnn.norm[0] = 0.0078125;
-    //     zm831_ai->opt_param.awnn.norm[1] = zm831_ai->opt_param.awnn.norm[0];
-    //     zm831_ai->opt_param.awnn.norm[2] = zm831_ai->opt_param.awnn.norm[0];
+        self->opt_param.awnn.mean[0] = self->opt_param_mean;
+        self->opt_param.awnn.mean[1] = self->opt_param.awnn.mean[0];
+        self->opt_param.awnn.mean[2] = self->opt_param.awnn.mean[0];
 
-    //     zm831_ai->model_path.awnn.param_path = (char *)"/home/res/yolo2_face_int8.param";
-    //     zm831_ai->model_path.awnn.bin_path = (char *)"/home/res/yolo2_face_int8.bin";
+        self->opt_param.awnn.norm[0] = self->opt_param_norm;
+        self->opt_param.awnn.norm[1] = self->opt_param.awnn.norm[0];
+        self->opt_param.awnn.norm[2] = self->opt_param.awnn.norm[0];
 
-    //     zm831_ai->input = {
-    //         .w = 224,
-    //         .h = 224,
-    //         .c = 3,
-    //         .dtype = LIBMAIX_NN_DTYPE_UINT8,
-    //     };
-    //     zm831_ai->input.need_quantization = true;
+        self->model_path.awnn.param_path = (char *)self->model_path_param;
+        self->model_path.awnn.bin_path = (char *)self->model_path_bin;
 
-    //     zm831_ai->out_fmap = {
-    //         .w = 7,
-    //         .h = 7,
-    //         .c = 30,
-    //         .dtype = LIBMAIX_NN_DTYPE_FLOAT,
-    //     };
+        self->input.need_quantization = true;
 
-    //     zm831_ai->output_buffer = (float *)malloc(zm831_ai->out_fmap.w * zm831_ai->out_fmap.h * zm831_ai->out_fmap.c * sizeof(float));
-    //     if (!zm831_ai->output_buffer)
-    //     {
-    //     LIBMAIX_INFO_PRINTF("no memory!!!\n");
-    //     return -1;
-    //     }
+        self->out_fmap.data = (float *)malloc(self->out_fmap.w * self->out_fmap.h * self->out_fmap.c * sizeof(float));
+        if (!self->out_fmap.data)
+        {
+            LIBMAIX_INFO_PRINTF("no memory!!!\n");
+            return -1;
+        }
 
-    //     zm831_ai->quantize_buffer = (uint8_t *)malloc(zm831_ai->input.w * zm831_ai->input.h * zm831_ai->input.c);
-    //     if (!zm831_ai->quantize_buffer)
-    //     {
-    //     LIBMAIX_INFO_PRINTF("no memory!!!\n");
-    //     return -1;
-    //     }
+        self->input.buff_quantization = (uint8_t *)malloc(self->input.w * self->input.h * self->input.c);
+        if (!self->input.buff_quantization)
+        {
+            LIBMAIX_INFO_PRINTF("no memory!!!\n");
+            return -1;
+        }
 
-    //     zm831_ai->out_fmap.data = zm831_ai->output_buffer;
-    //     zm831_ai->input.buff_quantization = zm831_ai->quantize_buffer;
+        LIBMAIX_INFO_PRINTF("-- nn create\n");
+        self->nn = libmaix_nn_create();
+        if (!self->nn)
+        {
+            LIBMAIX_INFO_PRINTF("libmaix_nn object create fail\n");
+            return -1;
+        }
+        LIBMAIX_INFO_PRINTF("-- nn object init\n");
+        err = self->nn->init(self->nn);
+        if (err != LIBMAIX_ERR_NONE)
+        {
+            LIBMAIX_INFO_PRINTF("libmaix_nn init fail: %s\n", libmaix_get_err_msg(err));
+            return -1;
+        }
+        LIBMAIX_INFO_PRINTF("-- nn object load model\n");
+        err = self->nn->load(self->nn, &self->model_path, &self->opt_param);
+        if (err != LIBMAIX_ERR_NONE)
+        {
+            LIBMAIX_INFO_PRINTF("libmaix_nn load fail: %s\n", libmaix_get_err_msg(err));
+            return -1;
+        }
 
-    //     LIBMAIX_INFO_PRINTF("-- nn create\n");
-    //     zm831_ai->nn = libmaix_nn_create();
-    //     if (!zm831_ai->nn)
-    //     {
-    //     LIBMAIX_INFO_PRINTF("libmaix_nn object create fail\n");
-    //     return -1;
-    //     }
-    //     LIBMAIX_INFO_PRINTF("-- nn object init\n");
-    //     err = zm831_ai->nn->init(zm831_ai->nn);
-    //     if (err != LIBMAIX_ERR_NONE)
-    //     {
-    //     LIBMAIX_INFO_PRINTF("libmaix_nn init fail: %s\n", libmaix_get_err_msg(err));
-    //     return -1;
-    //     }
-    //     LIBMAIX_INFO_PRINTF("-- nn object load model\n");
-    //     err = zm831_ai->nn->load(zm831_ai->nn, &zm831_ai->model_path, &zm831_ai->opt_param);
-    //     if (err != LIBMAIX_ERR_NONE)
-    //     {
-    //     LIBMAIX_INFO_PRINTF("libmaix_nn load fail: %s\n", libmaix_get_err_msg(err));
-    //     return -1;
-    //     }
+        LIBMAIX_INFO_PRINTF("-- yolo2 decoder create\n");
+        self->yolo2_decoder = libmaix_nn_decoder_yolo2_create(libmaix_nn_decoder_yolo2_init,
+                                                              libmaix_nn_decoder_yolo2_deinit,
+                                                              libmaix_nn_decoder_yolo2_decode);
+        if (!self->yolo2_decoder)
+        {
+            LIBMAIX_INFO_PRINTF("no mem\n");
+            return -1;
+        }
+        LIBMAIX_INFO_PRINTF("-- yolo2 decoder init\n");
+        err = self->yolo2_decoder->init(self->yolo2_decoder, (void *)&self->yolo2_config);
+        if (err != LIBMAIX_ERR_NONE)
+        {
+            LIBMAIX_INFO_PRINTF("decoder init error:%d\n", err);
+            return -1;
+        }
 
-    //     LIBMAIX_INFO_PRINTF("-- yolo2 decoder create\n");
-    //     zm831_ai->yolo2_decoder = libmaix_nn_decoder_yolo2_create();
-    //     if (!zm831_ai->yolo2_decoder)
-    //     {
-    //     LIBMAIX_INFO_PRINTF("no mem\n");
-    //     return -1;
-    //     }
-    //     LIBMAIX_INFO_PRINTF("-- yolo2 decoder init\n");
-    //     err = zm831_ai->yolo2_decoder->init(zm831_ai->yolo2_decoder, (void *)&zm831_ai->yolo2_config);
-    //     if (err != LIBMAIX_ERR_NONE)
-    //     {
-    //     LIBMAIX_INFO_PRINTF("decoder init error:%d\n", err);
-    //     return -1;
-    //     }
+        LIBMAIX_INFO_PRINTF("nn_gestures_app_load");
+    }
 
-    //     LIBMAIX_INFO_PRINTF("nn_gestures_app_load");
-    // }
+    int zm831_ai_exit(_zm831_ai_ *self)
+    {
+        if (self->yolo2_decoder)
+        {
+            self->yolo2_decoder->deinit(self->yolo2_decoder);
+            libmaix_nn_decoder_yolo2_destroy(&self->yolo2_decoder);
+            self->yolo2_decoder = NULL;
+        }
+        if (self->input.buff_quantization)
+        {
+            free(self->input.buff_quantization);
+            self->input.buff_quantization = NULL;
+        }
+        if (self->out_fmap.data)
+        {
+            free(self->out_fmap.data);
+            self->out_fmap.data = NULL;
+        }
+        if (self->nn)
+        {
+            libmaix_nn_destroy(&self->nn);
+        }
+    }
 
-    // int zm831_ai_exit()
-    // {
-    //     if(zm831_ai->yolo2_decoder)
-    //     {
-    //         zm831_ai->yolo2_decoder->deinit(zm831_ai->yolo2_decoder);
-    //         libmaix_nn_decoder_yolo2_destroy(&zm831_ai->yolo2_decoder);
-    //         zm831_ai->yolo2_decoder = NULL;
-    //     }
-    //     if(zm831_ai->output_buffer)
-    //     {
-    //         free(zm831_ai->output_buffer);
-    //         zm831_ai->output_buffer = NULL;
-    //     }
-    //     if(zm831_ai->nn)
-    //     {
-    //         libmaix_nn_destroy(&zm831_ai->nn);
-    //     }
-    // }
+    int zm831_ai_loop(_zm831_ai_ *self)
+    {
+        libmaix_err_t err = LIBMAIX_ERR_NONE;
+        libmaix_image_t *ai_rgb = NULL;
+        if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
+        {
+            // LIBMAIX_INFO_PRINTF("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
+            // cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
 
-    // int zm831_ai_loop()
-    // {
-    //     libmaix_err_t err = LIBMAIX_ERR_NONE;
-    //     libmaix_image_t *ai_rgb = NULL;
-    //     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
-    //     {
-    //         zm831_ai->input.data = ai_rgb->data;
-    //         err = zm831_ai->nn->forward(zm831_ai->nn, &zm831_ai->input, &zm831_ai->out_fmap);
-    //         if(err != LIBMAIX_ERR_NONE)
-    //         {
-    //             printf("libmaix_nn forward fail: %s\n", libmaix_get_err_msg(err));
-    //         }
-    //         err = zm831_ai->yolo2_decoder->decode(zm831_ai->yolo2_decoder, &zm831_ai->out_fmap, (void*)&zm831_ai->yolo2_result);
-    //         if(err != LIBMAIX_ERR_NONE)
-    //         {
-    //             printf("yolo2 decode fail: %s\n", libmaix_get_err_msg(err));
-    //         }
-    //         if(zm831_ai->yolo2_result.boxes_num > 0)
-    //         {
-    //             // libmaix_nn_decoder_yolo2_draw(zm831_ai, zm831_ai->yolo2_decoder, &zm831_ai->yolo2_result);
-    //             LIBMAIX_INFO_PRINTF("yolo2_result.boxes_num %d", zm831_ai->yolo2_result.boxes_num);
-    //         }
-    //     }
-    // }
+            self->input.data = ai_rgb->data;
+            err = self->nn->forward(self->nn, &self->input, &self->out_fmap);
+            if (err != LIBMAIX_ERR_NONE)
+            {
+                printf("libmaix_nn forward fail: %s\n", libmaix_get_err_msg(err));
+            }
 
-    // // =========================================================================================
+            err = self->yolo2_decoder->decode(self->yolo2_decoder, &self->out_fmap, (void *)&self->yolo2_result);
+            if (err != LIBMAIX_ERR_NONE)
+            {
+                printf("yolo2 decode fail: %s\n", libmaix_get_err_msg(err));
+            }
+
+            if (self->yolo2_result.boxes_num > 0)
+            {
+                // libmaix_nn_decoder_yolo2_draw(self, self->yolo2_decoder, &self->yolo2_result);
+                LIBMAIX_INFO_PRINTF("yolo2_result.boxes_num %d", self->yolo2_result.boxes_num);
+            }
+        }
+        CALC_FPS("ai");
+        return 0;
+    }
+    */
+    // =========================================================================================
 
     void zm831_vi_open()
     {
@@ -612,22 +648,23 @@ extern "C"
 
         // cap_set();
         // pthread_mutex_lock(&zm831->vi_mutex);
-        // if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &zm831->ai_rgb))
+        // libmaix_image_t *ai_rgb = NULL;
+        // if (LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
         // {
-        //     // cv::Mat cv_src(zm831->ai_rgb->height, zm831->ai_rgb->width, CV_8UC3, zm831->ai_rgb->data);
-        //     // cv::rectangle(cv_src, cv::Point(24, 24), cv::Point(200, 200), cv::Scalar(255, 0, 0), 5);
-        //     // void *tmp = zm831->vo->get_frame(zm831->vo, 9);
-        //     // if (tmp != NULL)
-        //     // {
-        //     //     uint32_t *phy = NULL, *vir = NULL;
-        //     //     zm831->vo->frame_addr(zm831->vo, tmp, &vir, &phy);
-        //     //     cv::Mat bgra(zm831->ui_h, zm831->ui_w, CV_8UC4, (unsigned char *)vir[0]);
-        //     //     cv::rectangle(bgra, cv::Point(20, 20), cv::Point(220, 220), cv::Scalar(0, 0, 255, 128), 20);
-        //     //     // cv::Mat cv_dst;
-        //     //     // cv::resize(cv_src, cv_dst, cv::Size(zm831->ui_w, zm831->ui_h));
-        //     //     // cv::cvtColor(cv_dst, bgra, cv::COLOR_RGB2BGRA);
-        //     //     zm831->vo->set_frame(zm831->vo, tmp, 9);
-        //     // }
+        //     cv::Mat cv_src(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+        //     cv::rectangle(cv_src, cv::Point(24, 24), cv::Point(200, 200), cv::Scalar(255, 0, 0), 5);
+        //     void *tmp = zm831->vo->get_frame(zm831->vo, 9);
+        //     if (tmp != NULL)
+        //     {
+        //         uint32_t *phy = NULL, *vir = NULL;
+        //         zm831->vo->frame_addr(zm831->vo, tmp, &vir, &phy);
+        //         cv::Mat bgra(zm831->ui_h, zm831->ui_w, CV_8UC4, (unsigned char *)vir[0]);
+        //         cv::rectangle(bgra, cv::Point(20, 20), cv::Point(220, 220), cv::Scalar(0, 0, 255, 128), 20);
+        //         // cv::Mat cv_dst;
+        //         // cv::resize(cv_src, cv_dst, cv::Size(zm831->ui_w, zm831->ui_h));
+        //         // cv::cvtColor(cv_dst, bgra, cv::COLOR_RGB2BGRA);
+        //         zm831->vo->set_frame(zm831->vo, tmp, 9);
+        //     }
         // }
         // pthread_mutex_unlock(&zm831->vi_mutex);
         // cap_get("zm831->ai");
@@ -694,9 +731,9 @@ extern "C"
     void maix_zm831_main(int argc, char *argv[])
     {
         zm831_load_json_conf(zm831->config_file, zm831->config_json, json5pp::object({
-            {"last_select", 0},
-            {"language", "zh-cn"},
-        }));
+                                                                         {"last_select", 0},
+                                                                         {"language", "zh-cn"},
+                                                                     }));
 
         void zm831_ctrl_load();
         void zm831_home_load();
@@ -715,7 +752,7 @@ extern "C"
         signal(SIGSEGV, zm831_signal);
         zm831_vi_load();
         zm831_ui_load();
-        // zm831_ai_load();
+        // zm831_ai_load(zm831_ai);
         zm831_ctrl_load();
         zm831_home_load();
 
@@ -727,7 +764,7 @@ extern "C"
             zm831_ctrl_loop();
             zm831_home_loop();
             // zm831_ui_loop();
-            // zm831_ai_loop();
+            // zm831_ai_loop(zm831_ai);
         }
 
         // extern int imlib_find_blobs_app_load(zm831_home_app *app);
@@ -744,12 +781,11 @@ extern "C"
         //     // zm831_home_loop();
         //     imlib_find_blobs_app_loop(&tmp);
         // }
-
         // imlib_find_blobs_app_exit(&tmp);
 
         zm831_home_exit();
         zm831_ctrl_exit();
-        // zm831_ai_exit();
+        // zm831_ai_exit(zm831_ai);
         zm831_ui_exit();
         zm831_vi_exit();
         zm831->exit = 1;
