@@ -96,7 +96,8 @@ extern "C"
     lv_draw_label_dsc_t label_dsc;
     lv_draw_line_dsc_t line_dsc;
 
-    uint32_t old = 0, work = 0;
+    uint32_t old = 0;
+    int state = 0;
     std::string data_cmd;
 
     bool init = false;
@@ -186,6 +187,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      int now = zm831_get_ms();
       // CALC_FPS("function_0x03_app_loop"); // 224x224x3
       // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
       cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
@@ -240,32 +242,28 @@ extern "C"
           pthread_mutex_unlock(&zm831->ui_mutex);
 
           self->data_cmd = string_format("%s", data);
-
-          for (int i = 1; i < self->data_cmd.size(); i++) self->data_cmd[i] = 0; // clear 0x03 after data
           zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
-          zm831_ui_show_clear();
 
-          self->work++;
+          self->state = 2;
+          self->old = now;
 
           break;// only one QR code
         }
       }
-
-      // int now = zm831_get_ms();
-      // if (self->work)
-      // {
-      //   self->work--;
-      //   zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
-      //   zm831_ui_show_clear();
-      //   if (self->work) self->old = now;
-      // }
-
-      // if (now - self->old > 200)
-      // {
-      //   // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
-      //   // printf("\r\n");
-      // }
-
+      switch (self->state)
+      {
+      case 1:
+        for (int i = 0; i < self->data_cmd.size(); i++) self->data_cmd[i] = 0;
+        zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+        pthread_mutex_unlock(&zm831->ui_mutex);
+        self->state = 0;
+        break;
+      case 2:
+        if (now - self->old > 200) self->state = 1;
+        break;
+      }
       /* clean up */
       zbar_image_destroy(image); // use zbar_image_free_data
       // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
