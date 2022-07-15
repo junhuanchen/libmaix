@@ -53,6 +53,13 @@ std::string string_format(const std::string &format, Args... args)
     return std::string(bytes);
 }
 
+static void msleep(unsigned int ms)
+{
+    usleep(ms * 1000);
+    // struct timespec ts = {ms / 1000, (ms % 1000) * 1000 * 1000};
+    // nanosleep(&ts, nullptr);
+}
+
 #define CALC_FPS(tips)                                                                                         \
     {                                                                                                          \
         static int fcnt = 0;                                                                                   \
@@ -391,10 +398,10 @@ typedef struct
     lv_ft_info_t ft_font;
     // ui
     pthread_t ui_thread;
-    int ui_th_usec, vi_th_usec;
+    int ui_th_ms, vi_th_ms;
     // ai
     pthread_t ai_thread;
-    int ai_th_usec, ai_th_id;
+    int ai_th_ms, ai_th_id;
     volatile int ai_th_keep;
 } zm831_uv;
 

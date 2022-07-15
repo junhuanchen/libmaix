@@ -84,7 +84,8 @@ void setup_scr_gesture_app(lv_ui *ui){
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    time_t now;
+    uint32_t now = 0, old = 0;
+    uint8_t state = 0;
 
     const char *model_path_param = "/home/res/ZM_hand_awnn.param";
     const char *model_path_bin = "/home/res/ZM_hand_awnn.bin";
@@ -187,6 +188,8 @@ void setup_scr_gesture_app(lv_ui *ui){
         printf("%d %d %d %d %d %f %s\n", x, y, w, h, class_id, prob, self->labels[class_id]);
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
         lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 30, 120, &self->label_dsc, string_format("ID%d:%d", map_id[class_id], (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
+
+        self->state = 2, self->old = self->now;
       }
     }
     pthread_mutex_unlock(&zm831->ui_mutex);
@@ -362,6 +365,29 @@ void setup_scr_gesture_app(lv_ui *ui){
       {
         libmaix_nn_decoder_yolo2_draw(app, self->yolo2_decoder, &self->yolo2_result);
         // LIBMAIX_INFO_PRINTF("yolo2_result.boxes_num %d", self->yolo2_result.boxes_num);
+      }
+
+      self->now = zm831_get_ms();
+      switch (self->state)
+      {
+      case 1:
+      {
+        std::array<uint8_t, 5> data_cmd;
+        data_cmd.fill(0);
+        zm831_protocol_send(0x06, (uint8_t *)data_cmd.data(), data_cmd.size());
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+        pthread_mutex_unlock(&zm831->ui_mutex);
+        self->state = 0;
+        break;
+      }
+      case 2:
+      {
+        if (self->now - self->old > 100) {
+          self->state = 1;
+        }
+        break;
+      }
       }
     }
     return 0;

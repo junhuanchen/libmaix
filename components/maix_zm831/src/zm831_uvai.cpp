@@ -121,10 +121,11 @@ extern "C"
 
     void *zm831_ui_thread(void *)
     {
-        while (zm831->ui_th_usec)
+        while (zm831->ui_th_ms)
         {
             zm831_ui_loop();
-            usleep(zm831->ui_th_usec);
+            msleep(zm831->ui_th_ms);
+            // CALC_FPS("ui");
         }
         return 0;
     }
@@ -257,9 +258,9 @@ extern "C"
         // lv_label_set_text(label, "你好 Hi 今天");
 
         signal(SIGALRM, zm831_signal);
-        ualarm(5000, 5000); // 5ms
+        ualarm(0, 10000); // 10ms
 
-        zm831->ui_th_usec = 20000; // 20ms > 5ms
+        zm831->ui_th_ms = 30; // 20ms > 5ms
         int ret = pthread_create(&zm831->ui_thread, NULL, zm831_ui_thread, NULL);
         // (ret != 0) ? -1 : 0;
 
@@ -269,9 +270,9 @@ extern "C"
     void zm831_ui_exit()
     {
         int *thread_ret = NULL;
-        if (zm831->ui_th_usec)
+        if (zm831->ui_th_ms)
         {
-            zm831->ui_th_usec = 0;
+            zm831->ui_th_ms = 0;
             pthread_join(zm831->ui_thread, (void **)&thread_ret);
         }
 
@@ -566,7 +567,7 @@ extern "C"
         // if (NULL == zm831->ui_rgba)
         //     return;
 
-        zm831->vi_th_usec = 30 * 1000; // 30ms 33fps for vi & hw
+        zm831->vi_th_ms = 30; // 30ms 33fps for vi & hw
     }
 
     void zm831_vi_exit()
@@ -720,7 +721,8 @@ extern "C"
 
         while (zm831->exit == 0)
         {
-            usleep(zm831->vi_th_usec); // 30ms 33fps for vi & hw
+            // CALC_FPS("vi");
+            msleep(zm831->vi_th_ms); // 30ms 33fps for vi & hw
             zm831_vi_loop();
             zm831_ctrl_loop();
             zm831_home_loop();
@@ -736,7 +738,7 @@ extern "C"
         // imlib_find_blobs_app_load(&tmp);
         // while (zm831->exit == 0)
         // {
-        //     usleep(zm831->vi_th_usec);
+        //     msleep(zm831->vi_th_ms);
         //     zm831_vi_loop();
         //     zm831_ctrl_loop();
         //     // zm831_home_loop();

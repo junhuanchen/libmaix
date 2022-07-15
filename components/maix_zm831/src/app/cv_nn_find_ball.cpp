@@ -233,7 +233,7 @@ extern "C"
       }
     }
 
-    usleep(zm831->ai_th_usec);
+    usleep(zm831->ai_th_ms);
 
     if (!zm831->recvPacks.empty()){
       zm831_pack_t pack = zm831->recvPacks.front();

@@ -4,7 +4,6 @@
 extern "C"
 {
   extern zm831_uv *zm831;
-
   // ==============================================================================================
 
   // extern zm831_home_app get_qrcode_zbar_app();
@@ -117,7 +116,7 @@ extern "C"
       zm831_ui_show_image(rgb, 8, 8, LV_OPA_80);
     }
 
-    usleep(zm831->ai_th_usec);
+    msleep(zm831->ai_th_ms);
 
     if (!zm831->recvPacks.empty())
     {
@@ -201,10 +200,12 @@ extern "C"
     return 0;
   }
 
+  // bool debug = false;
+
   void *_zm831_home_loop(void *)
   {
     int ret = 0;
-    while (zm831->ai_th_usec)
+    while (zm831->ai_th_ms)
     {
       if (app_bak)
       {
@@ -230,7 +231,14 @@ extern "C"
         }
         while (app_run->loop)
         {
-          app_run->loop(app_run);
+          // extern int function_0x07_app_loop(zm831_home_app *app);
+          // if (app_run->loop == function_0x07_app_loop)
+          // {
+          //   debug = true;
+          //   msleep(1000);
+          // } else {
+            app_run->loop(app_run);
+          // }
           // pthread_mutex_lock(&zm831->ai_mutex);
           // zm831->ai_th_keep = 0; // keep ai thread running.
           // pthread_mutex_unlock(&zm831->ai_mutex);
@@ -296,13 +304,17 @@ extern "C"
     // zm831->config_json["last_select"] = (int)cnt;
     // zm831_save_json_conf(zm831->config_file, zm831->config_json);
 
-    zm831->ai_th_usec = 40000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
+    zm831->ai_th_ms = 20; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
 
     zm831->ai_th_id = pthread_create(&zm831->ai_thread, NULL, _zm831_home_loop, NULL);
 
     // int ret, stacksize = 204800; /*thread 堆栈设置为 20K */
     // pthread_attr_t attr;
     // ret = pthread_attr_init(&attr);
+    // pthread_attr_setschedpolicy(&attr, SCHED_RR);
+    // sched_param param;
+    // param.sched_priority = -20;
+    // pthread_attr_setschedparam(&attr, &param);
     // ret = pthread_attr_setstacksize(&attr, stacksize);
     // zm831->ai_th_id = pthread_create(&zm831->ai_thread, &attr, _zm831_home_loop, NULL);
     // ret = pthread_attr_destroy(&attr);
@@ -317,9 +329,9 @@ extern "C"
   void zm831_home_exit()
   {
     int *thread_ret = NULL;
-    if (zm831->ai_th_usec)
+    if (zm831->ai_th_ms)
     {
-      zm831->ai_th_usec = 0;
+      zm831->ai_th_ms = 0;
       zm831_home_app_stop();
       pthread_join(zm831->ai_thread, (void **)&thread_ret);
     }
@@ -328,9 +340,16 @@ extern "C"
 
   void zm831_home_loop()
   {
+    // if (debug) {
+    //   extern int function_0x07_app_loop(zm831_home_app *app);
+    //   if (app_run->loop == function_0x07_app_loop)
+    //   {
+    //     app_run->loop(app_run);
+    //   }
+    // }
     // if (zm831->ai_th_keep > 60) { // 30ms * 60 = 1800ms
     //   zm831->ai_th_keep = 0;
-    //   zm831->ai_th_usec = 30000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
+    //   zm831->ai_th_ms = 30000; // 40ms 25fps 50% 30ms 65% 10ms 100fps 80%
     //   // int res_kill = pthread_kill(zm831->ai_th_id, 0); // 0 signal is retain sign,then no signal is send
     //   // if(res_kill == ESRCH)
     //   // {
