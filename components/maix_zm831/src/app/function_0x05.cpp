@@ -95,6 +95,10 @@ extern "C"
         .h = 50,
     };
 
+    uint32_t old = 0;
+    uint8_t state = 0;
+    std::array<uint8_t, 2> data_cmd;
+
     bool init = false;
   } function_0x05_app;
 
@@ -202,6 +206,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      int now = zm831_get_ms();
       // CALC_FPS("function_0x05_app_loop"); // 224x224x3
       // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
 
@@ -266,8 +271,7 @@ extern "C"
               printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
               printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
 
-              uint8_t data[] = { max_blobs_data.centroid_x, max_blobs_data.rect.w };
-              zm831_protocol_send(0x04, (uint8_t *)data, sizeof(data));
+              self->data_cmd = { (uint8_t)(max_blobs_data.centroid_x * 0.75), (uint8_t)(max_blobs_data.rect.w * 0.75) };
 
               lv_canvas_draw_rect(zm831_ui_get_canvas(), max_blobs_data.rect.x, 100 + max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h, &self->rect_dsc);
 
@@ -284,11 +288,36 @@ extern "C"
 
               lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
               lv_canvas_draw_text(zm831_ui_get_canvas(), 160, 200, 100, &self->label_dsc, string_format("X: %02d", x).c_str(), LV_LABEL_ALIGN_LEFT);
+
+              self->state = 2, self->old = now;
+
             }
           }
           pthread_mutex_unlock(&zm831->ui_mutex);
         }
         list_clear(&out);
+      }
+
+      switch (self->state)
+      {
+      case 1:
+      {
+        self->data_cmd.fill(0);
+        zm831_protocol_send(0x05, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+        pthread_mutex_unlock(&zm831->ui_mutex);
+        self->state = 0;
+        break;
+      }
+      case 2:
+      {
+        zm831_protocol_send(0x05, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+        if (now - self->old > 100) {
+          self->state = 1;
+        }
+        break;
+      }
       }
       // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
     }

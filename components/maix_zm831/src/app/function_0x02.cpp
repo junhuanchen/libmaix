@@ -261,6 +261,7 @@ extern "C"
         case 2:
         {
           zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+          self->data_cmd.fill(0);
           if (now - self->old > 100) {
             self->state = 1;
           }
