@@ -99,7 +99,8 @@ extern "C"
     apriltag_family_t *tf = NULL;
 
     uint32_t old = 0;
-    int state = 0;
+    uint8_t state = 0;
+    std::array<uint8_t, 4> data_cmd;
 
     bool init = false;
   } function_0x08_app;
@@ -315,9 +316,7 @@ extern "C"
           int w = abs(ai2vi(det->p[3][0]) - ai2vi(det->p[1][0])), h = abs(ai2vi(det->p[3][1]) - ai2vi(det->p[1][1]));
           int area = ((float)(w * h) / (240 * 240)) * 100;
 
-          uint8_t data[] = {det->id, ai2vi(det->c[0]), ai2vi(det->c[1]), area};
-
-          zm831_protocol_send(0x08, (uint8_t *)data, sizeof(data));
+          self->data_cmd = { (uint8_t)det->id, (uint8_t)ai2vi(det->c[0]), (uint8_t)ai2vi(det->c[1]), (uint8_t)area};
 
           lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
 
@@ -331,8 +330,8 @@ extern "C"
         {
         case 1:
         {
-          uint8_t data[] = {0, 0, 0, 0};
-          zm831_protocol_send(0x08, data, sizeof(data));
+          self->data_cmd.fill(0);
+          zm831_protocol_send(0x08, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
           pthread_mutex_unlock(&zm831->ui_mutex);
@@ -341,8 +340,10 @@ extern "C"
         }
         case 2:
         {
-          if (now - self->old > 200)
+          zm831_protocol_send(0x08, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+          if (now - self->old > 200) {
             self->state = 1;
+          }
           break;
         }
         }

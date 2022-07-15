@@ -97,7 +97,8 @@ extern "C"
         {.LMin = 50, .LMax = 100, .AMin = -2, .AMax = 40, .BMin = 40, .BMax = 90},  //黄
     };
 
-    uint32_t old = 0, work = 0;
+    uint32_t old = 0;
+    uint8_t state = 0;
     std::array<uint8_t, 4> data_cmd;
 
     lv_draw_rect_dsc_t rect_dsc;
@@ -180,6 +181,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      int now = zm831_get_ms();
       // CALC_FPS("function_0x02_app_loop"); // 224x224x3
 
       image_t imlib_img, *img = &imlib_img;
@@ -216,12 +218,9 @@ extern "C"
         unsigned int y_hist_bins_max = 0;
 
         int now = zm831_get_ms();
-        std::array<uint8_t, 4> cmd;
 
         pthread_mutex_lock(&zm831->ui_mutex);
         lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-        pthread_mutex_unlock(&zm831->ui_mutex);
-
         list_t out;
         for (int i = 0; i < 4; i++)
         {
@@ -236,34 +235,38 @@ extern "C"
             find_blobs_list_lnk_data_t lnk_data;
             list_pop_front(&out, &lnk_data);
 
-            pthread_mutex_lock(&zm831->ui_mutex);
             lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
-            pthread_mutex_unlock(&zm831->ui_mutex);
 
-            cmd[i] += 1;
+            self->data_cmd[i] += 1;
+
+            self->state = 2, self->old = now;
 
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
         }
+        pthread_mutex_unlock(&zm831->ui_mutex);
 
-        // if (self->data_cmd != cmd) {
-        //   self->data_cmd = cmd;
-        //   zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
-        //   self->work++;
-        // }
-
-        // if (now - self->old > 1000)
-        // {
-        //   if (self->work)
-        //   {
-        //     self->data_cmd.fill(0);
-        //     zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
-        //     self->work = 0;
-        //   }
-        //   self->old = now;
-        //   zm831_ui_show_clear();
-        // }
-
+        switch (self->state)
+        {
+        case 1:
+        {
+          self->data_cmd.fill(0);
+          zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+          self->state = 0;
+          break;
+        }
+        case 2:
+        {
+          zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+          if (now - self->old > 100) {
+            self->state = 1;
+          }
+          break;
+        }
+        }
       }
 
       fb_alloc_free_till_mark();

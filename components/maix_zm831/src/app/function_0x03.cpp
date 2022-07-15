@@ -96,7 +96,7 @@ extern "C"
     lv_draw_line_dsc_t line_dsc;
 
     uint32_t old = 0;
-    int state = 0;
+    uint8_t state = 0;
     std::string data_cmd;
 
     bool init = false;
@@ -240,10 +240,8 @@ extern "C"
           // lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y - 30, corners[2].x - corners[0].x, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
           pthread_mutex_unlock(&zm831->ui_mutex);
 
-          self->data_cmd = string_format("%s", data);
-          zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
-
           self->state = 2, self->old = now;
+          self->data_cmd = string_format("%s", data);
 
           break; // only one QR code
         }
@@ -263,8 +261,10 @@ extern "C"
       }
       case 2:
       {
-        if (now - self->old > 200)
+        zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
+        if (now - self->old > 200) {
           self->state = 1;
+        }
         break;
       }
       }
