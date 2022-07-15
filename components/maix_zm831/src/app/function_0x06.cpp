@@ -182,7 +182,7 @@ extern "C"
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w) + 5, ai2vi(h) + 5, &self->rect_dsc);
         // lv_canvas_draw_text(zm831_ui_get_canvas(), x + 5, y + 5, ai2vi(w), &self->label_dsc, string_format("%d", (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
         int area = ((float)(w * h) / (240 * 240)) * 100;
-        char data[] = { class_id, ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(prob * 100) };
+        uint8_t data[] = { class_id, ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(prob * 100) };
         zm831_protocol_send(0x06, (uint8_t *)data, sizeof(data));
 
         // printf("%d %d %d %d %d %f %s\n", x, y, w, h, area, prob, self->labels[class_id]);

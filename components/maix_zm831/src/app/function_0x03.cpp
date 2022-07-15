@@ -12,26 +12,26 @@ extern "C"
     // Write codes camera
     ui->qrcode_app = lv_scr_act();
 
-    //Write style LV_OBJ_PART_MAIN for qrcode_app
+    // Write style LV_OBJ_PART_MAIN for qrcode_app
     static lv_style_t style_qrcode_app_main;
     lv_style_reset(&style_qrcode_app_main);
 
-    //Write style state: LV_STATE_DEFAULT for style_qrcode_app_main
+    // Write style state: LV_STATE_DEFAULT for style_qrcode_app_main
     lv_style_set_bg_color(&style_qrcode_app_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
     lv_style_set_bg_opa(&style_qrcode_app_main, LV_STATE_DEFAULT, 0);
     lv_obj_add_style(ui->qrcode_app, LV_OBJ_PART_MAIN, &style_qrcode_app_main);
 
-    //Write codes qrcode_app_label_top_title
+    // Write codes qrcode_app_label_top_title
     ui->qrcode_app_label_top_title = lv_label_create(ui->qrcode_app, NULL);
     lv_label_set_text(ui->qrcode_app_label_top_title, "二维码识别");
     lv_label_set_long_mode(ui->qrcode_app_label_top_title, LV_LABEL_LONG_BREAK);
     lv_label_set_align(ui->qrcode_app_label_top_title, LV_LABEL_ALIGN_CENTER);
 
-    //Write style LV_LABEL_PART_MAIN for qrcode_app_label_top_title
+    // Write style LV_LABEL_PART_MAIN for qrcode_app_label_top_title
     static lv_style_t style_qrcode_app_label_top_title_main;
     lv_style_reset(&style_qrcode_app_label_top_title_main);
 
-    //Write style state: LV_STATE_DEFAULT for style_qrcode_app_label_top_title_main
+    // Write style state: LV_STATE_DEFAULT for style_qrcode_app_label_top_title_main
     lv_style_set_radius(&style_qrcode_app_label_top_title_main, LV_STATE_DEFAULT, 0);
     lv_style_set_bg_color(&style_qrcode_app_label_top_title_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
     lv_style_set_bg_grad_color(&style_qrcode_app_label_top_title_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
@@ -48,34 +48,33 @@ extern "C"
     lv_obj_set_pos(ui->qrcode_app_label_top_title, 0, 0);
     lv_obj_set_size(ui->qrcode_app_label_top_title, 240, 0);
 
-    //Write codes qrcode_app_imgbtn_back
+    // Write codes qrcode_app_imgbtn_back
     ui->qrcode_app_imgbtn_back = lv_imgbtn_create(ui->qrcode_app, NULL);
 
-    //Write style LV_IMGBTN_PART_MAIN for qrcode_app_imgbtn_back
+    // Write style LV_IMGBTN_PART_MAIN for qrcode_app_imgbtn_back
     static lv_style_t style_qrcode_app_imgbtn_back_main;
     lv_style_reset(&style_qrcode_app_imgbtn_back_main);
 
-    //Write style state: LV_STATE_DEFAULT for style_qrcode_app_imgbtn_back_main
+    // Write style state: LV_STATE_DEFAULT for style_qrcode_app_imgbtn_back_main
     lv_style_set_text_color(&style_qrcode_app_imgbtn_back_main, LV_STATE_DEFAULT, lv_color_make(0x00, 0x00, 0x00));
     lv_style_set_image_recolor(&style_qrcode_app_imgbtn_back_main, LV_STATE_DEFAULT, lv_color_make(0xff, 0xff, 0xff));
     lv_style_set_image_recolor_opa(&style_qrcode_app_imgbtn_back_main, LV_STATE_DEFAULT, 0);
     lv_style_set_image_opa(&style_qrcode_app_imgbtn_back_main, LV_STATE_DEFAULT, 255);
 
-    //Write style state: LV_STATE_PRESSED for style_qrcode_app_imgbtn_back_main
+    // Write style state: LV_STATE_PRESSED for style_qrcode_app_imgbtn_back_main
     lv_style_set_text_color(&style_qrcode_app_imgbtn_back_main, LV_STATE_PRESSED, lv_color_make(0xFF, 0x33, 0xFF));
     lv_style_set_image_recolor(&style_qrcode_app_imgbtn_back_main, LV_STATE_PRESSED, lv_color_make(0x00, 0x00, 0x00));
     lv_style_set_image_recolor_opa(&style_qrcode_app_imgbtn_back_main, LV_STATE_PRESSED, 0);
 
-    //Write style state: LV_STATE_CHECKED for style_qrcode_app_imgbtn_back_main
+    // Write style state: LV_STATE_CHECKED for style_qrcode_app_imgbtn_back_main
     lv_style_set_text_color(&style_qrcode_app_imgbtn_back_main, LV_STATE_CHECKED, lv_color_make(0xFF, 0x33, 0xFF));
     lv_style_set_image_recolor(&style_qrcode_app_imgbtn_back_main, LV_STATE_CHECKED, lv_color_make(0x00, 0x00, 0x00));
     lv_style_set_image_recolor_opa(&style_qrcode_app_imgbtn_back_main, LV_STATE_CHECKED, 0);
     lv_obj_add_style(ui->qrcode_app_imgbtn_back, LV_IMGBTN_PART_MAIN, &style_qrcode_app_imgbtn_back_main);
     lv_obj_set_pos(ui->qrcode_app_imgbtn_back, 20, 180);
     lv_obj_set_size(ui->qrcode_app_imgbtn_back, 50, 50);
-    lv_imgbtn_set_src(ui->qrcode_app_imgbtn_back,LV_BTN_STATE_RELEASED,&_back_alpha_50x50);
+    lv_imgbtn_set_src(ui->qrcode_app_imgbtn_back, LV_BTN_STATE_RELEASED, &_back_alpha_50x50);
     lv_imgbtn_set_checkable(ui->qrcode_app_imgbtn_back, true);
-
   }
 
 #include "zbar.h"
@@ -244,25 +243,30 @@ extern "C"
           self->data_cmd = string_format("%s", data);
           zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
 
-          self->state = 2;
-          self->old = now;
+          self->state = 2, self->old = now;
 
-          break;// only one QR code
+          break; // only one QR code
         }
       }
       switch (self->state)
       {
       case 1:
-        for (int i = 0; i < self->data_cmd.size(); i++) self->data_cmd[i] = 0;
+      {
+        for (int i = 0; i < self->data_cmd.size(); i++)
+          self->data_cmd[i] = 0;
         zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
         pthread_mutex_lock(&zm831->ui_mutex);
         lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         pthread_mutex_unlock(&zm831->ui_mutex);
         self->state = 0;
         break;
+      }
       case 2:
-        if (now - self->old > 200) self->state = 1;
+      {
+        if (now - self->old > 200)
+          self->state = 1;
         break;
+      }
       }
       /* clean up */
       zbar_image_destroy(image); // use zbar_image_free_data

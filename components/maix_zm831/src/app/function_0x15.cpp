@@ -190,7 +190,7 @@ extern "C"
         uint32_t w = b->w * image_width;
         uint32_t h = b->h * image_height;
         int area = ((float)(w * h) / (240 * 240)) * 100;
-        char data[] = { class_id, x, y, area, (int)(prob * 100) };
+        uint8_t data[] = { class_id, x, y, area, (int)(prob * 100) };
         zm831_protocol_send(0x15, (uint8_t *)data, sizeof(data));
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
         lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 30, ai2vi(h), &self->label_dsc, string_format("ID%d:%d", class_id, (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);

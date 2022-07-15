@@ -296,7 +296,7 @@ extern "C"
           }
       }
 
-      char data[] = { area_part[0], area_part[1], area_part[2], area_part[3], area_part[4] };
+      uint8_t data[] = { area_part[0], area_part[1], area_part[2], area_part[3], area_part[4] };
       zm831_protocol_send(0x0e, (uint8_t *)data, sizeof(data));
 
       pthread_mutex_lock(&zm831->ui_mutex);

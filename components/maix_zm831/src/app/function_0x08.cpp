@@ -97,7 +97,9 @@ extern "C"
     const char *famname = "tag36h11";
     apriltag_detector_t *td = NULL;
     apriltag_family_t *tf = NULL;
-    time_t now;
+
+    uint32_t old = 0;
+    int state = 0;
 
     bool init = false;
   } function_0x08_app;
@@ -270,6 +272,7 @@ extern "C"
       libmaix_image_t *ai_rgb = NULL;
       if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
       {
+        int now = zm831_get_ms();
         // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
         cv::Mat gray, rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
         cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
@@ -312,7 +315,7 @@ extern "C"
           int w = abs(ai2vi(det->p[3][0]) - ai2vi(det->p[1][0])), h = abs(ai2vi(det->p[3][1]) - ai2vi(det->p[1][1]));
           int area = ((float)(w * h) / (240 * 240)) * 100;
 
-          char data[] = { det->id, ai2vi(det->c[0]), ai2vi(det->c[1]), area };
+          uint8_t data[] = {det->id, ai2vi(det->c[0]), ai2vi(det->c[1]), area};
 
           zm831_protocol_send(0x08, (uint8_t *)data, sizeof(data));
 
@@ -320,9 +323,29 @@ extern "C"
 
           lv_canvas_draw_text(zm831_ui_get_canvas(), ai2vi(det->p[3][0]), ai2vi(det->p[3][1]) - 30, 100, &self->label_dsc, string_format("NO:%d", det->id).c_str(), LV_LABEL_ALIGN_LEFT);
 
-          self->now = time(NULL);
+          self->state = 2, self->old = now;
         }
         pthread_mutex_unlock(&zm831->ui_mutex);
+
+        switch (self->state)
+        {
+        case 1:
+        {
+          uint8_t data[] = {0, 0, 0, 0};
+          zm831_protocol_send(0x08, data, sizeof(data));
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+          self->state = 0;
+          break;
+        }
+        case 2:
+        {
+          if (now - self->old > 200)
+            self->state = 1;
+          break;
+        }
+        }
 
         apriltag_detections_destroy(detections);
       }

@@ -272,7 +272,7 @@ extern "C"
               printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
               printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
 
-              char data[] = { max_blobs_data.centroid_x, max_blobs_data.rect.w };
+              uint8_t data[] = { max_blobs_data.centroid_x, max_blobs_data.rect.w };
               zm831_protocol_send(0x04, (uint8_t *)data, sizeof(data));
 
               pthread_mutex_lock(&zm831->ui_mutex);

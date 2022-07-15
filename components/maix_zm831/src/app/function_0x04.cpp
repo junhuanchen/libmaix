@@ -496,7 +496,7 @@ extern "C"
               lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
               lv_canvas_draw_arc(zm831_ui_get_canvas(), ai2vi(tmp[8]), ai2vi(tmp[9]), tmp[10] / 2 , 0, 360, &self->line_dsc);
               int area = (tmp[10] / 2) * (tmp[10] / 2) * 3.14;
-              char data[] = { self->target, x, y, (area > 255) ? 255 : area };
+              uint8_t data[] = { self->target, x, y, (area > 255) ? 255 : area };
               zm831_protocol_send(0x04, (uint8_t *)data, sizeof(data));
               break;
             }
@@ -506,7 +506,7 @@ extern "C"
               self->rect_dsc.bg_color = self->bgra_lab_color[self->target];
               lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
               int area = (w / 2) * (w / 2) * 3.14;
-              char data[] = { self->target, x, y, (area > 255) ? 255 : area };
+              uint8_t data[] = { self->target, x, y, (area > 255) ? 255 : area };
               zm831_protocol_send(0x04, (uint8_t *)data, sizeof(data));
               break;
             }

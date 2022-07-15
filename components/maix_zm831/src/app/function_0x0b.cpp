@@ -182,7 +182,7 @@ void setup_scr_gesture_app(lv_ui *ui){
         uint32_t h = b->h * image_height;
         const int map_id[] = {3, 2, 1, 4, 5, 6};
         int area = ((float)(w * h) / (240 * 240)) * 100;
-        char data[] = { map_id[class_id], ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(prob * 100) };
+        uint8_t data[] = { map_id[class_id], ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(prob * 100) };
         zm831_protocol_send(0x0b, (uint8_t *)data, sizeof(data));
         printf("%d %d %d %d %d %f %s\n", x, y, w, h, class_id, prob, self->labels[class_id]);
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
