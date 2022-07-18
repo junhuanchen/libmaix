@@ -271,11 +271,9 @@ extern "C"
               printf("max_blobs_data.rect.x: %d, max_blobs_data.rect.y: %d, max_blobs_data.rect.w: %d, max_blobs_data.rect.h: %d\r\n", max_blobs_data.rect.x, max_blobs_data.rect.y, max_blobs_data.rect.w, max_blobs_data.rect.h);
               printf("max_blobs_data.centroid_x: %f, max_blobs_data.centroid_y: %f\r\n", max_blobs_data.centroid_x, max_blobs_data.centroid_y);
 
-              uint8_t x = max_blobs_data.rect.x * 0.75, y = 100 + max_blobs_data.rect.y, w = (uint8_t)(max_blobs_data.rect.w * 0.75);
+              uint8_t x = max_blobs_data.rect.x * 0.75, y = 50 + max_blobs_data.rect.y, w = (uint8_t)(max_blobs_data.rect.w * 0.75);
 
               self->data_cmd = { x, w };
-
-              lv_canvas_draw_rect(zm831_ui_get_canvas(), x, max_blobs_data.rect.y * 0.75, max_blobs_data.rect.w, max_blobs_data.rect.h, &self->rect_dsc);
 
               const lv_point_t points[] = {
                   {x, y - 5},
@@ -286,6 +284,7 @@ extern "C"
                   {x, y + 5},
               };
 
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, max_blobs_data.rect.w, max_blobs_data.rect.h, &self->rect_dsc);
               lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
               lv_canvas_draw_text(zm831_ui_get_canvas(), 160, 200, 100, &self->label_dsc, string_format("X: %02d", x).c_str(), LV_LABEL_ALIGN_LEFT);
 
