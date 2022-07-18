@@ -297,6 +297,8 @@ extern "C"
         list_clear(&out);
       }
 
+      fb_alloc_free_till_mark();
+
       switch (self->state)
       {
       case 1:

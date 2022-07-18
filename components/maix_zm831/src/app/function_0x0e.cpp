@@ -236,6 +236,9 @@ extern "C"
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       // CALC_FPS("function_0x0e_app_loop"); // 224x224
+
+      fb_alloc_mark();
+
       list_t thresholds;
       imlib_list_init(&thresholds, sizeof(color_thresholds_list_lnk_data_t));
 
