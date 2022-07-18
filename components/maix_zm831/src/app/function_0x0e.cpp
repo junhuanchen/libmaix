@@ -132,6 +132,14 @@ extern "C"
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_line_dsc_t line_dsc;
 
+    lv_color_t target_color[2] = {
+        {0, 0, 0, 255},  // black
+        {255, 255, 255, 255},  // white
+    };
+
+    bool is_change = false;
+    uint8_t target = 0; // 0 is black 1 is white
+
     bool init = false;
   } function_0x0e_app;
 
@@ -152,6 +160,12 @@ extern "C"
     if (function_0x0e_app.ui->five_road_app_imgbtn_back == btn && event == LV_EVENT_SHORT_CLICKED)
     {
       zm831_home_app_select(0);
+      return;
+    }
+    if (function_0x0e_app.ui->five_road_app_imgbtn_change_color == btn && event == LV_EVENT_SHORT_CLICKED)
+    {
+      function_0x0e_app.target = (function_0x0e_app.target + 1) % 2;
+      function_0x0e_app.is_change = true;
       return;
     }
   }
@@ -183,7 +197,7 @@ extern "C"
 
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_0;
+      self->rect_dsc.bg_opa = LV_OPA_30;
       self->rect_dsc.border_width = 2;
       self->rect_dsc.border_opa = LV_OPA_80;
       self->rect_dsc.border_color = {0x00, 0x00, 0x00, 0x7f};
@@ -192,6 +206,7 @@ extern "C"
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->five_road_app_imgbtn_back, function_0x0e_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->five_road_app_imgbtn_change_color, function_0x0e_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
@@ -236,6 +251,19 @@ extern "C"
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       // CALC_FPS("function_0x0e_app_loop"); // 224x224
+
+      if (self->is_change)
+      {
+        self->is_change = false;
+        pthread_mutex_lock(&zm831->ui_mutex);
+        self->rect_dsc.border_color = self->rect_dsc.bg_color = self->target_color[self->target];
+        lv_canvas_draw_rect(zm831_ui_get_canvas(), 80, 80, 80, 80, &self->rect_dsc);
+        pthread_mutex_unlock(&zm831->ui_mutex);
+        sleep(1);
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+        pthread_mutex_unlock(&zm831->ui_mutex);
+      }
 
       fb_alloc_mark();
 
@@ -282,11 +310,11 @@ extern "C"
                       max_blobs_data = lnk_data;
                   }
               }
-              area_part[i] = 1;
+              area_part[i] = !self->target;
           }
           else
           {
-              area_part[i] = 0;
+              area_part[i] = self->target;
           }
       }
 
