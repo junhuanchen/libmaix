@@ -326,6 +326,11 @@ extern "C"
       zm831_home_app_select(0);
       return;
     }
+    if (function_0x04_app.ui->ball_app_imgbtn_change_color == btn && event == LV_EVENT_SHORT_CLICKED)
+    {
+      function_0x04_app.target = (function_0x04_app.target + 1) % 4;
+      return;
+    }
   }
 
   int function_0x04_app_load(zm831_home_app *app)
@@ -411,6 +416,7 @@ extern "C"
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->ball_app_imgbtn_back, function_0x04_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->ball_app_imgbtn_change_color, function_0x04_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
