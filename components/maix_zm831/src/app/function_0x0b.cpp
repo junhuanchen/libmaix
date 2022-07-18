@@ -374,7 +374,7 @@ void setup_scr_gesture_app(lv_ui *ui){
       {
         std::array<uint8_t, 5> data_cmd;
         data_cmd.fill(0);
-        zm831_protocol_send(0x06, (uint8_t *)data_cmd.data(), data_cmd.size());
+        zm831_protocol_send(0x0b, (uint8_t *)data_cmd.data(), data_cmd.size());
         pthread_mutex_lock(&zm831->ui_mutex);
         lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         pthread_mutex_unlock(&zm831->ui_mutex);
