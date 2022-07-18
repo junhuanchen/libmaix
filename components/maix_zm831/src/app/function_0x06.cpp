@@ -384,7 +384,7 @@ extern "C"
       {
       case 1:
       {
-        std::array<uint8_t, 5> data_cmd;
+        std::array<uint8_t, 4> data_cmd;
         data_cmd.fill(0);
         zm831_protocol_send(0x06, (uint8_t *)data_cmd.data(), data_cmd.size());
         pthread_mutex_lock(&zm831->ui_mutex);
