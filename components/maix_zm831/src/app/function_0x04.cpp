@@ -142,6 +142,7 @@ extern "C"
         {0, 255, 255, 255} // yellow
     };
 
+    bool is_change = false;
     uint8_t target = 0; // < thresholds.size()
     uint8_t state = 0;
     uint32_t old;
@@ -329,6 +330,7 @@ extern "C"
     if (function_0x04_app.ui->ball_app_imgbtn_change_color == btn && event == LV_EVENT_SHORT_CLICKED)
     {
       function_0x04_app.target = (function_0x04_app.target + 1) % 4;
+      function_0x04_app.is_change = true;
       return;
     }
   }
@@ -347,7 +349,7 @@ extern "C"
 
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_10;
+      self->rect_dsc.bg_opa = LV_OPA_50;
       self->rect_dsc.border_width = 2;
       self->rect_dsc.border_opa = LV_OPA_80;
       self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
@@ -464,6 +466,19 @@ extern "C"
       int now = zm831_get_ms();
       try
       {
+        if (self->is_change)
+        {
+          self->is_change = false;
+          pthread_mutex_lock(&zm831->ui_mutex);
+          self->rect_dsc.border_color = self->rect_dsc.bg_color = self->bgra_lab_color[self->target];
+          lv_canvas_draw_rect(zm831_ui_get_canvas(), 80, 80, 80, 80, &self->rect_dsc);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+          sleep(1);
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+        }
+
         if (!zm831->recvPacks.empty())
         {
           auto pack = zm831->recvPacks.front();
