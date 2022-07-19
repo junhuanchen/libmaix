@@ -148,26 +148,22 @@ extern "C"
     };
 
     color_thresholds_list_lnk_data_t lab_thresholds[4] = {
-        {.LMin = 5, .LMax = 50, .AMin = 30, .AMax = 85, .BMin = -29, .BMax = 72},   //红
-        {.LMin = 20, .LMax = 74, .AMin = -60, .AMax = -8, .BMin = -18, .BMax = 62}, //绿
-        {.LMin = 5, .LMax = 82, .AMin = 3, .AMax = 57, .BMin = -81, .BMax = -30},   //蓝
-        {.LMin = 50, .LMax = 100, .AMin = -2, .AMax = 40, .BMin = 40, .BMax = 90},  //黄
+        {0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0},
+        // {.LMin = 5, .LMax = 50, .AMin = 30, .AMax = 85, .BMin = -29, .BMax = 72},   //红
+        // {.LMin = 20, .LMax = 74, .AMin = -60, .AMax = -8, .BMin = -18, .BMax = 62}, //绿
+        // {.LMin = 5, .LMax = 82, .AMin = 3, .AMax = 57, .BMin = -81, .BMax = -30},   //蓝
+        // {.LMin = 50, .LMax = 100, .AMin = -2, .AMax = 40, .BMin = 40, .BMax = 90},  //黄
     };
 
     uint32_t old = 0;
     uint8_t state = 0;
-    uint8_t color_learn_id = 0;
-    uint8_t is_study_color = false;
+    int8_t color_learn_id = -1;
+    uint8_t is_clear_color = false;
     uint8_t is_learn_color = false;
     std::array<uint8_t, 4> data_cmd;
-
-    rectangle_t goal_roi = {
-        .x = vi2ai(80),
-        .y = vi2ai(80),
-        .w = vi2ai(80),
-        .h = vi2ai(80),
-    };
-
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
@@ -191,7 +187,7 @@ extern "C"
 
   static statistics_t get_roi_color_lab(image_t *arg_img, rectangle_t roi)
   {
-    fb_alloc_mark();
+    // fb_alloc_mark();
     //定义直方图通道
     histogram_t hist;
     hist.LBinCount = COLOR_L_MAX - COLOR_L_MIN + 1;
@@ -210,7 +206,7 @@ extern "C"
     fb_free(hist.BBins);
     fb_free(hist.ABins);
     fb_free(hist.LBins);
-    fb_alloc_free_till_mark();
+    // fb_alloc_free_till_mark();
     return stats;
   }
 
@@ -224,14 +220,88 @@ extern "C"
     }
     if (function_0x09_app.ui->color_study_app_imgbtn_clear == btn && event == LV_EVENT_SHORT_CLICKED)
     {
-      printf("clear\n");
+      function_0x09_app.is_clear_color = true;
       return;
     }
     if (function_0x09_app.ui->color_study_app_imgbtn_press == btn && event == LV_EVENT_SHORT_CLICKED)
     {
-      printf("press\n");
+      function_0x09_app.is_learn_color = true;
       return;
     }
+  }
+
+  void function_0x09_cfg_load(_function_0x09_ *self)
+  {
+    int cfgsum = 0;
+    {
+      auto result = self->config_json["color_learn_id"];
+      if (result.is_integer())
+      {
+        self->color_learn_id = result.as_integer();
+        if (self->color_learn_id > 4 || self->color_learn_id < -1) {
+          self->color_learn_id = -1;
+        }
+        cfgsum += 1;
+      }
+    }
+    {
+      auto result = self->config_json["lab_thresholds"];
+      if (result.is_array())
+      {
+        auto arr = result.as_array();
+        if (arr.size() == 4)
+        {
+          for (int i = 0; i < 4; i++)
+          {
+            auto item = arr[i];
+            if (item.is_array())
+            {
+              auto arr = item.as_array();
+              self->lab_thresholds[i].LMin = arr[0].as_integer();
+              self->lab_thresholds[i].LMax = arr[1].as_integer();
+              self->lab_thresholds[i].AMin = arr[2].as_integer();
+              self->lab_thresholds[i].AMax = arr[3].as_integer();
+              self->lab_thresholds[i].BMin = arr[4].as_integer();
+              self->lab_thresholds[i].BMax = arr[5].as_integer();
+              cfgsum += 1;
+            }
+          }
+        }
+      }
+    }
+    {
+      auto result = self->config_json["lab_colors"];
+      if (result.is_array())
+      {
+        auto arr = result.as_array();
+        if (arr.size() == 4)
+        {
+          for (int i = 0; i < 4; i++)
+          {
+            auto item = arr[i];
+            if (item.is_array())
+            {
+              auto arr = item.as_array();
+              self->lab_colors[i].ch.red = arr[0].as_integer();
+              self->lab_colors[i].ch.green = arr[1].as_integer();
+              self->lab_colors[i].ch.blue = arr[2].as_integer();
+              self->lab_colors[i].ch.alpha = arr[3].as_integer();
+              cfgsum += 1;
+            }
+          }
+        }
+      }
+    }
+    if (cfgsum == 9)
+    {
+      LIBMAIX_INFO_PRINTF("function_0x09_app_load conf success");
+    }
+    else
+    {
+      LIBMAIX_INFO_PRINTF("function_0x09_app_load conf error need reset");
+      system(string_format("rm -f %s", self->config_file).c_str());
+    }
+    zm831_save_json_conf(self->config_file, self->config_json);
   }
 
   int function_0x09_app_load(zm831_home_app *app)
@@ -240,96 +310,31 @@ extern "C"
 
     fb_realloc_init1(1 * 1024 * 1024);
 
-    zm831_load_json_conf(self->config_file, self->config_json, json5pp::object({
-        {"is_learn_color", 0},
-        {
-          "lab_thresholds", json5pp::array({
-            json5pp::array({self->lab_thresholds[0].LMin, self->lab_thresholds[0].LMax, self->lab_thresholds[0].AMin, self->lab_thresholds[0].AMax, self->lab_thresholds[0].BMin, self->lab_thresholds[0].BMax}),
-            json5pp::array({self->lab_thresholds[1].LMin, self->lab_thresholds[1].LMax, self->lab_thresholds[1].AMin, self->lab_thresholds[1].AMax, self->lab_thresholds[1].BMin, self->lab_thresholds[1].BMax}),
-            json5pp::array({self->lab_thresholds[2].LMin, self->lab_thresholds[2].LMax, self->lab_thresholds[2].AMin, self->lab_thresholds[2].AMax, self->lab_thresholds[2].BMin, self->lab_thresholds[2].BMax}),
-            json5pp::array({self->lab_thresholds[3].LMin, self->lab_thresholds[3].LMax, self->lab_thresholds[3].AMin, self->lab_thresholds[3].AMax, self->lab_thresholds[3].BMin, self->lab_thresholds[3].BMax})
-          }),
-        },
-        {
-          "lab_colors", json5pp::array({
-            json5pp::array({self->lab_colors[0].ch.red, self->lab_colors[0].ch.green, self->lab_colors[0].ch.blue, self->lab_colors[0].ch.alpha}),
-            json5pp::array({self->lab_colors[1].ch.red, self->lab_colors[1].ch.green, self->lab_colors[1].ch.blue, self->lab_colors[1].ch.alpha}),
-            json5pp::array({self->lab_colors[2].ch.red, self->lab_colors[2].ch.green, self->lab_colors[2].ch.blue, self->lab_colors[2].ch.alpha}),
-            json5pp::array({self->lab_colors[3].ch.red, self->lab_colors[3].ch.green, self->lab_colors[3].ch.blue, self->lab_colors[3].ch.alpha})
-          }),
-        }
-    }));
+    zm831_load_json_conf(self->config_file, self->config_json,
+      json5pp::object({{"color_learn_id", -1}, {
+        "lab_thresholds",
+        json5pp::array({json5pp::array({self->lab_thresholds[0].LMin, self->lab_thresholds[0].LMax, self->lab_thresholds[0].AMin, self->lab_thresholds[0].AMax, self->lab_thresholds[0].BMin, self->lab_thresholds[0].BMax}), json5pp::array({self->lab_thresholds[1].LMin, self->lab_thresholds[1].LMax, self->lab_thresholds[1].AMin, self->lab_thresholds[1].AMax, self->lab_thresholds[1].BMin, self->lab_thresholds[1].BMax}), json5pp::array({self->lab_thresholds[2].LMin, self->lab_thresholds[2].LMax, self->lab_thresholds[2].AMin, self->lab_thresholds[2].AMax, self->lab_thresholds[2].BMin, self->lab_thresholds[2].BMax}), json5pp::array({self->lab_thresholds[3].LMin, self->lab_thresholds[3].LMax, self->lab_thresholds[3].AMin, self->lab_thresholds[3].AMax, self->lab_thresholds[3].BMin, self->lab_thresholds[3].BMax})}),
+      },
+      {
+        "lab_colors",
+        json5pp::array({json5pp::array({self->lab_colors[0].ch.red, self->lab_colors[0].ch.green, self->lab_colors[0].ch.blue, self->lab_colors[0].ch.alpha}), json5pp::array({self->lab_colors[1].ch.red, self->lab_colors[1].ch.green, self->lab_colors[1].ch.blue, self->lab_colors[1].ch.alpha}), json5pp::array({self->lab_colors[2].ch.red, self->lab_colors[2].ch.green, self->lab_colors[2].ch.blue, self->lab_colors[2].ch.alpha}), json5pp::array({self->lab_colors[3].ch.red, self->lab_colors[3].ch.green, self->lab_colors[3].ch.blue, self->lab_colors[3].ch.alpha})}),
+      }})
+    );
 
-    {
-      int cfgsum = 0;
-      {
-        auto result = self->config_json["is_learn_color"];
-        if (result.is_integer()) {
-          self->is_learn_color = result.as_integer();
-          cfgsum += 1;
-        }
-      }
-      {
-        auto result = self->config_json["lab_thresholds"];
-        if (result.is_array()) {
-          auto arr = result.as_array();
-          if (arr.size() == 4) {
-            for (int i = 0; i < 4; i++) {
-              auto item = arr[i];
-              if (item.is_array()) {
-                auto arr = item.as_array();
-                self->lab_thresholds[i].LMin = arr[0].as_integer();
-                self->lab_thresholds[i].LMax = arr[1].as_integer();
-                self->lab_thresholds[i].AMin = arr[2].as_integer();
-                self->lab_thresholds[i].AMax = arr[3].as_integer();
-                self->lab_thresholds[i].BMin = arr[4].as_integer();
-                self->lab_thresholds[i].BMax = arr[5].as_integer();
-                cfgsum += 1;
-              }
-            }
-          }
-        }
-      }
-      {
-        auto result = self->config_json["lab_colors"];
-        if (result.is_array()) {
-          auto arr = result.as_array();
-          if (arr.size() == 4) {
-            for (int i = 0; i < 4; i++) {
-              auto item = arr[i];
-              if (item.is_array()) {
-                auto arr = item.as_array();
-                self->lab_colors[i].ch.red = arr[0].as_integer();
-                self->lab_colors[i].ch.green = arr[1].as_integer();
-                self->lab_colors[i].ch.blue = arr[2].as_integer();
-                self->lab_colors[i].ch.alpha = arr[3].as_integer();
-                cfgsum += 1;
-              }
-            }
-          }
-        }
-      }
-      if (cfgsum == 9) {
-        LIBMAIX_INFO_PRINTF("function_0x09_app_load conf success");
-      } else {
-        LIBMAIX_INFO_PRINTF("function_0x09_app_load conf error need reset");
-        system(string_format("rm -f %s", self->config_file).c_str());
-      }
-      zm831_save_json_conf(self->config_file, self->config_json);
-    }
+    function_0x09_cfg_load(self);
 
     if (!self->init)
     {
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_50;
+      self->rect_dsc.bg_opa = LV_OPA_80;
       self->rect_dsc.border_width = 2;
-      self->rect_dsc.border_opa = LV_OPA_50;
-      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+      self->rect_dsc.border_opa = LV_OPA_90;
+      self->rect_dsc.border_color = {0x00, 0x00, 0x00, 0x7f};
 
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
-      self->label_dsc.font = zm831->ft_font.font;
+      // self->label_dsc.font = zm831->ft_font.font;
 
       zm831_home_setup_ui(&self->ui->color_study_app, setup_scr_color_study_app, 500);
 
@@ -386,114 +391,84 @@ extern "C"
         auto pack = zm831->recvPacks.front();
         // for(auto i = 0; i < pack.data.size(); i++) printf("%02x ", pack.data[i]);
         // printf("\n");
-        if (pack.type == 0x09)
+        if (pack.data[5] == 0x16 && pack.type == 0x01)
         {
-          self->is_study_color = true;
+          self->is_learn_color = true;
         }
         zm831->recvPacks.pop_front();
       }
 
-      if (self->is_study_color)
+      color_thresholds_list_lnk_data_t tmp_lab;
+      lv_color_t tmp_rgb;
+
+      pthread_mutex_lock(&zm831->ui_mutex);
+      lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+
+      if (self->color_learn_id < 3)
       {
-        self->is_study_color = false;
+        const rectangle_t goal_roi = { .x = vi2ai(110), .y = vi2ai(110), .w = vi2ai(20), .h = vi2ai(20), };
 
-        statistics_t stats = get_roi_color_lab(img, self->goal_roi);
-        self->lab_thresholds[self->color_learn_id] = (color_thresholds_list_lnk_data_t){
-            .LMin = stats.LMin,
-            .LMax = stats.LMax,
-            .AMin = stats.AMin,
-            .AMax = stats.AMax,
-            .BMin = stats.BMin,
-            .BMax = stats.BMax,
+        statistics_t stats = get_roi_color_lab(img, goal_roi);
+        tmp_lab = (color_thresholds_list_lnk_data_t){
+            .LMin = stats.LMin, .LMax = stats.LMax, .AMin = stats.AMin,
+            .AMax = stats.AMax, .BMin = stats.BMin, .BMax = stats.BMax,
         };
-
-        int piexs = COLOR_LAB_TO_RGB888(stats.LMode, stats.AMode, stats.BMode);
-        self->lab_colors[self->color_learn_id].ch.red = COLOR_RGB888_TO_R8(piexs);
-        self->lab_colors[self->color_learn_id].ch.green = COLOR_RGB888_TO_G8(piexs);
-        self->lab_colors[self->color_learn_id].ch.blue = COLOR_RGB888_TO_B8(piexs);
-        self->lab_colors[self->color_learn_id].ch.alpha = 0xFF;
-
-        self->rect_dsc.border_color = self->lab_colors[self->color_learn_id];
-        self->rect_dsc.bg_color = self->lab_colors[self->color_learn_id];
-
-        pthread_mutex_lock(&zm831->ui_mutex);
-        lv_canvas_draw_rect(zm831_ui_get_canvas(), 80, 80, 80, 80, &self->rect_dsc);
-        pthread_mutex_unlock(&zm831->ui_mutex);
-
-        zm831_save_json_conf(self->config_file, self->config_json);
-
-        self->color_learn_id = (self->color_learn_id + 1) % 4;
+        int pixel = COLOR_LAB_TO_RGB888(stats.LMode, stats.AMode, stats.BMode);
+        tmp_rgb = {COLOR_RGB888_TO_B8(pixel), COLOR_RGB888_TO_G8(pixel), COLOR_RGB888_TO_R8(pixel), 0xFF};
+        self->rect_dsc.bg_color = tmp_rgb;
+        lv_canvas_draw_rect(zm831_ui_get_canvas(), 110, 110, 20, 20, &self->rect_dsc);
       }
 
-      rectangle_t roi = {.x = 0, .y = 0, .w = (int16_t)img->w, .h = (int16_t)img->h};
-
+      if (self->color_learn_id >= 0)
       {
         list_t thresholds;
         imlib_list_init(&thresholds, sizeof(color_thresholds_list_lnk_data_t));
         bool invert = false;
-        rectangle_t roi = {
-            .x = 0,
-            .y = 0,
-            .w = (int16_t)img->w,
-            .h = (int16_t)img->h,
-        };
-        unsigned int x_stride = 10;
-        unsigned int y_stride = 10;
-        unsigned int area_threshold = 100;
-        unsigned int pixels_threshold = 100;
-        bool merge = true;
+        rectangle_t roi = { .x = 0, .y = 0, .w = (int16_t)img->w, .h = (int16_t)img->h, };
+        unsigned int x_stride = 30;
+        unsigned int y_stride = 30;
+        unsigned int area_threshold = 150;
+        unsigned int pixels_threshold = 150;
+        bool merge = false;
         int margin = 0;
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
-
         int now = zm831_get_ms();
-        if (now - self->old > 200) // 200ms
-        {
-          std::array<uint8_t, 4> data_cmd;
-          self->old = now;
-          // for (int i = 0; i < sizeof(self->data_cmd); i++) printf("%02x-", self->data_cmd[i]);
-          // printf("\r\n");
-          // zm831_protocol_send(0x09, self->data_cmd, sizeof(self->data_cmd));
-          // memset(self->data_cmd + 1, 0, sizeof(self->data_cmd) - 1);
-          zm831_ui_show_clear();
-        }
-
-        pthread_mutex_lock(&zm831->ui_mutex);
-        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         list_t out;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0, sum = self->color_learn_id + 1; i < sum; i++)
         {
+          // printf("self->lab_thresholds[i].LMin: %d\n", self->lab_thresholds[i].LMin);
+          // printf("self->lab_thresholds[i].LMax: %d\n", self->lab_thresholds[i].LMax);
+          // printf("self->lab_thresholds[i].AMin: %d\n", self->lab_thresholds[i].AMin);
+          // printf("self->lab_thresholds[i].AMax: %d\n", self->lab_thresholds[i].AMax);
+          // printf("self->lab_thresholds[i].BMin: %d\n", self->lab_thresholds[i].BMin);
+          // printf("self->lab_thresholds[i].BMax: %d\n", self->lab_thresholds[i].BMax);
           list_push_back(&thresholds, &self->lab_thresholds[i]);
           imlib_find_blobs(&out, img, &roi, x_stride, y_stride, &thresholds, invert, area_threshold,
                            pixels_threshold, merge, margin, NULL, NULL, NULL, NULL, x_hist_bins_max, y_hist_bins_max);
           list_clear(&thresholds);
-          self->rect_dsc.border_color = self->lab_colors[i];
           self->rect_dsc.bg_color = self->lab_colors[i];
           for (size_t m = 0; list_size(&out); m++)
           {
             find_blobs_list_lnk_data_t lnk_data;
             list_pop_front(&out, &lnk_data);
+            if (lnk_data.rect.w > 112) continue;
 
+            self->label_dsc.color = self->lab_colors[i];
+            lv_canvas_draw_text(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y - 14, 60, &self->label_dsc, string_format("ID:%d", i).c_str(), LV_LABEL_ALIGN_LEFT);
             lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
-
             self->data_cmd[i] += 1;
-
             self->state = 2, self->old = now;
-
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
         }
-        pthread_mutex_unlock(&zm831->ui_mutex);
-
         switch (self->state)
         {
         case 1:
         {
           self->data_cmd.fill(0);
           zm831_protocol_send(0x09, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
-          pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-          pthread_mutex_unlock(&zm831->ui_mutex);
           self->state = 0;
           break;
         }
@@ -501,12 +476,79 @@ extern "C"
         {
           zm831_protocol_send(0x09, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
           self->data_cmd.fill(0);
-          if (now - self->old > 100) {
+          if (now - self->old > 100)
+          {
             self->state = 1;
           }
           break;
         }
         }
+      }
+
+      pthread_mutex_unlock(&zm831->ui_mutex);
+
+      if (self->is_clear_color)
+      {
+        self->is_clear_color = false;
+        self->color_learn_id = -1;
+        // {
+        //   auto result = self->config_json["color_learn_id"];
+        //   if (result.is_integer())
+        //   {
+        //     self->config_json["color_learn_id"] = (int)self->color_learn_id;
+        //   }
+        //   zm831_save_json_conf(self->config_file, self->config_json);
+        // }
+      }
+
+      if (self->is_learn_color)
+      {
+        self->is_learn_color = false;
+        printf("self->color_learn_id %d\r\n", self->color_learn_id);
+        self->color_learn_id += 1;
+        self->lab_thresholds[self->color_learn_id] = tmp_lab;
+        self->lab_colors[self->color_learn_id] = tmp_rgb;
+
+        // {
+        //   auto result = self->config_json["color_learn_id"];
+        //   if (result.is_integer())
+        //   {
+        //     self->config_json["color_learn_id"] = (int)self->color_learn_id;
+        //   }
+        // }
+        // {
+        //   auto result = self->config_json["lab_thresholds"];
+        //   if (result.is_array())
+        //   {
+        //     auto item = result.as_array()[self->color_learn_id];
+        //     if (item.is_array())
+        //     {
+        //       auto arr = item.as_array();
+        //       arr[0] = tmp_lab.LMin;
+        //       arr[1] = tmp_lab.LMax;
+        //       arr[2] = tmp_lab.AMin;
+        //       arr[3] = tmp_lab.AMax;
+        //       arr[4] = tmp_lab.BMin;
+        //       arr[5] = tmp_lab.BMax;
+        //     }
+        //   }
+        // }
+        // {
+        //   auto result = self->config_json["lab_colors"];
+        //   if (result.is_array())
+        //   {
+        //     auto item = result.as_array()[self->color_learn_id];
+        //     if (item.is_array())
+        //     {
+        //       auto arr = item.as_array();
+        //       arr[0] = tmp_rgb.ch.red;
+        //       arr[1] = tmp_rgb.ch.green;
+        //       arr[2] = tmp_rgb.ch.blue;
+        //       arr[3] = tmp_rgb.ch.alpha;
+        //     }
+        //   }
+        // }
+        // zm831_save_json_conf(self->config_file, self->config_json);
       }
 
       fb_alloc_free_till_mark();

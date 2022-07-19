@@ -142,7 +142,6 @@ extern "C"
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
     lv_draw_line_dsc_t line_dsc;
-    time_t now;
 
     const char *fa_model_path_param = "/home/res/model_int8.param";
     const char *fa_model_path_bin = "/home/res/model_int8.bin";
@@ -184,6 +183,9 @@ extern "C"
     const char *config_file = "/root/function_0x0a.json";
     json5pp::value config_json;
 
+    uint32_t now = 0, old = 0;
+    uint8_t state = 0;
+
     bool init = false;
   } function_0x0a_app;
 
@@ -223,14 +225,14 @@ extern "C"
     self->rect_dsc.bg_opa = LV_OPA_TRANSP;
     self->rect_dsc.border_width = 5;
     self->rect_dsc.border_opa = LV_OPA_80;
-    self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+    self->rect_dsc.border_color = LV_COLOR_GREEN;
 
     lv_draw_label_dsc_init(&self->label_dsc);
     self->label_dsc.color = LV_COLOR_GREEN;
     self->label_dsc.font = zm831->ft_font.font;
 
     lv_draw_line_dsc_init(&self->line_dsc);
-    self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+    self->line_dsc.color = LV_COLOR_WHITE;
     self->line_dsc.width = 2;
     self->line_dsc.opa = LV_OPA_70;
 
@@ -475,6 +477,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      self->now = zm831_get_ms();
       int face_num = 0;
       face_obj_t *face_objs = NULL;
       err = libmaix_nn_face_get_feature(self->recognize_module, ai_rgb, &face_num, NULL, &face_objs, false);
@@ -482,29 +485,17 @@ extern "C"
       {
         if (face_num > 0)
         {
-          // printf("face_num: %d\n", face_num);
-          // printf("face_objs: %p\n", face_objs);
-          // printf("face_objs->prob: %f\n", face_objs->prob);
-          // printf("face_objs->x1: %d\n", face_objs->x1);
-          // printf("face_objs->y1: %d\n", face_objs->y1);
-          // printf("face_objs->x2: %d\n", face_objs->x2);
-          // printf("face_objs->y2: %d\n", face_objs->y2);
-
-          // for (int i = 0; i < 5; i++)
-          // {
-          //   printf("face_objs->key_point(%d, %d)\n", i, face_objs->key_point.point[i].x, face_objs->key_point.point[i].y);
-          // }
-
-          std::ostringstream prob2str;
-          prob2str << face_objs->prob;
-
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_rect(zm831_ui_get_canvas(), face_objs->x1, face_objs->y1, ai2vi(face_objs->x2 - face_objs->x1), ai2vi(face_objs->y2 - face_objs->y1), &self->rect_dsc);
-          lv_canvas_draw_text(zm831_ui_get_canvas(), face_objs->x1, face_objs->y1, 100, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
+
+          self->label_dsc.color = LV_COLOR_RED;
+          self->rect_dsc.border_color = LV_COLOR_RED;
+
+          int x = ai2vi(face_objs->x1), y = ai2vi(face_objs->y1), w = ai2vi(face_objs->x2 - face_objs->x1), h = ai2vi(face_objs->y2 - face_objs->y1);
+
+          lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
           for (int i = 0; i < 5; i++)
             lv_canvas_draw_arc(zm831_ui_get_canvas(), ai2vi(face_objs->key_point.point[i].x), ai2vi(face_objs->key_point.point[i].y), 5, 0, 360, &self->line_dsc);
-          pthread_mutex_unlock(&zm831->ui_mutex);
 
           float _tmp_score = 0;
           int tmp_id = nn_get_face_recognize_scores_max(app, face_objs->feature, &_tmp_score);
@@ -513,22 +504,45 @@ extern "C"
             if (_tmp_score > self->face_threshold)
             {
               //人脸对比分数大于人脸阈值时,认为是记录的人脸
+              self->label_dsc.color = LV_COLOR_GREEN;
+              self->rect_dsc.border_color = LV_COLOR_GREEN;
+              lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("ID%d:%d", tmp_id, (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
+              // send
+              self->state = 2, self->old = self->now;
             }
             else
             {
               //人脸对比分数小于人脸阈值时,认为不是记录的人脸
+              lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("IDx:%d", (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
             }
           }
           else
           {
-            //没有记录的人脸时,但有脸
+            //没有记录过的人脸
+            lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("IDx:%d", (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
           }
+          pthread_mutex_unlock(&zm831->ui_mutex);
         }
-        else
+        switch (self->state)
         {
+        case 1:
+        {
+          std::array<uint8_t, 5> data_cmd;
+          data_cmd.fill(0);
+          zm831_protocol_send(0x0a, (uint8_t *)data_cmd.data(), data_cmd.size());
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
           pthread_mutex_unlock(&zm831->ui_mutex);
+          self->state = 0;
+          break;
+        }
+        case 2:
+        {
+          if (self->now - self->old > 100) {
+            self->state = 1;
+          }
+          break;
+        }
         }
       }
     }
