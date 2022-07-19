@@ -154,6 +154,13 @@ extern "C"
         {.LMin = 50, .LMax = 100, .AMin = -2, .AMax = 40, .BMin = 40, .BMax = 90},  //黄
     };
 
+    uint32_t old = 0;
+    uint8_t state = 0;
+    uint8_t color_learn_id = 0;
+    uint8_t is_study_color = false;
+    uint8_t is_learn_color = false;
+    std::array<uint8_t, 4> data_cmd;
+
     rectangle_t goal_roi = {
         .x = vi2ai(80),
         .y = vi2ai(80),
@@ -161,8 +168,6 @@ extern "C"
         .h = vi2ai(80),
     };
 
-    uint32_t old, color_learn_id = 0;
-    bool is_study_color = false;
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
@@ -217,6 +222,16 @@ extern "C"
       zm831_home_app_select(0);
       return;
     }
+    if (function_0x09_app.ui->color_study_app_imgbtn_clear == btn && event == LV_EVENT_SHORT_CLICKED)
+    {
+      printf("clear\n");
+      return;
+    }
+    if (function_0x09_app.ui->color_study_app_imgbtn_press == btn && event == LV_EVENT_SHORT_CLICKED)
+    {
+      printf("press\n");
+      return;
+    }
   }
 
   int function_0x09_app_load(zm831_home_app *app)
@@ -226,6 +241,7 @@ extern "C"
     fb_realloc_init1(1 * 1024 * 1024);
 
     zm831_load_json_conf(self->config_file, self->config_json, json5pp::object({
+        {"is_learn_color", 0},
         {
           "lab_thresholds", json5pp::array({
             json5pp::array({self->lab_thresholds[0].LMin, self->lab_thresholds[0].LMax, self->lab_thresholds[0].AMin, self->lab_thresholds[0].AMax, self->lab_thresholds[0].BMin, self->lab_thresholds[0].BMax}),
@@ -246,6 +262,13 @@ extern "C"
 
     {
       int cfgsum = 0;
+      {
+        auto result = self->config_json["is_learn_color"];
+        if (result.is_integer()) {
+          self->is_learn_color = result.as_integer();
+          cfgsum += 1;
+        }
+      }
       {
         auto result = self->config_json["lab_thresholds"];
         if (result.is_array()) {
@@ -286,7 +309,7 @@ extern "C"
           }
         }
       }
-      if (cfgsum == 8) {
+      if (cfgsum == 9) {
         LIBMAIX_INFO_PRINTF("function_0x09_app_load conf success");
       } else {
         LIBMAIX_INFO_PRINTF("function_0x09_app_load conf error need reset");
@@ -312,6 +335,8 @@ extern "C"
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->color_study_app_imgbtn_back, function_0x09_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->color_study_app_imgbtn_clear, function_0x09_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->color_study_app_imgbtn_press, function_0x09_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
@@ -433,6 +458,8 @@ extern "C"
           zm831_ui_show_clear();
         }
 
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         list_t out;
         for (int i = 0; i < 4; i++)
         {
@@ -447,14 +474,38 @@ extern "C"
             find_blobs_list_lnk_data_t lnk_data;
             list_pop_front(&out, &lnk_data);
 
-            pthread_mutex_lock(&zm831->ui_mutex);
             lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
-            pthread_mutex_unlock(&zm831->ui_mutex);
 
-            // self->data_cmd[i] += 1;
+            self->data_cmd[i] += 1;
+
+            self->state = 2, self->old = now;
 
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
+        }
+        pthread_mutex_unlock(&zm831->ui_mutex);
+
+        switch (self->state)
+        {
+        case 1:
+        {
+          self->data_cmd.fill(0);
+          zm831_protocol_send(0x09, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+          self->state = 0;
+          break;
+        }
+        case 2:
+        {
+          zm831_protocol_send(0x09, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
+          self->data_cmd.fill(0);
+          if (now - self->old > 100) {
+            self->state = 1;
+          }
+          break;
+        }
         }
       }
 
