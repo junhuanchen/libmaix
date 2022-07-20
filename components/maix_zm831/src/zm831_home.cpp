@@ -294,7 +294,7 @@ extern "C"
 
     zm831_home_app_reload(get_function_home_app());
 
-    auto result = zm831->config_json["last_select"];
+    auto &result = zm831->config_json["last_select"];
     if (result.is_number())
     {
       // printf("last_select: %d\n", result.as_integer());

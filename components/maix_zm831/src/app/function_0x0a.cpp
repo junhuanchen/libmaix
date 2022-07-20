@@ -344,7 +344,7 @@ extern "C"
     }
 
     {
-      auto result = self->config_json["face_features"];
+      auto &result = self->config_json["face_features"];
       if (result.is_array()) {
         auto face_features = result.as_array();
         self->face_features_sum = face_features.size();
