@@ -165,19 +165,19 @@ extern "C"
 
     libmaix_nn_face_config_t face_config = {
         .detect_nms = 0.3,
-        .detect_thresh = 0.5,
+        .detect_thresh = 0.6,
         .detect_input_w = 224,
         .detect_input_h = 224,
     };
 
+    const int max_face_num = 1;       // 输出的最大人脸数量
     float face_threshold = 70.f;      // 人脸阈值
     int face_feature_id = 0;          // 人脸学习id
     int face_feature_max = 0;         // 人脸总数id
     const int face_features_len = 256;// 人脸数据宽度
-    float **face_features;            // 人脸特征数据
     const int face_features_max = 10; // 最大人脸数量
     int face_features_sum = 0;        // 人脸特征总数
-    int max_face_num = 1;             // 输出的最大人脸数量
+    float **face_features;            // 人脸特征数据
     void *recognize_module = NULL;    // 人脸识别模块
 
     const char *config_file = "/root/function_0x0a.json";
@@ -185,6 +185,8 @@ extern "C"
 
     uint32_t now = 0, old = 0;
     uint8_t state = 0;
+    uint8_t is_clear_face = false;
+    uint8_t is_learn_face = false;
 
     bool init = false;
   } function_0x0a_app;
@@ -208,6 +210,16 @@ extern "C"
       zm831_home_app_select(0);
       return;
     }
+    if (function_0x0a_app.ui->face_study_app_imgbtn_clear == btn && event == LV_EVENT_SHORT_CLICKED)
+    {
+      function_0x0a_app.is_clear_face = true;
+      return;
+    }
+    if (function_0x0a_app.ui->face_study_app_imgbtn_press == btn && event == LV_EVENT_SHORT_CLICKED)
+    {
+      function_0x0a_app.is_learn_face = true;
+      return;
+    }
   }
 
   int function_0x0a_app_load(zm831_home_app *app)
@@ -215,6 +227,7 @@ extern "C"
     auto self = (_function_0x0a_ *)app->userdata;
 
     zm831_load_json_conf(self->config_file, self->config_json, json5pp::object({
+        { "face_features_sum", 0},
         {
           "face_features", json5pp::array({}),
         }
@@ -344,10 +357,22 @@ extern "C"
     }
 
     {
+      auto &result = self->config_json["face_features_sum"];
+      if (result.is_integer())
+      {
+        self->face_features_sum = result.as_integer();
+        if (self->face_features_sum > 10 || self->face_features_sum < 0) {
+          self->face_features_sum = 0;
+          result = self->face_features_sum;
+        }
+      }
+    }
+    printf("self->face_features_sum: %d\n", self->face_features_sum);
+    if (self->face_features_sum)
+    {
       auto &result = self->config_json["face_features"];
       if (result.is_array()) {
         auto face_features = result.as_array();
-        self->face_features_sum = face_features.size();
         for (int i = 0; i < self->face_features_sum; i++) {
           auto item = face_features[i];
           if (item.is_array()) {
@@ -359,20 +384,18 @@ extern "C"
           }
         }
       }
-      printf("self->face_features_sum: %d\n", self->face_features_sum);
-      if (!self->face_features_sum)
-      {
-        auto face_features = json5pp::array({});
-        for (int i = 0; i < self->face_features_max; i++) {
-          auto face_feature = json5pp::array({});
-          for (int j = 0; j < self->face_features_len; j++) {
-            face_feature.as_array().push_back(self->face_features[i][j]);
-          }
-          face_features.as_array().push_back(face_feature);
+    }
+    else
+    {
+      auto face_features = json5pp::array({});
+      for (int i = 0; i < self->face_features_max; i++) {
+        auto face_feature = json5pp::array({});
+        for (int j = 0; j < self->face_features_len; j++) {
+          face_feature.as_array().push_back(self->face_features[i][j]);
         }
-        self->config_json["face_features"] = face_features;
+        face_features.as_array().push_back(face_feature);
       }
-
+      self->config_json["face_features"] = face_features;
       zm831_save_json_conf(self->config_file, self->config_json);
     }
 
@@ -382,6 +405,8 @@ extern "C"
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_back, function_0x0a_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_clear, function_0x0a_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_press, function_0x0a_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
@@ -431,45 +456,6 @@ extern "C"
     return 0;
   }
 
-  /**
-   * @brief 对比人脸数据,找出最大的数据 id 和分数
-   *
-   * @param face_feature 输出人脸特征向量
-   * @param score 输出人脸对比最高的分数
-   * @return int 返回人脸对比的 id 索引号,无人脸时返回 -1.
-   */
-  static int nn_get_face_recognize_scores_max(zm831_home_app *app, float *face_feature, float *score)
-  {
-    auto self = (_function_0x0a_ *)app->userdata;
-    float face_scores[self->face_features_max] = {0};
-    int face_score_max_id = 0;
-    if (!self->face_feature_id)
-    {
-      *score = 0;
-      return -1;
-    }
-    if (self->face_features_max < self->face_feature_id)
-    {
-      self->face_feature_id = 0;
-      return -1;
-    }
-    if (self->face_feature_max == 0)
-    {
-      return -1;
-    }
-    int limit = std::min(self->face_feature_max, self->face_features_max);
-    for (int i = 0; i < limit; ++i)
-    {
-      face_scores[i] = libmaix_nn_feature_compare_float(face_feature, self->face_features[i], self->face_features_len);
-      if (face_scores[i] > face_scores[face_score_max_id])
-      {
-        face_score_max_id = i;
-      }
-    }
-    *score = face_scores[face_score_max_id];
-    return face_score_max_id;
-  }
-
   int function_0x0a_app_loop(zm831_home_app *app)
   {
     auto self = (_function_0x0a_ *)app->userdata;
@@ -493,36 +479,89 @@ extern "C"
 
           int x = ai2vi(face_objs->x1), y = ai2vi(face_objs->y1), w = ai2vi(face_objs->x2 - face_objs->x1), h = ai2vi(face_objs->y2 - face_objs->y1);
 
-          lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
           for (int i = 0; i < 5; i++)
             lv_canvas_draw_arc(zm831_ui_get_canvas(), ai2vi(face_objs->key_point.point[i].x), ai2vi(face_objs->key_point.point[i].y), 5, 0, 360, &self->line_dsc);
 
-          float _tmp_score = 0;
-          int tmp_id = nn_get_face_recognize_scores_max(app, face_objs->feature, &_tmp_score);
-          if (tmp_id >= 0) // 有记录的人脸时
+          if (self->face_features_sum) // 有记录的人脸时
           {
-            if (_tmp_score > self->face_threshold)
+            int face_id = 0;
+            float face_scores[self->face_features_sum] = {0};
+            for (int i = 0; i < self->face_features_sum; ++i)
+            {
+              face_scores[i] = libmaix_nn_feature_compare_float(face_objs->feature, self->face_features[i], self->face_features_len);
+              if (face_scores[i] > face_scores[face_id]) face_id = i;
+            }
+            float face_score = face_scores[face_id];
+            if (face_score > self->face_threshold)
             {
               //人脸对比分数大于人脸阈值时,认为是记录的人脸
               self->label_dsc.color = LV_COLOR_GREEN;
               self->rect_dsc.border_color = LV_COLOR_GREEN;
-              lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("ID%d:%d", tmp_id, (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
-              // send
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
+              lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("ID%d:%d", face_id, (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
+              // lv_canvas_draw_text(zm831_ui_get_canvas(), x + 5, y + 5, ai2vi(w), &self->label_dsc, string_format("%d", (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
+              int area = ((float)(w * h) / (240 * 240)) * 100;
+
+              uint8_t data[] = { face_id, ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(face_objs->prob * 100) };
+              zm831_protocol_send(0x0a, (uint8_t *)data, sizeof(data));
+
               self->state = 2, self->old = self->now;
             }
             else
             {
+              self->state = 4, self->old = self->now;
               //人脸对比分数小于人脸阈值时,认为不是记录的人脸
+              lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
               lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("IDx:%d", (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
             }
           }
           else
           {
             //没有记录过的人脸
+            self->state = 3, self->old = self->now;
+            lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
             lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("IDx:%d", (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
           }
           pthread_mutex_unlock(&zm831->ui_mutex);
         }
+
+        if (self->is_clear_face)
+        {
+          self->is_clear_face = false;
+          // printf("is_learn_face %d\r\n", self->face_features_sum);
+          self->face_features_sum = 0;
+          {
+            auto &result = self->config_json["face_features_sum"];
+            if (result.is_integer()) self->config_json["face_features_sum"] = (int)self->face_features_sum;
+          }
+          zm831_save_json_conf(self->config_file, self->config_json);
+        }
+
+        if (self->is_learn_face)
+        {
+          self->is_learn_face = false;
+          // printf("is_learn_face %d\r\n", self->state);
+          if (self->state == 3 || self->state == 4) {
+            // printf("self->face_features_sum = %d\r\n", self->face_features_sum);
+            float *tmp = self->face_features[self->face_features_sum];
+            for(int i = 0; i < self->face_features_len; i++) tmp[i] = face_objs->feature[i];
+            {
+              auto &result = self->config_json["face_features"];
+              auto _face_feature = json5pp::array({});
+              for (int j = 0; j < self->face_features_len; j++) {
+                _face_feature.as_array().push_back(self->face_features[self->face_features_sum][j]);
+              }
+              result[self->face_features_sum] = _face_feature;
+            }
+            self->face_features_sum += 1;
+            {
+              auto &result = self->config_json["face_features_sum"];
+              if (result.is_integer()) self->config_json["face_features_sum"] = (int)self->face_features_sum;
+            }
+            zm831_save_json_conf(self->config_file, self->config_json);
+          }
+        }
+
         switch (self->state)
         {
         case 1:
@@ -540,6 +579,17 @@ extern "C"
         {
           if (self->now - self->old > 100) {
             self->state = 1;
+          }
+          break;
+        }
+        case 3:
+        case 4:
+        {
+          if (self->now - self->old > 100) {
+            pthread_mutex_lock(&zm831->ui_mutex);
+            lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+            pthread_mutex_unlock(&zm831->ui_mutex);
+            self->state = 0;
           }
           break;
         }
