@@ -506,7 +506,7 @@ extern "C"
               self->label_dsc.color = LV_COLOR_GREEN;
               self->rect_dsc.border_color = LV_COLOR_GREEN;
               lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
-              lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("ID%d:%d", face_id, (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
+              lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("ID%d:%d", face_id + 1, (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
               // lv_canvas_draw_text(zm831_ui_get_canvas(), x + 5, y + 5, ai2vi(w), &self->label_dsc, string_format("%d", (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
               int area = ((float)(w * h) / (240 * 240)) * 100;
 
