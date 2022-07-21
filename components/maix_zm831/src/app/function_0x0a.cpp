@@ -356,47 +356,55 @@ extern "C"
       memset(self->face_features[i], 0, self->face_features_len * sizeof(float));
     }
 
+    try
     {
-      auto &result = self->config_json["face_features_sum"];
-      if (result.is_integer())
       {
-        self->face_features_sum = result.as_integer();
-        if (self->face_features_sum > 10 || self->face_features_sum < 0) {
-          self->face_features_sum = 0;
-          result = self->face_features_sum;
+        auto &result = self->config_json["face_features_sum"];
+        if (result.is_integer())
+        {
+          self->face_features_sum = result.as_integer();
+          if (self->face_features_sum > 10 || self->face_features_sum < 0) {
+            self->face_features_sum = 0;
+            result = self->face_features_sum;
+          }
         }
       }
-    }
-    printf("self->face_features_sum: %d\n", self->face_features_sum);
-    if (self->face_features_sum)
-    {
-      auto &result = self->config_json["face_features"];
-      if (result.is_array()) {
-        auto face_features = result.as_array();
-        for (int i = 0; i < self->face_features_sum; i++) {
-          auto item = face_features[i];
-          if (item.is_array()) {
-            auto face_feature = item.as_array();
-            auto face_features_len = face_feature.size();
-            for (int j = 0; j < face_features_len; j++) {
-              self->face_features[i][j] = face_feature[j].as_number();
+      printf("self->face_features_sum: %d\n", self->face_features_sum);
+      if (self->face_features_sum)
+      {
+        auto &result = self->config_json["face_features"];
+        if (result.is_array()) {
+          auto face_features = result.as_array();
+          for (int i = 0; i < self->face_features_sum; i++) {
+            auto item = face_features[i];
+            if (item.is_array()) {
+              auto face_feature = item.as_array();
+              auto face_features_len = face_feature.size();
+              for (int j = 0; j < face_features_len; j++) {
+                self->face_features[i][j] = face_feature[j].as_number();
+              }
             }
           }
         }
       }
-    }
-    else
-    {
-      auto face_features = json5pp::array({});
-      for (int i = 0; i < self->face_features_max; i++) {
-        auto face_feature = json5pp::array({});
-        for (int j = 0; j < self->face_features_len; j++) {
-          face_feature.as_array().push_back(self->face_features[i][j]);
+      else
+      {
+        auto face_features = json5pp::array({});
+        for (int i = 0; i < self->face_features_max; i++) {
+          auto face_feature = json5pp::array({});
+          for (int j = 0; j < self->face_features_len; j++) {
+            face_feature.as_array().push_back(self->face_features[i][j]);
+          }
+          face_features.as_array().push_back(face_feature);
         }
-        face_features.as_array().push_back(face_feature);
+        self->config_json["face_features"] = face_features;
+        zm831_save_json_conf(self->config_file, self->config_json);
       }
-      self->config_json["face_features"] = face_features;
-      zm831_save_json_conf(self->config_file, self->config_json);
+    }
+    catch(const std::exception& e)
+    {
+      self->face_features_sum = 0;
+      std::cerr << e.what() << '\n';
     }
 
     if (!self->init)
@@ -537,10 +545,10 @@ extern "C"
           zm831_save_json_conf(self->config_file, self->config_json);
         }
 
-        if (self->is_clear)
+        if (self->is_learn)
         {
-          self->is_clear = false;
-          // printf("is_clear %d\r\n", self->state);
+          self->is_learn = false;
+          // printf("is_learn %d\r\n", self->state);
           if (self->state == 3 || self->state == 4) {
             // printf("self->face_features_sum = %d\r\n", self->face_features_sum);
             float *tmp = self->face_features[self->face_features_sum];
