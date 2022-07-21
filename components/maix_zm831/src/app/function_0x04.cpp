@@ -518,7 +518,7 @@ extern "C"
                 // lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
                 self->line_dsc.color = self->bgra_lab_color[self->target];
                 lv_canvas_draw_arc(zm831_ui_get_canvas(), r_x, r_y, r, 0, 360, &self->line_dsc);
-                self->data_cmd = { self->target, r_x, r_y, area };
+                self->data_cmd = { self->target + 1, r_x, r_y, area };
                 break;
               }
               case 2:
@@ -530,7 +530,7 @@ extern "C"
                 // lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
                 self->line_dsc.color = self->bgra_lab_color[self->target];
                 lv_canvas_draw_arc(zm831_ui_get_canvas(), r_x, r_y, r, 0, 360, &self->line_dsc);
-                self->data_cmd = { self->target, r_x, r_y, area };
+                self->data_cmd = { self->target + 1, r_x, r_y, area };
                 break; //
               }
               case 0:
