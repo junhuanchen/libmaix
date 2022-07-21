@@ -159,7 +159,7 @@ extern "C"
     int feature_length = 512;
     int input_w = 224, input_h = 224;
     int i_class_num = 0, i_sample_num = 0;
-    int class_num = 3;
+    int class_num = 4;
     int sample_num = 3;
     int class_id = -1;
     uint8_t flag_trained = 0;
@@ -408,7 +408,7 @@ extern "C"
         {
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("Capture ID:%d(%d)", self->i_class_num, self->class_num).c_str(), LV_LABEL_ALIGN_LEFT);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("Capture ID:%d(%d)", self->i_class_num - 1, self->class_num).c_str(), LV_LABEL_ALIGN_LEFT);
           pthread_mutex_unlock(&zm831->ui_mutex);
           if (self->flag_confirm)
           {
@@ -495,6 +495,10 @@ extern "C"
         self->i_class_num = 0;
         self->i_sample_num = 0;
         self->state = 2;
+        // ready null image
+        libmaix_err_t err = libmaix_classifier_add_class_img(self->classifier_obj, ai_rgb, &self->i_class_num);
+        if (err != LIBMAIX_ERR_NONE) printf("libmaix_classifier_add_class_img fail: %s\n", libmaix_get_err_msg(err));
+        self->i_class_num++;
       }
       }
 
