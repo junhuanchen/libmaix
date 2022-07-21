@@ -351,7 +351,7 @@ extern "C"
 
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("class id: %d, prob: %d", self->class_id + 1, tmp).c_str(), LV_LABEL_ALIGN_LEFT);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("class id: %d, prob: %d", self->class_id, tmp).c_str(), LV_LABEL_ALIGN_LEFT);
           pthread_mutex_unlock(&zm831->ui_mutex);
         }
       }
