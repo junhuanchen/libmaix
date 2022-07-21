@@ -347,12 +347,11 @@ extern "C"
           {
             uint8_t data[] = { (uint8_t)self->class_id, 0, 0, 100, (uint8_t)tmp };
             zm831_protocol_send(0x0c, (uint8_t *)data, sizeof(data));
+            pthread_mutex_lock(&zm831->ui_mutex);
+            lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+            lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("class id: %d, prob: %d", self->class_id, tmp).c_str(), LV_LABEL_ALIGN_LEFT);
+            pthread_mutex_unlock(&zm831->ui_mutex);
           }
-
-          pthread_mutex_lock(&zm831->ui_mutex);
-          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("class id: %d, prob: %d", self->class_id, tmp).c_str(), LV_LABEL_ALIGN_LEFT);
-          pthread_mutex_unlock(&zm831->ui_mutex);
         }
       }
       else if (self->state == 0)
