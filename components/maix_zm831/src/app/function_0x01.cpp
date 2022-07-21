@@ -272,7 +272,6 @@ extern "C"
 
         printf("capture %s\n", filename.str().c_str());
 
-        void zm831_ui_show_image(cv::Mat & img, int x, int y, lv_opa_t opa);
         zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
 
         pthread_mutex_lock(&zm831->ui_mutex);

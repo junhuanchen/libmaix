@@ -177,7 +177,7 @@ extern "C"
         {
           printf("add class img, class num: %d\n", self->i_class_num);
           sleep(2);
-          libmaix_classifier_add_class_img(&self->classifier_obj, ai_rgb, &self->i_class_num);
+          libmaix_classifier_add_class_img(self->classifier_obj, ai_rgb, &self->i_class_num);
           self->i_class_num++; // 先添加类别
         }
         else if(self->i_sample_num < self->sample_num)

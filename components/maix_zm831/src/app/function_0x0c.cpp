@@ -154,17 +154,20 @@ extern "C"
     libmaix_nn_opt_param_t opt_param;
 
     const char *classifier_pth = "/root/classifier.bin";
+    void *classifier_obj;
     float class_prob = 0;
-    int class_num = 3;
-    int sample_num = 8;
     int feature_length = 512;
     int input_w = 224, input_h = 224;
+    int i_class_num = 0, i_sample_num = 0;
+    int class_num = 3;
+    int sample_num = 3;
     int class_id = -1;
-    int i_class_num = 0, i_sample_num = 0, flag_trained = 0;
-    void *classifier_obj;
-
+    uint8_t flag_trained = 0;
+    uint8_t flag_confirm = 0;
+    // uint8_t flag_captrue = 0;
     uint8_t is_clear = false;
     uint8_t is_learn = false;
+    uint8_t state = 0;
 
     bool init = false;
   } function_0x0c_app;
@@ -209,11 +212,24 @@ extern "C"
     self->rect_dsc.bg_opa = LV_OPA_TRANSP;
     self->rect_dsc.border_width = 5;
     self->rect_dsc.border_opa = LV_OPA_80;
-    self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+    self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
 
     lv_draw_label_dsc_init(&self->label_dsc);
     self->label_dsc.color = LV_COLOR_GREEN;
     self->label_dsc.font = zm831->ft_font.font;
+
+    if (!self->init)
+    {
+      zm831_home_setup_ui(&self->ui->classific_study_app, setup_scr_classific_study_app, 2500);
+
+      pthread_mutex_lock(&zm831->ui_mutex);
+      lv_obj_set_event_cb(self->ui->classific_study_app_imgbtn_back, function_0x0c_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->classific_study_app_imgbtn_clear, function_0x0c_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->classific_study_app_imgbtn_press, function_0x0c_btn_event_app_cb);
+      pthread_mutex_unlock(&zm831->ui_mutex);
+
+      self->init = true;
+    }
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 
@@ -275,18 +291,6 @@ extern "C"
     printf("self->class_num = %d\n", self->class_num);
     printf("self->sample_num = %d\n", self->sample_num);
 
-    if (!self->init)
-    {
-      zm831_home_setup_ui(&self->ui->classific_study_app, setup_scr_classific_study_app, 500);
-
-      pthread_mutex_lock(&zm831->ui_mutex);
-      lv_obj_set_event_cb(self->ui->classific_study_app_imgbtn_back, function_0x0c_btn_event_app_cb);
-      lv_obj_set_event_cb(self->ui->classific_study_app_imgbtn_clear, function_0x0c_btn_event_app_cb);
-      lv_obj_set_event_cb(self->ui->classific_study_app_imgbtn_press, function_0x0c_btn_event_app_cb);
-      pthread_mutex_unlock(&zm831->ui_mutex);
-
-      self->init = true;
-    }
     LIBMAIX_INFO_PRINTF("function_0x0c_app_load");
     return 0;
   }
@@ -324,65 +328,176 @@ extern "C"
     {
       if (self->flag_trained)
       {
-        // 没有模型，需要训练。
+        err = libmaix_classifier_predict(self->classifier_obj, ai_rgb, &self->class_id, &self->class_prob);
+        printf("err %d: class id: %d, class prob: %f\n", err, self->class_id, 100 - self->class_prob);
+        if (err != LIBMAIX_ERR_NONE)
+        {
+          printf("libmaix_classifier_predict fail: %s\n", libmaix_get_err_msg(err));
+        }
+        else if (self->class_id >= 0)
+        {
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("class id: %d, prob: %d", self->class_id + 1, (int)((100 - self->class_prob))).c_str(), LV_LABEL_ALIGN_LEFT);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+        }
+      }
+      else if (self->state == 0)
+      {
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("no train model...").c_str(), LV_LABEL_ALIGN_LEFT);
+        pthread_mutex_unlock(&zm831->ui_mutex);
       }
 
-      // {
-      //   err = libmaix_classifier_predict(self->classifier_obj, ai_rgb, &self->class_id, &self->class_prob);
-      //   if (err != LIBMAIX_ERR_NONE)
-      //   {
-      //     printf("libmaix_classifier_predict fail: %s\n", libmaix_get_err_msg(err));
-      //   }
-      //   else
-      //   {
-      //     if (self->class_id >= 0)
-      //     {
-      //       printf("class id: %d, class prob: %f\n", self->class_id, 100 - self->class_prob);
-      //       std::ostringstream prob2str;
-      //       prob2str << "class id: " << self->class_id << ", prob: " << (int)((100 - self->class_prob) * 10) << std::endl;
-      //       pthread_mutex_lock(&zm831->ui_mutex);
-      //       lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-      //       lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 0, 240, &self->label_dsc, prob2str.str().c_str(), LV_LABEL_ALIGN_LEFT);
-      //       pthread_mutex_unlock(&zm831->ui_mutex);
-      //     }
-      //   }
-      // }
-      // else
-      // {
-      //   printf("wait for training\n");
-      //   if (self->i_class_num < self->class_num)
-      //   {
-      //     printf("add class img, class num: %d\n", self->i_class_num);
-      //     sleep(2);
-      //     libmaix_classifier_add_class_img(&self->classifier_obj, ai_rgb, &self->i_class_num);
-      //     self->i_class_num++; // 先添加类别
-      //   }
-      //   else if (self->i_sample_num < self->sample_num)
-      //   {
-      //     printf("add sample img, sample num: %d\n", self->i_sample_num);
-      //     sleep(1);
-      //     libmaix_classifier_add_sample_img(self->classifier_obj, ai_rgb, &self->i_sample_num);
-      //     self->i_sample_num++; // 再添加样本
-      //   }
-      //   else if (self->i_sample_num == self->sample_num)
-      //   {
-      //     // 训练完成
-      //     libmaix_classifier_train(self->classifier_obj);
-      //     self->flag_trained = 1;
-      //     self->i_sample_num = 0;
-      //     self->i_class_num = 0;
-      //     libmaix_classifier_save(self->classifier_obj, self->classifier_pth);
-      //     system("sync");
-      //     libmaix_classifier_del(&self->classifier_obj);
-      //     err = libmaix_classifier_load(&self->classifier_obj, self->classifier_pth, self->nn, &self->feature_length, &self->input_w, &self->input_h, &self->class_num, &self->sample_num);
-      //     if (err != LIBMAIX_ERR_NONE)
-      //     {
-      //       printf("libmaix_classifier_init fail\n");
-      //       libmaix_classifier_init(&self->classifier_obj, self->nn, self->feature_length, self->input_w, self->input_h, self->class_num, self->sample_num);
-      //     }
-      //     printf("train classifier\n");
-      //   }
-      // }
+      if (self->is_clear)
+      {
+        self->is_clear = false;
+        system(string_format("rm %s && sync", self->classifier_pth).c_str());
+        self->flag_trained = 0;
+        self->state = 0;
+      }
+
+      if (self->is_learn)
+      {
+        self->is_learn = false;
+        if (self->flag_trained == 0)
+        {
+          if (self->state == 0)
+          {
+            self->flag_confirm = false;
+            self->state = 3;
+          }
+          else
+          {
+            self->flag_confirm = true;
+          }
+        }
+      }
+
+      switch (self->state)
+      {
+      case 1:
+      {
+        if (self->i_sample_num == 0 && self->i_class_num == 0)
+        {
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("start train model...").c_str(), LV_LABEL_ALIGN_LEFT);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+
+          libmaix_classifier_train(self->classifier_obj);
+          libmaix_classifier_save(self->classifier_obj, self->classifier_pth);
+          system("sync");
+          libmaix_classifier_del(&self->classifier_obj);
+          err = libmaix_classifier_load(&self->classifier_obj, self->classifier_pth, self->nn, &self->feature_length, &self->input_w, &self->input_h, &self->class_num, &self->sample_num);
+          if (err != LIBMAIX_ERR_NONE)
+          {
+            printf("libmaix_classifier_init fail\n");
+            libmaix_classifier_init(&self->classifier_obj, self->nn, self->feature_length, self->input_w, self->input_h, self->class_num, self->sample_num);
+          }
+          printf("train classifier\n");
+          self->flag_trained = 1;
+          self->state = 0;
+        }
+        break;
+      }
+      case 2:
+      {
+        if (self->i_class_num < self->class_num)
+        {
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("Capture ID:%d(%d)", self->i_class_num, self->class_num).c_str(), LV_LABEL_ALIGN_LEFT);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+          if (self->flag_confirm)
+          {
+            self->flag_confirm = false;
+            cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+            zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
+            msleep(200);
+            libmaix_err_t err = libmaix_classifier_add_class_img(self->classifier_obj, ai_rgb, &self->i_class_num);
+            if (err != LIBMAIX_ERR_NONE) printf("libmaix_classifier_add_class_img fail: %s\n", libmaix_get_err_msg(err));
+            self->i_class_num++;
+          }
+        }
+        else if (self->i_class_num == self->class_num)
+        {
+          pthread_mutex_lock(&zm831->ui_mutex);
+          lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("Capture Datas:%d(%d)", self->i_sample_num, self->sample_num).c_str(), LV_LABEL_ALIGN_LEFT);
+          pthread_mutex_unlock(&zm831->ui_mutex);
+          if (self->i_sample_num < self->sample_num)
+          {
+            if (self->flag_confirm)
+            {
+              self->flag_confirm = false;
+              cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+              zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
+              msleep(200);
+              int idx = -1;
+              libmaix_err_t err = libmaix_classifier_add_sample_img(self->classifier_obj, ai_rgb, &idx);
+              if (err != LIBMAIX_ERR_NONE) printf("libmaix_classifier_add_sample_img fail: %s\n", libmaix_get_err_msg(err));
+              printf("idx %d\r\n", idx);
+              self->i_sample_num++;
+            }
+          }
+          else if (self->i_sample_num == self->sample_num)
+          {
+            self->i_sample_num = 0;
+            self->i_class_num = 0;
+            self->state = 1;
+          }
+        }
+        break;
+        /*
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
+        lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("ID%d:datas(%d)", self->i_class_num, self->i_sample_num).c_str(), LV_LABEL_ALIGN_LEFT);
+        pthread_mutex_unlock(&zm831->ui_mutex);
+        if (self->flag_confirm)
+        {
+          self->flag_confirm = false;
+          if (self->flag_captrue == 0)
+          {
+            self->flag_captrue = 1;
+            cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+            zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
+            msleep(250);
+            libmaix_err_t err = libmaix_classifier_add_class_img(self->classifier_obj, ai_rgb, &self->i_class_num);
+            if (err != LIBMAIX_ERR_NONE) printf("libmaix_classifier_add_class_img fail: %s\n", libmaix_get_err_msg(err));
+          }
+          else if (self->i_sample_num < self->sample_num)
+          {
+            cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+            zm831_ui_show_image(rgb, 8, 8, LV_OPA_90);
+            msleep(250);
+            libmaix_err_t err = libmaix_classifier_add_sample_img(self->classifier_obj, ai_rgb, &self->i_sample_num);
+            if (err != LIBMAIX_ERR_NONE) printf("libmaix_classifier_add_sample_img fail: %s\n", libmaix_get_err_msg(err));
+            self->i_sample_num++;
+          }
+          else if (self->i_sample_num == self->sample_num)
+          {
+            self->i_class_num++;
+            self->flag_captrue = 0;
+            if (self->i_class_num == self->class_num)
+            {
+              self->i_sample_num = 0;
+              self->i_class_num = 0;
+              self->state = 1;
+            }
+          }
+        }
+        */
+      }
+      case 3:
+      {
+        self->i_class_num = 0;
+        self->i_sample_num = 0;
+        self->state = 2;
+      }
+      }
+
     }
     return 0;
   }
