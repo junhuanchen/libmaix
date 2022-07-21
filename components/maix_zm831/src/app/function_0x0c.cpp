@@ -154,6 +154,7 @@ extern "C"
     libmaix_nn_opt_param_t opt_param;
 
     const char *classifier_pth = "/root/classifier.bin";
+    const float classifier_val = 80;
     void *classifier_obj;
     float class_prob = 0;
     int feature_length = 512;
@@ -330,15 +331,27 @@ extern "C"
       {
         err = libmaix_classifier_predict(self->classifier_obj, ai_rgb, &self->class_id, &self->class_prob);
         printf("err %d: class id: %d, class prob: %f\n", err, self->class_id, 100 - self->class_prob);
+        int tmp = (int)((100 - self->class_prob));
         if (err != LIBMAIX_ERR_NONE)
         {
           printf("libmaix_classifier_predict fail: %s\n", libmaix_get_err_msg(err));
         }
-        else if (self->class_id >= 0)
+        else if (tmp > self->classifier_val && self->class_id >= 0)
         {
+          if (self->class_id == 0)
+          {
+            uint8_t data[] = { 0, 0, 0, 0, 0 };
+            zm831_protocol_send(0x0c, (uint8_t *)data, sizeof(data));
+          }
+          else
+          {
+            uint8_t data[] = { (uint8_t)self->class_id, 0, 0, 100, (uint8_t)tmp };
+            zm831_protocol_send(0x0c, (uint8_t *)data, sizeof(data));
+          }
+
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("class id: %d, prob: %d", self->class_id + 1, (int)((100 - self->class_prob))).c_str(), LV_LABEL_ALIGN_LEFT);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("class id: %d, prob: %d", self->class_id + 1, tmp).c_str(), LV_LABEL_ALIGN_LEFT);
           pthread_mutex_unlock(&zm831->ui_mutex);
         }
       }
@@ -408,7 +421,7 @@ extern "C"
         {
           pthread_mutex_lock(&zm831->ui_mutex);
           lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("Capture ID:%d(%d)", self->i_class_num - 1, self->class_num).c_str(), LV_LABEL_ALIGN_LEFT);
+          lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("Capture ID:%d(%d)", self->i_class_num - 1, self->class_num - 1).c_str(), LV_LABEL_ALIGN_LEFT);
           pthread_mutex_unlock(&zm831->ui_mutex);
           if (self->flag_confirm)
           {
