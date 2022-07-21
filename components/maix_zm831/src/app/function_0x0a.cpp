@@ -528,7 +528,7 @@ extern "C"
             //没有记录过的人脸
             self->state = 3, self->old = self->now;
             lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
-            lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("IDx:%d", (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
+            lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("IDx:00").c_str(), LV_LABEL_ALIGN_LEFT);
           }
           pthread_mutex_unlock(&zm831->ui_mutex);
         }
