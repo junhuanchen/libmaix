@@ -510,7 +510,7 @@ extern "C"
               // lv_canvas_draw_text(zm831_ui_get_canvas(), x + 5, y + 5, ai2vi(w), &self->label_dsc, string_format("%d", (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
               int area = ((float)(w * h) / (240 * 240)) * 100;
 
-              uint8_t data[] = { face_id, ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(face_objs->prob * 100) };
+              uint8_t data[] = { face_id + 1, ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(face_objs->prob * 100) };
               zm831_protocol_send(0x0a, (uint8_t *)data, sizeof(data));
 
               self->state = 2, self->old = self->now;
