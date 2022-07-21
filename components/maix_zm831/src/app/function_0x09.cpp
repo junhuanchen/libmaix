@@ -233,64 +233,71 @@ extern "C"
   void function_0x09_cfg_load(_function_0x09_ *self)
   {
     int cfgsum = 0;
+    try
     {
-      auto &result = self->config_json["color_learn_id"];
-      if (result.is_integer())
       {
-        self->color_learn_id = result.as_integer();
-        if (self->color_learn_id > 4 || self->color_learn_id < -1) {
-          self->color_learn_id = -1;
-        }
-        cfgsum += 1;
-      }
-    }
-    {
-      auto &result = self->config_json["lab_thresholds"];
-      if (result.is_array())
-      {
-        auto arr = result.as_array();
-        if (arr.size() == 4)
+        auto &result = self->config_json["color_learn_id"];
+        if (result.is_integer())
         {
-          for (int i = 0; i < 4; i++)
+          self->color_learn_id = result.as_integer();
+          if (self->color_learn_id > 4 || self->color_learn_id < -1) {
+            self->color_learn_id = -1;
+          }
+          cfgsum += 1;
+        }
+      }
+      {
+        auto &result = self->config_json["lab_thresholds"];
+        if (result.is_array())
+        {
+          auto arr = result.as_array();
+          if (arr.size() == 4)
           {
-            auto item = arr[i];
-            if (item.is_array())
+            for (int i = 0; i < 4; i++)
             {
-              auto arr = item.as_array();
-              self->lab_thresholds[i].LMin = arr[0].as_integer();
-              self->lab_thresholds[i].LMax = arr[1].as_integer();
-              self->lab_thresholds[i].AMin = arr[2].as_integer();
-              self->lab_thresholds[i].AMax = arr[3].as_integer();
-              self->lab_thresholds[i].BMin = arr[4].as_integer();
-              self->lab_thresholds[i].BMax = arr[5].as_integer();
-              cfgsum += 1;
+              auto item = arr[i];
+              if (item.is_array())
+              {
+                auto arr = item.as_array();
+                self->lab_thresholds[i].LMin = arr[0].as_integer();
+                self->lab_thresholds[i].LMax = arr[1].as_integer();
+                self->lab_thresholds[i].AMin = arr[2].as_integer();
+                self->lab_thresholds[i].AMax = arr[3].as_integer();
+                self->lab_thresholds[i].BMin = arr[4].as_integer();
+                self->lab_thresholds[i].BMax = arr[5].as_integer();
+                cfgsum += 1;
+              }
+            }
+          }
+        }
+      }
+      {
+        auto &result = self->config_json["lab_colors"];
+        if (result.is_array())
+        {
+          auto arr = result.as_array();
+          if (arr.size() == 4)
+          {
+            for (int i = 0; i < 4; i++)
+            {
+              auto item = arr[i];
+              if (item.is_array())
+              {
+                auto arr = item.as_array();
+                self->lab_colors[i].ch.red = arr[0].as_integer();
+                self->lab_colors[i].ch.green = arr[1].as_integer();
+                self->lab_colors[i].ch.blue = arr[2].as_integer();
+                self->lab_colors[i].ch.alpha = arr[3].as_integer();
+                cfgsum += 1;
+              }
             }
           }
         }
       }
     }
+    catch(const std::exception& e)
     {
-      auto &result = self->config_json["lab_colors"];
-      if (result.is_array())
-      {
-        auto arr = result.as_array();
-        if (arr.size() == 4)
-        {
-          for (int i = 0; i < 4; i++)
-          {
-            auto item = arr[i];
-            if (item.is_array())
-            {
-              auto arr = item.as_array();
-              self->lab_colors[i].ch.red = arr[0].as_integer();
-              self->lab_colors[i].ch.green = arr[1].as_integer();
-              self->lab_colors[i].ch.blue = arr[2].as_integer();
-              self->lab_colors[i].ch.alpha = arr[3].as_integer();
-              cfgsum += 1;
-            }
-          }
-        }
-      }
+      std::cerr << e.what() << '\n';
     }
     if (cfgsum == 9)
     {
@@ -457,7 +464,7 @@ extern "C"
             self->label_dsc.color = self->lab_colors[i];
             self->rect_dsc.bg_color = self->lab_colors[i];
             self->rect_dsc.border_color = self->lab_colors[i];
-            lv_canvas_draw_text(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y - 14, 60, &self->label_dsc, string_format("ID:%d", i).c_str(), LV_LABEL_ALIGN_LEFT);
+            lv_canvas_draw_text(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y - 14, 60, &self->label_dsc, string_format("ID:%d", i + 1).c_str(), LV_LABEL_ALIGN_LEFT);
             lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
             self->data_cmd[i] += 1;
             self->state = 2, self->old = now;
