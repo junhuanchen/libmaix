@@ -161,8 +161,8 @@ extern "C"
     uint32_t old = 0;
     uint8_t state = 0;
     int8_t color_learn_id = -1;
-    uint8_t is_clear_color = false;
-    uint8_t is_learn_color = false;
+    uint8_t is_clear = false;
+    uint8_t is_learn = false;
     std::array<uint8_t, 4> data_cmd;
 
     lv_draw_rect_dsc_t rect_dsc;
@@ -220,12 +220,12 @@ extern "C"
     }
     if (function_0x09_app.ui->color_study_app_imgbtn_clear == btn && event == LV_EVENT_SHORT_CLICKED)
     {
-      function_0x09_app.is_clear_color = true;
+      function_0x09_app.is_clear = true;
       return;
     }
     if (function_0x09_app.ui->color_study_app_imgbtn_press == btn && event == LV_EVENT_SHORT_CLICKED)
     {
-      function_0x09_app.is_learn_color = true;
+      function_0x09_app.is_learn = true;
       return;
     }
   }
@@ -393,7 +393,7 @@ extern "C"
         // printf("\n");
         if (pack.data[5] == 0x16 && pack.type == 0x01)
         {
-          self->is_learn_color = true;
+          self->is_learn = true;
         }
         zm831->recvPacks.pop_front();
       }
@@ -489,9 +489,9 @@ extern "C"
 
       pthread_mutex_unlock(&zm831->ui_mutex);
 
-      if (self->is_clear_color)
+      if (self->is_clear)
       {
-        self->is_clear_color = false;
+        self->is_clear = false;
         self->color_learn_id = -1;
         {
           auto &result = self->config_json["color_learn_id"];
@@ -503,9 +503,9 @@ extern "C"
         }
       }
 
-      if (self->is_learn_color)
+      if (self->is_learn)
       {
-        self->is_learn_color = false;
+        self->is_learn = false;
         printf("self->color_learn_id %d\r\n", self->color_learn_id);
         self->color_learn_id += 1;
         self->lab_thresholds[self->color_learn_id] = tmp_lab;

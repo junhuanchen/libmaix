@@ -185,8 +185,8 @@ extern "C"
 
     uint32_t now = 0, old = 0;
     uint8_t state = 0;
-    uint8_t is_clear_face = false;
-    uint8_t is_learn_face = false;
+    uint8_t is_clear = false;
+    uint8_t is_learn = false;
 
     bool init = false;
   } function_0x0a_app;
@@ -212,12 +212,12 @@ extern "C"
     }
     if (function_0x0a_app.ui->face_study_app_imgbtn_clear == btn && event == LV_EVENT_SHORT_CLICKED)
     {
-      function_0x0a_app.is_clear_face = true;
+      function_0x0a_app.is_clear = true;
       return;
     }
     if (function_0x0a_app.ui->face_study_app_imgbtn_press == btn && event == LV_EVENT_SHORT_CLICKED)
     {
-      function_0x0a_app.is_learn_face = true;
+      function_0x0a_app.is_learn = true;
       return;
     }
   }
@@ -525,10 +525,10 @@ extern "C"
           pthread_mutex_unlock(&zm831->ui_mutex);
         }
 
-        if (self->is_clear_face)
+        if (self->is_clear)
         {
-          self->is_clear_face = false;
-          // printf("is_learn_face %d\r\n", self->face_features_sum);
+          self->is_clear = false;
+          // printf("is_clear %d\r\n", self->face_features_sum);
           self->face_features_sum = 0;
           {
             auto &result = self->config_json["face_features_sum"];
@@ -537,10 +537,10 @@ extern "C"
           zm831_save_json_conf(self->config_file, self->config_json);
         }
 
-        if (self->is_learn_face)
+        if (self->is_clear)
         {
-          self->is_learn_face = false;
-          // printf("is_learn_face %d\r\n", self->state);
+          self->is_clear = false;
+          // printf("is_clear %d\r\n", self->state);
           if (self->state == 3 || self->state == 4) {
             // printf("self->face_features_sum = %d\r\n", self->face_features_sum);
             float *tmp = self->face_features[self->face_features_sum];
