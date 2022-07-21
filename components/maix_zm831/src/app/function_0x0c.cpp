@@ -331,6 +331,8 @@ extern "C"
       {
         err = libmaix_classifier_predict(self->classifier_obj, ai_rgb, &self->class_id, &self->class_prob);
         printf("err %d: class id: %d, class prob: %f\n", err, self->class_id, 100 - self->class_prob);
+        pthread_mutex_lock(&zm831->ui_mutex);
+        lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         int tmp = (int)((100 - self->class_prob));
         if (err != LIBMAIX_ERR_NONE)
         {
@@ -347,12 +349,11 @@ extern "C"
           {
             uint8_t data[] = { (uint8_t)self->class_id, 0, 0, 100, (uint8_t)tmp };
             zm831_protocol_send(0x0c, (uint8_t *)data, sizeof(data));
-            pthread_mutex_lock(&zm831->ui_mutex);
-            lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
             lv_canvas_draw_text(zm831_ui_get_canvas(), 0, 40, 240, &self->label_dsc, string_format("class id: %d, prob: %d", self->class_id, tmp).c_str(), LV_LABEL_ALIGN_LEFT);
-            pthread_mutex_unlock(&zm831->ui_mutex);
+
           }
         }
+        pthread_mutex_unlock(&zm831->ui_mutex);
       }
       else if (self->state == 0)
       {
@@ -508,8 +509,8 @@ extern "C"
         self->i_sample_num = 0;
         self->state = 2;
         // ready null image
-        // cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
-        // cv::rectangle(rgb, cv::Point(0, 0), cv::Point(rgb.cols, rgb.rows), cv::Scalar(0, 0, 0, 0));
+        cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+        cv::rectangle(rgb, cv::Point(0, 0), cv::Point(rgb.cols, rgb.rows), cv::Scalar(0, 0, 0, 0));
         libmaix_err_t err = libmaix_classifier_add_class_img(self->classifier_obj, ai_rgb, &self->i_class_num);
         if (err != LIBMAIX_ERR_NONE) printf("libmaix_classifier_add_class_img fail: %s\n", libmaix_get_err_msg(err));
         self->i_class_num++;
