@@ -508,8 +508,8 @@ extern "C"
         self->i_sample_num = 0;
         self->state = 2;
         // ready null image
-        cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
-        cv::rectangle(rgb, cv::Point(0, 0), cv::Point(rgb.cols, rgb.rows), cv::Scalar(0, 0, 0, 0));
+        // cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+        // cv::rectangle(rgb, cv::Point(0, 0), cv::Point(rgb.cols, rgb.rows), cv::Scalar(0, 0, 0, 0));
         libmaix_err_t err = libmaix_classifier_add_class_img(self->classifier_obj, ai_rgb, &self->i_class_num);
         if (err != LIBMAIX_ERR_NONE) printf("libmaix_classifier_add_class_img fail: %s\n", libmaix_get_err_msg(err));
         self->i_class_num++;
