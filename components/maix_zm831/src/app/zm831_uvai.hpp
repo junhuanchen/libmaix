@@ -29,6 +29,7 @@
 #include "lv_lib_freetype/lv_freetype.h"
 #include "evdev_mouse.h"
 #include "linux_uart.h"
+#include "linux_gpio.h"
 
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"

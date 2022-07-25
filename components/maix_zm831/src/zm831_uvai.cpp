@@ -95,6 +95,7 @@ extern "C"
                 uint32_t *phy = NULL, *vir = NULL;
                 zm831->vo->frame_addr(zm831->vo, tmp, &vir, &phy);
                 cv::Mat ui_bgra(zm831->ui_h, zm831->ui_w, CV_8UC4, (unsigned char *)color_p);
+                // cv::flip(ui_bgra, ui_bgra, -1);
                 cv::Mat vo_bgra(zm831->ui_h, zm831->ui_w, CV_8UC4, (unsigned char *)vir[0]);
                 ui_bgra.copyTo(vo_bgra);
                 // pthread_mutex_lock(&zm831->ai_mutex);
@@ -730,6 +731,16 @@ extern "C"
 
     void maix_zm831_main(int argc, char *argv[])
     {
+        // _gpio_init("PH7", 0, 0);
+        // for (int i = 0; i < 30; i++)
+        // {
+        //     int val = 0;
+        //     _gpio_read("PH7", &val);
+        //     printf("%d\r\n", val);
+        //     sleep(1);
+        // }
+        // _gpio_deinit("PH7");
+        // return;
         zm831_load_json_conf(zm831->config_file, zm831->config_json, json5pp::object({
                                                                          {"last_select", 0},
                                                                          {"language", "zh-cn"},
