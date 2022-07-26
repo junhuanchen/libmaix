@@ -185,6 +185,10 @@ extern "C"
     // printf("btn %p event %d\n", btn, event);
     if (function_0x01_app.ui->photo_app_imgbtn_press == btn && event == LV_EVENT_SHORT_CLICKED)
     {
+      int AW_MPI_VI_SetVippMirror(int ViDev, int Value);
+      AW_MPI_VI_SetVippMirror(0, 1);
+      int AW_MPI_VI_SetVippFlip(int ViDev, int Value);
+      AW_MPI_VI_SetVippFlip(0, 1);
       function_0x01_app.is_capture = true;
       return;
     }
@@ -195,6 +199,10 @@ extern "C"
     }
     if (function_0x01_app.ui->photo_app_imgbtn_clear == btn && event == LV_EVENT_SHORT_CLICKED)
     {
+      int AW_MPI_VI_SetVippMirror(int ViDev, int Value);
+      AW_MPI_VI_SetVippMirror(0, 0);
+      int AW_MPI_VI_SetVippFlip(int ViDev, int Value);
+      AW_MPI_VI_SetVippFlip(0, 0);
       function_0x01_app.is_clear = true;
       return;
     }
