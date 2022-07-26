@@ -278,7 +278,7 @@ extern "C"
         cv::Mat gray, rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
         cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
 
-        if(zm831->sensor_flip) cv:flip(gray, gray, 0);
+        if(zm831->sensor_flip) cv:flip(gray, gray, 1);
 
         // if (self->now < time(NULL))
         // {
@@ -320,12 +320,12 @@ extern "C"
 
           if(zm831->sensor_flip)
           {
-            points[0].y = zm831_vi_h - points[0].y;
-            points[1].y = zm831_vi_h - points[1].y;
-            points[2].y = zm831_vi_h - points[2].y;
-            points[3].y = zm831_vi_h - points[3].y;
-            points[4].y = zm831_vi_h - points[4].y;
-            h = zm831_vi_h - h;
+            points[0].x = zm831_vi_w - points[0].x;
+            points[1].x = zm831_vi_w - points[1].x;
+            points[2].x = zm831_vi_w - points[2].x;
+            points[3].x = zm831_vi_w - points[3].x;
+            points[4].x = zm831_vi_w - points[4].x;
+            w = zm831_vi_w - w;
           }
 
           self->data_cmd = { (uint8_t)det->id, (uint8_t)ai2vi(det->c[0]), (uint8_t)ai2vi(det->c[1]), (uint8_t)area};

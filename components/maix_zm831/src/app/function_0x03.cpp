@@ -194,7 +194,7 @@ extern "C"
       cv::Mat gray;
       cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
 
-      if(zm831->sensor_flip) cv:flip(gray, gray, 0);
+      if(zm831->sensor_flip) cv:flip(gray, gray, 1);
 
       /* obtain image data */
       int width = gray.cols, height = gray.rows;
@@ -228,11 +228,11 @@ extern "C"
 
         if(zm831->sensor_flip)
         {
-          corners[0].y = zm831_vi_h - corners[0].y;
-          corners[1].y = zm831_vi_h - corners[1].y;
-          corners[2].y = zm831_vi_h - corners[2].y;
-          corners[3].y = zm831_vi_h - corners[3].y;
-          corners[4].y = zm831_vi_h - corners[4].y;
+          corners[0].x = zm831_vi_w - corners[0].x;
+          corners[1].x = zm831_vi_w - corners[1].x;
+          corners[2].x = zm831_vi_w - corners[2].x;
+          corners[3].x = zm831_vi_w - corners[3].x;
+          corners[4].x = zm831_vi_w - corners[4].x;
         }
 
         zbar_symbol_type_t typ = zbar_symbol_get_type(symbol);
