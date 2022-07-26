@@ -190,8 +190,11 @@ extern "C"
       // CALC_FPS("function_0x03_app_loop"); // 224x224x3
       // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
       cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
+
       cv::Mat gray;
       cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
+
+      if(zm831->sensor_flip) cv:flip(gray, gray, 0);
 
       /* obtain image data */
       int width = gray.cols, height = gray.rows;
@@ -222,6 +225,15 @@ extern "C"
         corners[3].y = ai2vi(zbar_symbol_get_loc_y(symbol, 3));
         corners[4].x = corners[0].x;
         corners[4].y = corners[0].y;
+
+        if(zm831->sensor_flip)
+        {
+          corners[0].y = zm831_vi_h - corners[0].y;
+          corners[1].y = zm831_vi_h - corners[1].y;
+          corners[2].y = zm831_vi_h - corners[2].y;
+          corners[3].y = zm831_vi_h - corners[3].y;
+          corners[4].y = zm831_vi_h - corners[4].y;
+        }
 
         zbar_symbol_type_t typ = zbar_symbol_get_type(symbol);
         const char *data = zbar_symbol_get_data(symbol);

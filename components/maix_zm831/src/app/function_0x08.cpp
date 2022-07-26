@@ -278,6 +278,8 @@ extern "C"
         cv::Mat gray, rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
         cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
 
+        if(zm831->sensor_flip) cv:flip(gray, gray, 0);
+
         // if (self->now < time(NULL))
         // {
         //   pthread_mutex_lock(&zm831->ui_mutex);
@@ -305,7 +307,7 @@ extern "C"
           apriltag_detection_t *det;
           zarray_get(detections, i, &det);
 
-          const lv_point_t points[] = {
+          lv_point_t points[] = {
               {ai2vi(det->p[0][0]), ai2vi(det->p[0][1])},
               {ai2vi(det->p[1][0]), ai2vi(det->p[1][1])},
               {ai2vi(det->p[2][0]), ai2vi(det->p[2][1])},
@@ -315,6 +317,16 @@ extern "C"
 
           int w = abs(ai2vi(det->p[3][0]) - ai2vi(det->p[1][0])), h = abs(ai2vi(det->p[3][1]) - ai2vi(det->p[1][1]));
           int area = ((float)(w * h) / (240 * 240)) * 100;
+
+          if(zm831->sensor_flip)
+          {
+            points[0].y = zm831_vi_h - points[0].y;
+            points[1].y = zm831_vi_h - points[1].y;
+            points[2].y = zm831_vi_h - points[2].y;
+            points[3].y = zm831_vi_h - points[3].y;
+            points[4].y = zm831_vi_h - points[4].y;
+            h = zm831_vi_h - h;
+          }
 
           self->data_cmd = { (uint8_t)det->id, (uint8_t)ai2vi(det->c[0]), (uint8_t)ai2vi(det->c[1]), (uint8_t)area};
 

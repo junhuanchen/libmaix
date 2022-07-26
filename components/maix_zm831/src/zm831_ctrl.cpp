@@ -213,7 +213,7 @@ extern "C"
       zm831->sensor_flip = ret;
 
       AW_MPI_VI_SetVippFlip(0, zm831->sensor_flip);
-      AW_MPI_VI_SetVippMirror(0, zm831->sensor_flip);
+      // AW_MPI_VI_SetVippMirror(0, zm831->sensor_flip);
     }
 
     // serial
