@@ -37,7 +37,16 @@ void _gpio_deinit(char* pin);
 void _gpio_read(char* pin, int* state);
 
 /*
-
+// _gpio_init("PH7", 0, 0);
+// for (int i = 0; i < 30; i++)
+// {
+//     int val = 0;
+//     _gpio_read("PH7", &val);
+//     printf("%d\r\n", val);
+//     sleep(1);
+// }
+// _gpio_deinit("PH7");
+// return;
 */
 
 #ifdef __cplusplus
