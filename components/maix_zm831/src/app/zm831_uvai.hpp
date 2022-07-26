@@ -380,7 +380,7 @@ typedef struct
     pthread_mutex_t vi_mutex, ai_mutex, ui_mutex;
     // hw
     struct timeval timeout;
-    int input_event0, dev_ttyS1;
+    int input_event0, dev_ttyS1, sensor_flip;
     fd_set readfd;
     std::list<zm831_pack_t> recvPacks;
     // vi
@@ -439,6 +439,9 @@ extern "C"
     void zm831_home_app_stop();
     uint32_t zm831_get_ms();
     int zm831_protocol_send(uint8_t func, uint8_t * data, int len);
+
+    int AW_MPI_VI_SetVippMirror(int ViDev, int Value);
+    int AW_MPI_VI_SetVippFlip(int ViDev, int Value);
 }
 
 #endif /*_zm831_uv_*/

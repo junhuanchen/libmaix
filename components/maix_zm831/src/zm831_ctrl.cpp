@@ -30,11 +30,14 @@ extern "C"
     zm831->timeout.tv_sec = 0;
     zm831->timeout.tv_usec = 0;
     FD_ZERO(&zm831->readfd);
+
+    _gpio_init("PH7", 0, 0);
     LIBMAIX_DEBUG_PRINTF("zm831_ctrl_load");
   }
 
   void zm831_ctrl_exit()
   {
+    _gpio_deinit("PH7");
     close(zm831->dev_ttyS1);
     close(zm831->input_event0);
     LIBMAIX_DEBUG_PRINTF("zm831_ctrl_exit");
@@ -203,6 +206,15 @@ extern "C"
     // CALC_FPS("zm831_ctrl_loop");
 
     int ret = 0;
+
+    _gpio_read("PH7", &ret);
+    if (zm831->sensor_flip != ret)
+    {
+      zm831->sensor_flip = ret;
+
+      AW_MPI_VI_SetVippFlip(0, zm831->sensor_flip);
+      AW_MPI_VI_SetVippMirror(0, zm831->sensor_flip);
+    }
 
     // serial
     FD_SET(zm831->dev_ttyS1, &zm831->readfd);
