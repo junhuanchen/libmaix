@@ -251,7 +251,7 @@ extern "C"
     self->line_dsc.opa = LV_OPA_70;
     pthread_mutex_unlock(&zm831->ui_mutex);
 
-    zm831_home_setup_ui(&self->ui->face_study_app, setup_scr_face_study_app, 500);
+    zm831_home_setup_ui(&self->ui->face_study_app, setup_scr_face_study_app, 10000);
 
     pthread_mutex_lock(&zm831->ui_mutex);
     lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_back, function_0x0a_btn_event_app_cb);
