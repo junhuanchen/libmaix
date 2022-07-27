@@ -272,6 +272,7 @@ extern "C"
       LIBMAIX_INFO_PRINTF("libmaix_nn init fail: %s\n", libmaix_get_err_msg(err));
       return -1;
     }
+    zm831->sensor_time = zm831_get_ms();
     LIBMAIX_INFO_PRINTF("-- nn object load model\n");
     err = self->nn->load(self->nn, &self->model_path, &self->opt_param);
     if (err != LIBMAIX_ERR_NONE)
@@ -279,7 +280,7 @@ extern "C"
       LIBMAIX_INFO_PRINTF("libmaix_nn load fail: %s\n", libmaix_get_err_msg(err));
       return -1;
     }
-
+    zm831->sensor_time = zm831_get_ms();
     LIBMAIX_INFO_PRINTF("-- yolo2 decoder create\n");
     self->yolo2_decoder = libmaix_nn_decoder_yolo2_create(libmaix_nn_decoder_yolo2_init,
                                                           libmaix_nn_decoder_yolo2_deinit,

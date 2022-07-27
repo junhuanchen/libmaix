@@ -208,11 +208,17 @@ extern "C"
   {
     // CALC_FPS("zm831_ctrl_loop");
 
-    int ret = 0;
+    uint32_t ret = 0;
 
-    if (zm831_get_ms() - zm831->sensor_time > 10000) // soft-keep
+    ret = zm831_get_ms() - zm831->sensor_time;
+    if (ret > 8000) // soft-keep
     {
       zm831->exit = 1;
+      exit(0);
+    }
+    else
+    {
+      system(string_format("echo %d > /tmp/sync", ret).c_str());
     }
 
     _gpio_read("PH7", &ret);

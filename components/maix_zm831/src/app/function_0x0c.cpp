@@ -264,6 +264,7 @@ extern "C"
       LIBMAIX_INFO_PRINTF("libmaix_nn init fail: %s\n", libmaix_get_err_msg(err));
       return -1;
     }
+    zm831->sensor_time = zm831_get_ms();
     LIBMAIX_INFO_PRINTF("-- nn object load model\n");
     err = self->nn->load(self->nn, &self->model_path, &self->opt_param);
     if (err != LIBMAIX_ERR_NONE)
@@ -271,6 +272,7 @@ extern "C"
       LIBMAIX_INFO_PRINTF("libmaix_nn load fail: %s\n", libmaix_get_err_msg(err));
       return -1;
     }
+    zm831->sensor_time = zm831_get_ms();
     err = libmaix_classifier_load(&self->classifier_obj, self->classifier_pth, self->nn, &self->feature_length, &self->input_w, &self->input_h, &self->class_num, &self->sample_num);
     if (err != LIBMAIX_ERR_NONE)
     {

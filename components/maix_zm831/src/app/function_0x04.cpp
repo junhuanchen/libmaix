@@ -387,6 +387,7 @@ extern "C"
         LIBMAIX_INFO_PRINTF("libmaix_nn init fail: %s\n", libmaix_get_err_msg(err));
         return -1;
       }
+      zm831->sensor_time = zm831_get_ms();
       LIBMAIX_INFO_PRINTF("-- nn object load model\n");
       err = self->nn->load(self->nn, &self->model_path, &self->opt_param);
       if (err != LIBMAIX_ERR_NONE)
