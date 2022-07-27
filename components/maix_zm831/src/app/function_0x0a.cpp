@@ -233,6 +233,7 @@ extern "C"
         }
     }));
 
+    pthread_mutex_lock(&zm831->ui_mutex);
     lv_draw_rect_dsc_init(&self->rect_dsc);
     self->rect_dsc.radius = 5;
     self->rect_dsc.bg_opa = LV_OPA_TRANSP;
@@ -248,6 +249,22 @@ extern "C"
     self->line_dsc.color = LV_COLOR_WHITE;
     self->line_dsc.width = 2;
     self->line_dsc.opa = LV_OPA_70;
+    pthread_mutex_unlock(&zm831->ui_mutex);
+
+    zm831_home_setup_ui(&self->ui->face_study_app, setup_scr_face_study_app, 500);
+
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_back, function_0x0a_btn_event_app_cb);
+    lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_clear, function_0x0a_btn_event_app_cb);
+    lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_press, function_0x0a_btn_event_app_cb);
+    pthread_mutex_unlock(&zm831->ui_mutex);
+
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_t* loading = lv_spinner_create(lv_scr_act(), NULL);
+    lv_obj_set_size(loading, 120, 120);
+    lv_obj_align(loading, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_spinner_set_type(loading, LV_SPINNER_TYPE_FILLSPIN_ARC);
+    pthread_mutex_unlock(&zm831->ui_mutex);
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 
@@ -409,16 +426,13 @@ extern "C"
 
     if (!self->init)
     {
-      zm831_home_setup_ui(&self->ui->face_study_app, setup_scr_face_study_app, 500);
-
-      pthread_mutex_lock(&zm831->ui_mutex);
-      lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_back, function_0x0a_btn_event_app_cb);
-      lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_clear, function_0x0a_btn_event_app_cb);
-      lv_obj_set_event_cb(self->ui->face_study_app_imgbtn_press, function_0x0a_btn_event_app_cb);
-      pthread_mutex_unlock(&zm831->ui_mutex);
-
       self->init = true;
     }
+
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_del(loading);
+    pthread_mutex_unlock(&zm831->ui_mutex);
+
     LIBMAIX_INFO_PRINTF("function_0x0a_app_load");
     return 0;
   }
@@ -457,9 +471,11 @@ extern "C"
 
     if (self->init)
     {
-      zm831_home_clear_ui(&self->ui->face_study_app);
       self->init = false;
     }
+
+    zm831_home_clear_ui(&self->ui->face_study_app);
+
     LIBMAIX_INFO_PRINTF("function_0x0a_app_exit");
     return 0;
   }

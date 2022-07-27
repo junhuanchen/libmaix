@@ -127,6 +127,8 @@ extern "C"
         .net_out_height = 7,
         .input_width = 224,
         .input_height = 224};
+
+    bool init = false;
   } function_0x06_app;
 
   int function_0x06_app_load(zm831_home_app *app);
@@ -208,33 +210,31 @@ extern "C"
   {
     auto self = (_function_0x06_ *)app->userdata;
 
-    // if (!self->init)
-    {
-      pthread_mutex_lock(&zm831->ui_mutex);
-      lv_draw_rect_dsc_init(&self->rect_dsc);
-      self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_TRANSP;
-      self->rect_dsc.border_width = 5;
-      self->rect_dsc.border_opa = LV_OPA_80;
-      self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_draw_rect_dsc_init(&self->rect_dsc);
+    self->rect_dsc.radius = 5;
+    self->rect_dsc.bg_opa = LV_OPA_TRANSP;
+    self->rect_dsc.border_width = 5;
+    self->rect_dsc.border_opa = LV_OPA_80;
+    self->rect_dsc.border_color = {0x00, 0xFF, 0x00, 0x9f};
 
-      lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_GREEN;
-      self->label_dsc.font = zm831->ft_font.font;
-      pthread_mutex_unlock(&zm831->ui_mutex);
+    lv_draw_label_dsc_init(&self->label_dsc);
+    self->label_dsc.color = LV_COLOR_GREEN;
+    self->label_dsc.font = zm831->ft_font.font;
+    pthread_mutex_unlock(&zm831->ui_mutex);
 
-      zm831_home_setup_ui(&self->ui->face_app, setup_scr_face_app, 10000);
+    zm831_home_setup_ui(&self->ui->face_app, setup_scr_face_app, 10000);
 
-      pthread_mutex_lock(&zm831->ui_mutex);
-      lv_obj_set_event_cb(self->ui->face_app_imgbtn_back, function_0x06_btn_event_app_cb);
-      pthread_mutex_unlock(&zm831->ui_mutex);
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_set_event_cb(self->ui->face_app_imgbtn_back, function_0x06_btn_event_app_cb);
+    pthread_mutex_unlock(&zm831->ui_mutex);
 
-      pthread_mutex_lock(&zm831->ui_mutex);
-      lv_canvas_draw_text(zm831_ui_get_canvas(), 20, 120, 120, &self->label_dsc, "模型加载中...", LV_LABEL_ALIGN_AUTO);
-      pthread_mutex_unlock(&zm831->ui_mutex);
-
-      // self->init = true;
-    }
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_t* loading = lv_spinner_create(lv_scr_act(), NULL);
+    lv_obj_set_size(loading, 120, 120);
+    lv_obj_align(loading, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_spinner_set_type(loading, LV_SPINNER_TYPE_FILLSPIN_ARC);
+    pthread_mutex_unlock(&zm831->ui_mutex);
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 
@@ -316,6 +316,10 @@ extern "C"
     lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
     pthread_mutex_unlock(&zm831->ui_mutex);
 
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_del(loading);
+    pthread_mutex_unlock(&zm831->ui_mutex);
+
     LIBMAIX_INFO_PRINTF("function_0x06_app_load");
     return 0;
   }
@@ -323,12 +327,6 @@ extern "C"
   int function_0x06_app_exit(zm831_home_app *app)
   {
     auto self = (_function_0x06_ *)app->userdata;
-
-    // if (self->init)
-    {
-      zm831_home_clear_ui(&self->ui->face_app);
-      // self->init = false;
-    }
 
     if (self->yolo2_decoder)
     {
@@ -350,6 +348,13 @@ extern "C"
     {
       libmaix_nn_destroy(&self->nn);
     }
+
+    if (self->init)
+    {
+      self->init = false;
+    }
+
+    zm831_home_clear_ui(&self->ui->face_app);
 
     LIBMAIX_INFO_PRINTF("function_0x06_app_exit");
     return 0;

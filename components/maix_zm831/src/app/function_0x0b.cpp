@@ -209,6 +209,9 @@ void setup_scr_gesture_app(lv_ui *ui){
   {
     auto self = (_function_0x0b_ *)app->userdata;
 
+    zm831_home_setup_ui(&self->ui->gesture_app, setup_scr_gesture_app, 10000);
+
+    pthread_mutex_lock(&zm831->ui_mutex);
     lv_draw_rect_dsc_init(&self->rect_dsc);
     self->rect_dsc.radius = 5;
     self->rect_dsc.bg_opa = LV_OPA_TRANSP;
@@ -219,6 +222,18 @@ void setup_scr_gesture_app(lv_ui *ui){
     lv_draw_label_dsc_init(&self->label_dsc);
     self->label_dsc.color = LV_COLOR_GREEN;
     self->label_dsc.font = zm831->ft_font.font;
+    pthread_mutex_unlock(&zm831->ui_mutex);
+
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_set_event_cb(self->ui->gesture_app_imgbtn_back, function_0x0b_btn_event_app_cb);
+    pthread_mutex_unlock(&zm831->ui_mutex);
+
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_t* loading = lv_spinner_create(lv_scr_act(), NULL);
+    lv_obj_set_size(loading, 120, 120);
+    lv_obj_align(loading, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_spinner_set_type(loading, LV_SPINNER_TYPE_FILLSPIN_ARC);
+    pthread_mutex_unlock(&zm831->ui_mutex);
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 
@@ -294,16 +309,10 @@ void setup_scr_gesture_app(lv_ui *ui){
       return -1;
     }
 
-    if (!self->init)
-    {
-      zm831_home_setup_ui(&self->ui->gesture_app, setup_scr_gesture_app, 500);
+    pthread_mutex_lock(&zm831->ui_mutex);
+    lv_obj_del(loading);
+    pthread_mutex_unlock(&zm831->ui_mutex);
 
-      pthread_mutex_lock(&zm831->ui_mutex);
-      lv_obj_set_event_cb(self->ui->gesture_app_imgbtn_back, function_0x0b_btn_event_app_cb);
-      pthread_mutex_unlock(&zm831->ui_mutex);
-
-      self->init = true;
-    }
     LIBMAIX_INFO_PRINTF("function_0x0b_app_load");
     return 0;
   }
@@ -335,9 +344,11 @@ void setup_scr_gesture_app(lv_ui *ui){
 
     if (self->init)
     {
-      zm831_home_clear_ui(&self->ui->gesture_app);
       self->init = false;
     }
+
+    zm831_home_clear_ui(&self->ui->gesture_app);
+
     LIBMAIX_INFO_PRINTF("function_0x0b_app_exit");
     return 0;
   }
