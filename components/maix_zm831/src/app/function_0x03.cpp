@@ -134,6 +134,7 @@ extern "C"
         return -1;
       }
 
+      pthread_mutex_lock(&zm831->ui_mutex);
       lv_draw_line_dsc_init(&self->line_dsc);
       self->line_dsc.color = {0x00, 0xFF, 0x00, 0x9f};
       self->line_dsc.width = 3;
@@ -149,6 +150,7 @@ extern "C"
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
       self->label_dsc.font = zm831->ft_font.font;
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       zm831_home_setup_ui(&self->ui->qrcode_app, setup_scr_qrcode_app, 500);
 
@@ -186,7 +188,8 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      int now = zm831_get_ms();
+      zm831->sensor_time = zm831_get_ms();
+
       // CALC_FPS("function_0x03_app_loop"); // 224x224x3
       // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
       cv::Mat rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
@@ -252,7 +255,7 @@ extern "C"
           // lv_canvas_draw_text(zm831_ui_get_canvas(), corners[0].x, corners[0].y - 30, corners[2].x - corners[0].x, &self->label_dsc, data, LV_LABEL_ALIGN_AUTO);
           pthread_mutex_unlock(&zm831->ui_mutex);
 
-          self->state = 2, self->old = now;
+          self->state = 2, self->old = zm831->sensor_time;
           self->data_cmd = string_format("%s", data);
 
           break; // only one QR code
@@ -274,7 +277,7 @@ extern "C"
       case 2:
       {
         zm831_protocol_send(0x03, (uint8_t *)self->data_cmd.c_str(), self->data_cmd.length());
-        if (now - self->old > 200) {
+        if (zm831->sensor_time - self->old > 200) {
           self->state = 1;
         }
         break;

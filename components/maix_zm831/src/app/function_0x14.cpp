@@ -168,7 +168,6 @@ extern "C"
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    time_t now;
 
     bool init = false;
   } function_0x14_app;
@@ -204,6 +203,7 @@ extern "C"
     {
       zm831_home_setup_ui(&self->ui->cube_app, setup_scr_cube_app, 500);
 
+      pthread_mutex_lock(&zm831->ui_mutex);
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
       self->rect_dsc.bg_opa = LV_OPA_60;
@@ -214,6 +214,7 @@ extern "C"
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
       self->label_dsc.font = zm831->ft_font.font;
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       pthread_mutex_lock(&zm831->ui_mutex);
       lv_obj_set_event_cb(self->ui->cube_app_imgbtn_back, function_0x14_btn_event_app_cb);
@@ -247,6 +248,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      zm831->sensor_time = zm831_get_ms();
       // pthread_mutex_lock(&zm831->ui_mutex);
       // printf("lv_obj_is_visible %d\n", lv_obj_is_visible(zm831_ui_get_canvas()));
       // // lv_canvas_draw_rect(zm831_ui_get_canvas(), 8, 8, 224, 224, &self->rect_dsc);

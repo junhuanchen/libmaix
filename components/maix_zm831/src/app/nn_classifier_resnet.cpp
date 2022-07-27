@@ -192,6 +192,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      zm831->sensor_time = zm831_get_ms();
       self->input.data = ai_rgb->data;
       err = self->nn->forward(self->nn, &self->input, &self->out_fmap);
       if (err == LIBMAIX_ERR_NONE)

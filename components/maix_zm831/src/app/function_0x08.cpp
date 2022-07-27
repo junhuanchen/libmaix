@@ -130,6 +130,7 @@ extern "C"
   {
     auto self = (_function_0x08_ *)app->userdata;
 
+    pthread_mutex_lock(&zm831->ui_mutex);
     lv_draw_line_dsc_init(&self->line_dsc);
     self->line_dsc.color = {0x00, 0xFF, 0x00, 0x9f};
     self->line_dsc.width = 3;
@@ -138,6 +139,7 @@ extern "C"
     lv_draw_label_dsc_init(&self->label_dsc);
     self->label_dsc.color = LV_COLOR_GREEN;
     self->label_dsc.font = zm831->ft_font.font;
+    pthread_mutex_unlock(&zm831->ui_mutex);
 
     // Initialize tag detector with options
     if (!strcmp(self->famname, "tag36h11"))
@@ -273,19 +275,13 @@ extern "C"
       libmaix_image_t *ai_rgb = NULL;
       if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
       {
-        int now = zm831_get_ms();
+        zm831->sensor_time = zm831_get_ms();
+
         // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
         cv::Mat gray, rgb(ai_rgb->height, ai_rgb->width, CV_8UC3, ai_rgb->data);
         cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
 
         if(zm831->sensor_flip) cv:flip(gray, gray, 1);
-
-        // if (self->now < time(NULL))
-        // {
-        //   pthread_mutex_lock(&zm831->ui_mutex);
-        //   lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
-        //   pthread_mutex_unlock(&zm831->ui_mutex);
-        // }
 
         libmaix_err_t err = LIBMAIX_ERR_NONE;
 
@@ -334,7 +330,7 @@ extern "C"
 
           lv_canvas_draw_text(zm831_ui_get_canvas(), ai2vi(det->p[3][0]), ai2vi(det->p[3][1]) - 30, 100, &self->label_dsc, string_format("NO:%d", det->id).c_str(), LV_LABEL_ALIGN_LEFT);
 
-          self->state = 2, self->old = now;
+          self->state = 2, self->old = zm831->sensor_time;
         }
         pthread_mutex_unlock(&zm831->ui_mutex);
 
@@ -353,7 +349,7 @@ extern "C"
         case 2:
         {
           zm831_protocol_send(0x08, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
-          if (now - self->old > 200) {
+          if (zm831->sensor_time - self->old > 200) {
             self->state = 1;
           }
           break;

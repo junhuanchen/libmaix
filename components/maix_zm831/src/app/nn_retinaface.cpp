@@ -278,6 +278,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      zm831->sensor_time = zm831_get_ms();
       int face_num = 0;
       face_obj_t *face_objs = NULL;
       err = libmaix_nn_face_get_feature(self->recognize_module, ai_rgb, &face_num, NULL, &face_objs, false);

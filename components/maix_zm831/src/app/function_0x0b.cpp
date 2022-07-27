@@ -84,7 +84,7 @@ void setup_scr_gesture_app(lv_ui *ui){
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    uint32_t now = 0, old = 0;
+    uint32_t old = 0;
     uint8_t state = 0;
 
     const char *model_path_param = "/home/res/ZM_hand_awnn.param";
@@ -189,7 +189,7 @@ void setup_scr_gesture_app(lv_ui *ui){
         lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, ai2vi(w), ai2vi(h), &self->rect_dsc);
         lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 30, 120, &self->label_dsc, string_format("ID%d:%d", map_id[class_id], (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_AUTO);
 
-        self->state = 2, self->old = self->now;
+        self->state = 2, self->old = zm831->sensor_time;
       }
     }
     pthread_mutex_unlock(&zm831->ui_mutex);
@@ -348,6 +348,7 @@ void setup_scr_gesture_app(lv_ui *ui){
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      zm831->sensor_time = zm831_get_ms();
       self->input.data = ai_rgb->data;
       err = self->nn->forward(self->nn, &self->input, &self->out_fmap);
       if (err != LIBMAIX_ERR_NONE)
@@ -367,7 +368,6 @@ void setup_scr_gesture_app(lv_ui *ui){
         // LIBMAIX_INFO_PRINTF("yolo2_result.boxes_num %d", self->yolo2_result.boxes_num);
       }
 
-      self->now = zm831_get_ms();
       switch (self->state)
       {
       case 1:
@@ -383,7 +383,7 @@ void setup_scr_gesture_app(lv_ui *ui){
       }
       case 2:
       {
-        if (self->now - self->old > 100) {
+        if (zm831->sensor_time - self->old > 100) {
           self->state = 1;
         }
         break;

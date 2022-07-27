@@ -183,7 +183,7 @@ extern "C"
     const char *config_file = "/root/function_0x0a.json";
     json5pp::value config_json;
 
-    uint32_t now = 0, old = 0;
+    uint32_t old = 0;
     uint8_t state = 0;
     uint8_t is_clear = false;
     uint8_t is_learn = false;
@@ -471,7 +471,8 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      self->now = zm831_get_ms();
+      zm831->sensor_time = zm831_get_ms();
+
       int face_num = 0;
       face_obj_t *face_objs = NULL;
       err = libmaix_nn_face_get_feature(self->recognize_module, ai_rgb, &face_num, NULL, &face_objs, false);
@@ -513,11 +514,11 @@ extern "C"
               uint8_t data[] = { face_id + 1, ai2vi(x + ((w - x) / 2)), ai2vi(y + ((h - y) / 2)), area, (int)(face_objs->prob * 100) };
               zm831_protocol_send(0x0a, (uint8_t *)data, sizeof(data));
 
-              self->state = 2, self->old = self->now;
+              self->state = 2, self->old = zm831->sensor_time;
             }
             else
             {
-              self->state = 4, self->old = self->now;
+              self->state = 4, self->old = zm831->sensor_time;
               //人脸对比分数小于人脸阈值时,认为不是记录的人脸
               lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
               lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("IDx:%d", (int)(face_objs->prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
@@ -526,7 +527,7 @@ extern "C"
           else
           {
             //没有记录过的人脸
-            self->state = 3, self->old = self->now;
+            self->state = 3, self->old = zm831->sensor_time;
             lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
             lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 20, w * 2, &self->label_dsc, string_format("IDx:00").c_str(), LV_LABEL_ALIGN_LEFT);
           }
@@ -585,7 +586,7 @@ extern "C"
         }
         case 2:
         {
-          if (self->now - self->old > 100) {
+          if (zm831->sensor_time - self->old > 100) {
             self->state = 1;
           }
           break;
@@ -593,7 +594,7 @@ extern "C"
         case 3:
         case 4:
         {
-          if (self->now - self->old > 100) {
+          if (zm831->sensor_time - self->old > 100) {
             pthread_mutex_lock(&zm831->ui_mutex);
             lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
             pthread_mutex_unlock(&zm831->ui_mutex);

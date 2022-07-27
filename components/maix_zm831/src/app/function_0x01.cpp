@@ -213,6 +213,7 @@ extern "C"
       if (access("/root/camera", 0))
         system("mkdir /root/camera");
 
+      pthread_mutex_lock(&zm831->ui_mutex);
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
       self->rect_dsc.bg_opa = LV_OPA_0;
@@ -223,6 +224,7 @@ extern "C"
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
       self->label_dsc.font = zm831->ft_font.font;
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       zm831_home_setup_ui(&self->ui->photo_app, setup_scr_camera, 500);
 
@@ -257,6 +259,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      zm831->sensor_time = zm831_get_ms();
       // CALC_FPS("function_0x01_app_loop"); // 224x224
 
       if (function_0x01_app.is_capture)

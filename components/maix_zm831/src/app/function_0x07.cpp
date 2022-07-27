@@ -86,7 +86,7 @@ extern "C"
 
     lv_draw_rect_dsc_t rect_dsc;
     lv_draw_label_dsc_t label_dsc;
-    uint32_t now = 0, old = 0;
+    uint32_t old = 0;
     uint8_t state = 0;
 
     const char *model_path_param = "/home/res/ZM_three_awnn.param";
@@ -191,7 +191,7 @@ extern "C"
         lv_canvas_draw_text(zm831_ui_get_canvas(), x, y - 30, ai2vi(h), &self->label_dsc, string_format("ID%d:%d", map_id[class_id], (int)(prob * 100)).c_str(), LV_LABEL_ALIGN_LEFT);
         // printf("%d %d %d %d %d %f %s\n", x, y, w, h, map_id[class_id], prob, self->labels[class_id]);
 
-        self->state = 2, self->old = self->now;
+        self->state = 2, self->old = zm831->sensor_time;
       }
     }
     pthread_mutex_unlock(&zm831->ui_mutex);
@@ -211,6 +211,7 @@ extern "C"
   {
     auto self = (_function_0x07_ *)app->userdata;
 
+    pthread_mutex_lock(&zm831->ui_mutex);
     lv_draw_rect_dsc_init(&self->rect_dsc);
     self->rect_dsc.radius = 5;
     self->rect_dsc.bg_opa = LV_OPA_TRANSP;
@@ -221,6 +222,7 @@ extern "C"
     lv_draw_label_dsc_init(&self->label_dsc);
     self->label_dsc.color = LV_COLOR_GREEN;
     self->label_dsc.font = zm831->ft_font.font;
+    pthread_mutex_unlock(&zm831->ui_mutex);
 
     libmaix_err_t err = LIBMAIX_ERR_NONE;
 
@@ -350,6 +352,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      zm831->sensor_time = zm831_get_ms();
 
       self->input.data = ai_rgb->data;
       err = self->nn->forward(self->nn, &self->input, &self->out_fmap);
@@ -370,7 +373,6 @@ extern "C"
         // LIBMAIX_INFO_PRINTF("yolo2_result.boxes_num %d", self->yolo2_result.boxes_num);
       }
 
-      self->now = zm831_get_ms();
       switch (self->state)
       {
       case 1:
@@ -386,7 +388,7 @@ extern "C"
       }
       case 2:
       {
-        if (self->now - self->old > 100) {
+        if (zm831->sensor_time - self->old > 100) {
           self->state = 1;
         }
         break;

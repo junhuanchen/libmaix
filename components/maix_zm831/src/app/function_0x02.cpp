@@ -135,6 +135,7 @@ extern "C"
 
     if (!self->init)
     {
+      pthread_mutex_lock(&zm831->ui_mutex);
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
       self->rect_dsc.bg_opa = LV_OPA_50;
@@ -145,6 +146,7 @@ extern "C"
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
       self->label_dsc.font = zm831->ft_font.font;
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       zm831_home_setup_ui(&self->ui->color_app, setup_scr_color_app, 500);
 
@@ -181,7 +183,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      int now = zm831_get_ms();
+      zm831->sensor_time = zm831_get_ms();
       // CALC_FPS("function_0x02_app_loop"); // 224x224x3
 
       image_t imlib_img, *img = &imlib_img;
@@ -217,8 +219,6 @@ extern "C"
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
 
-        int now = zm831_get_ms();
-
         pthread_mutex_lock(&zm831->ui_mutex);
         lv_canvas_fill_bg(zm831_ui_get_canvas(), LV_COLOR_BLACK, LV_OPA_TRANSP);
         list_t out;
@@ -239,7 +239,7 @@ extern "C"
 
             self->data_cmd[i] += 1;
 
-            self->state = 2, self->old = now;
+            self->state = 2, self->old = zm831->sensor_time;
 
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
@@ -262,7 +262,7 @@ extern "C"
         {
           zm831_protocol_send(0x02, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
           self->data_cmd.fill(0);
-          if (now - self->old > 100) {
+          if (zm831->sensor_time - self->old > 100) {
             self->state = 1;
           }
           break;

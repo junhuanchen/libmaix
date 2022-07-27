@@ -32,6 +32,9 @@ extern "C"
     FD_ZERO(&zm831->readfd);
 
     _gpio_init("PH7", 0, 0);
+
+    zm831->sensor_time = zm831_get_ms();
+
     LIBMAIX_DEBUG_PRINTF("zm831_ctrl_load");
   }
 
@@ -206,6 +209,11 @@ extern "C"
     // CALC_FPS("zm831_ctrl_loop");
 
     int ret = 0;
+
+    if (zm831_get_ms() - zm831->sensor_time > 10000) // soft-keep
+    {
+      zm831->exit = 1;
+    }
 
     _gpio_read("PH7", &ret);
     if (zm831->sensor_flip != ret)

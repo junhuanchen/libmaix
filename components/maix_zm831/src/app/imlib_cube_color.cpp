@@ -77,6 +77,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      zm831->sensor_time = zm831_get_ms();
       CALC_FPS("imlib_cube_color_app_loop");
 
       image_t imlib_img, *img = &imlib_img;

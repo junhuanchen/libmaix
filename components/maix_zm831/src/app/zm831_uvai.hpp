@@ -380,7 +380,7 @@ typedef struct
     pthread_mutex_t vi_mutex, ai_mutex, ui_mutex;
     // hw
     struct timeval timeout;
-    int input_event0, dev_ttyS1, sensor_flip;
+    uint32_t input_event0, dev_ttyS1, sensor_flip, sensor_time;
     fd_set readfd;
     std::list<zm831_pack_t> recvPacks;
     // vi

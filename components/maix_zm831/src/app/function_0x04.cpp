@@ -339,25 +339,6 @@ extern "C"
   {
     auto self = (_function_0x04_ *)app->userdata;
 
-    if (!self->init)
-    {
-
-      lv_draw_line_dsc_init(&self->line_dsc);
-      self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
-      self->line_dsc.width = 5;
-      self->line_dsc.opa = LV_OPA_70;
-
-      lv_draw_rect_dsc_init(&self->rect_dsc);
-      self->rect_dsc.radius = 5;
-      self->rect_dsc.bg_opa = LV_OPA_50;
-      self->rect_dsc.border_width = 2;
-      self->rect_dsc.border_opa = LV_OPA_80;
-      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
-
-      lv_draw_label_dsc_init(&self->label_dsc);
-      self->label_dsc.color = LV_COLOR_GREEN;
-      self->label_dsc.font = zm831->ft_font.font;
-
       libmaix_err_t err = LIBMAIX_ERR_NONE;
 
       self->opt_param.awnn.input_names = (char **)self->inputs_names;
@@ -414,6 +395,27 @@ extern "C"
         return -1;
       }
 
+    if (!self->init)
+    {
+
+      pthread_mutex_lock(&zm831->ui_mutex);
+      lv_draw_line_dsc_init(&self->line_dsc);
+      self->line_dsc.color = {0xFF, 0x00, 0x00, 0x9f};
+      self->line_dsc.width = 5;
+      self->line_dsc.opa = LV_OPA_70;
+
+      lv_draw_rect_dsc_init(&self->rect_dsc);
+      self->rect_dsc.radius = 5;
+      self->rect_dsc.bg_opa = LV_OPA_50;
+      self->rect_dsc.border_width = 2;
+      self->rect_dsc.border_opa = LV_OPA_80;
+      self->rect_dsc.border_color = {0x00, 0x00, 0xFF, 0x9f};
+
+      lv_draw_label_dsc_init(&self->label_dsc);
+      self->label_dsc.color = LV_COLOR_GREEN;
+      self->label_dsc.font = zm831->ft_font.font;
+      pthread_mutex_unlock(&zm831->ui_mutex);
+
       zm831_home_setup_ui(&self->ui->ball_app, setup_scr_ball_app, 500);
 
       pthread_mutex_lock(&zm831->ui_mutex);
@@ -431,24 +433,24 @@ extern "C"
   int function_0x04_app_exit(zm831_home_app *app)
   {
     auto self = (_function_0x04_ *)app->userdata;
+
+    if (self->input.buff_quantization)
+    {
+      free(self->input.buff_quantization);
+      self->input.buff_quantization = NULL;
+    }
+    if (self->out_fmap.data)
+    {
+      free(self->out_fmap.data);
+      self->out_fmap.data = NULL;
+    }
+    if (self->nn)
+    {
+      libmaix_nn_destroy(&self->nn);
+    }
+
     if (self->init)
     {
-
-      if (self->input.buff_quantization)
-      {
-        free(self->input.buff_quantization);
-        self->input.buff_quantization = NULL;
-      }
-      if (self->out_fmap.data)
-      {
-        free(self->out_fmap.data);
-        self->out_fmap.data = NULL;
-      }
-      if (self->nn)
-      {
-        libmaix_nn_destroy(&self->nn);
-      }
-
       zm831_home_clear_ui(&self->ui->ball_app);
 
       self->init = false;
@@ -463,7 +465,8 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      int now = zm831_get_ms();
+      zm831->sensor_time = zm831_get_ms();
+
       try
       {
         if (self->is_change)
@@ -512,7 +515,7 @@ extern "C"
             {
               case 1:
               {
-                self->state = 2, self->old = now;
+                self->state = 2, self->old = zm831->sensor_time;
                 uint8_t r = tmp[10] / 2, r_x = ai2vi(tmp[8]), r_y = ai2vi(tmp[9]);
                 // self->rect_dsc.border_color = self->rect_dsc.bg_color = self->bgra_lab_color[self->target];
                 // lv_canvas_draw_rect(zm831_ui_get_canvas(), x, y, w, h, &self->rect_dsc);
@@ -523,7 +526,7 @@ extern "C"
               }
               case 2:
               {
-                self->state = 2, self->old = now;
+                self->state = 2, self->old = zm831->sensor_time;
                 uint8_t r = (w + h) / 4, r_x = x + (w / 2), r_y = y + (h / 2);
                 // printf("%d, %d, %d, %d, %d, %d, %d, %d\n", x, y, w, h, r_x, r_y, r, area);
                 // self->rect_dsc.bg_color = self->bgra_lab_color[self->target];
@@ -556,7 +559,7 @@ extern "C"
         case 2:
         {
           zm831_protocol_send(0x04, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
-          if (now - self->old > 200) {
+          if (zm831->sensor_time - self->old > 200) {
             self->state = 1;
           }
           break;

@@ -1966,10 +1966,12 @@ extern "C"
 
       extern int zm831_home_app_last;
       // printf("zm831_home_app_last:%d\n", zm831_home_app_last);
+      pthread_mutex_lock(&zm831->ui_mutex);
       if (zm831_home_app_last != 0) {
         const int last_pos[] = { 0, 0, 1, 1, 2, 2, 0, 3, 1, 1, 0, 0, 3, 2, 3, 4, 4, 4, 4, 4, 3, 2,  };
         lv_page_scroll_ver(self->ui->home_home, -lv_obj_get_height(self->ui->home_home) * last_pos[zm831_home_app_last]);
       }
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       self->init = true;
     }
@@ -1996,7 +1998,9 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      // sleep(1);
+      zm831->sensor_time = zm831_get_ms();
+
+      sleep(2);
       // zm831_home_app_select(1);
     }
     return 0;

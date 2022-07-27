@@ -332,6 +332,7 @@ extern "C"
 
     if (!self->init)
     {
+      pthread_mutex_lock(&zm831->ui_mutex);
       lv_draw_rect_dsc_init(&self->rect_dsc);
       self->rect_dsc.radius = 5;
       self->rect_dsc.bg_opa = LV_OPA_80;
@@ -342,6 +343,7 @@ extern "C"
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
       // self->label_dsc.font = zm831->ft_font.font;
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       zm831_home_setup_ui(&self->ui->color_study_app, setup_scr_color_study_app, 500);
 
@@ -381,6 +383,8 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
+      zm831->sensor_time = zm831_get_ms();
+
       image_t imlib_img, *img = &imlib_img;
       {
         img->w = ai_rgb->width;
@@ -441,7 +445,7 @@ extern "C"
         int margin = 0;
         unsigned int x_hist_bins_max = 0;
         unsigned int y_hist_bins_max = 0;
-        int now = zm831_get_ms();
+
         list_t out;
         for (int i = 0, sum = self->color_learn_id + 1; i < sum; i++)
         {
@@ -467,7 +471,7 @@ extern "C"
             lv_canvas_draw_text(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y - 14, 60, &self->label_dsc, string_format("ID:%d", i + 1).c_str(), LV_LABEL_ALIGN_LEFT);
             lv_canvas_draw_rect(zm831_ui_get_canvas(), lnk_data.rect.x, lnk_data.rect.y, ai2vi(lnk_data.rect.w), ai2vi(lnk_data.rect.h), &self->rect_dsc);
             self->data_cmd[i] += 1;
-            self->state = 2, self->old = now;
+            self->state = 2, self->old = zm831->sensor_time;
             // printf("[imlib_find_blobs] %d %d %d %d %d\n", i, lnk_data.rect.x, lnk_data.rect.y, lnk_data.rect.x + lnk_data.rect.w, lnk_data.rect.y + lnk_data.rect.h);
           }
         }
@@ -485,7 +489,7 @@ extern "C"
         {
           zm831_protocol_send(0x09, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
           self->data_cmd.fill(0);
-          if (now - self->old > 100)
+          if (zm831->sensor_time - self->old > 100)
           {
             self->state = 1;
           }

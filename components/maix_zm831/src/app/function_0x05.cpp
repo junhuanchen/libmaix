@@ -126,21 +126,22 @@ extern "C"
   {
     auto self = (_function_0x05_ *)app->userdata;
 
+    if (NULL != zm831->ai)
+    {
+      libmaix_cam_destroy(&zm831->ai);
+      if (NULL == zm831->ai)
+      {
+        zm831->ai = libmaix_cam_create(1, 320, 240, 0, 0);
+        if (NULL == zm831->ai)
+          return -1;
+        zm831->ai->start_capture(zm831->ai);
+      }
+    }
+
     if (!self->init)
     {
 
-      if (NULL != zm831->ai)
-      {
-        libmaix_cam_destroy(&zm831->ai);
-        if (NULL == zm831->ai)
-        {
-          zm831->ai = libmaix_cam_create(1, 320, 240, 0, 0);
-          if (NULL == zm831->ai)
-            return -1;
-          zm831->ai->start_capture(zm831->ai);
-        }
-      }
-
+      pthread_mutex_lock(&zm831->ui_mutex);
       lv_draw_line_dsc_init(&self->line_dsc);
       self->line_dsc.color = {0x00, 0xFF, 0x00, 0x9f};
       self->line_dsc.width = 3;
@@ -156,6 +157,7 @@ extern "C"
       lv_draw_label_dsc_init(&self->label_dsc);
       self->label_dsc.color = LV_COLOR_GREEN;
       self->label_dsc.font = zm831->ft_font.font;
+      pthread_mutex_unlock(&zm831->ui_mutex);
 
       zm831_home_setup_ui(&self->ui->road_app, setup_scr_road_app, 500);
 
@@ -175,24 +177,23 @@ extern "C"
   int function_0x05_app_exit(zm831_home_app *app)
   {
     auto self = (_function_0x05_ *)app->userdata;
+    zm831_home_clear_ui(&self->ui->road_app);
+
+    if (NULL != zm831->ai)
+    {
+      libmaix_cam_destroy(&zm831->ai);
+      if (NULL == zm831->ai)
+      {
+        zm831->ai = libmaix_cam_create(1, zm831->ai_w, zm831->ai_h, 0, 0);
+        if (NULL == zm831->ai)
+          return -1;
+        zm831->ai->start_capture(zm831->ai);
+      }
+    }
+
     if (self->init)
     {
       fb_alloc_close0();
-
-      zm831_home_clear_ui(&self->ui->road_app);
-
-      if (NULL != zm831->ai)
-      {
-        libmaix_cam_destroy(&zm831->ai);
-        if (NULL == zm831->ai)
-        {
-          zm831->ai = libmaix_cam_create(1, zm831->ai_w, zm831->ai_h, 0, 0);
-          if (NULL == zm831->ai)
-            return -1;
-          zm831->ai->start_capture(zm831->ai);
-        }
-      }
-
       self->init = false;
     }
     LIBMAIX_INFO_PRINTF("function_0x05_app_exit");
@@ -206,7 +207,8 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      int now = zm831_get_ms();
+      zm831->sensor_time = zm831_get_ms();
+
       // CALC_FPS("function_0x05_app_loop"); // 224x224x3
       // printf("ai_rgb: %p, %d, %d\r\n", ai_rgb, ai_rgb->width, ai_rgb->height);
 
@@ -288,7 +290,7 @@ extern "C"
               lv_canvas_draw_line(zm831_ui_get_canvas(), points, sizeof(points) / sizeof(points[0]), &self->line_dsc);
               lv_canvas_draw_text(zm831_ui_get_canvas(), 160, 200, 100, &self->label_dsc, string_format("X: %02d", x).c_str(), LV_LABEL_ALIGN_LEFT);
 
-              self->state = 2, self->old = now;
+              self->state = 2, self->old = zm831->sensor_time;
 
             }
           }
@@ -314,7 +316,7 @@ extern "C"
       case 2:
       {
         zm831_protocol_send(0x05, (uint8_t *)self->data_cmd.data(), self->data_cmd.size());
-        if (now - self->old > 100) {
+        if (zm831->sensor_time - self->old > 100) {
           self->state = 1;
         }
         break;
