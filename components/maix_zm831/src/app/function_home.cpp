@@ -1900,6 +1900,30 @@ extern "C"
       //   zm831_home_app_select(0x13);
       //   return;
       // }
+      if (function_home_app.ui->home_imgbtn_led == btn)
+      {
+        static int home_imgbtn_led_flag = 0;
+        home_imgbtn_led_flag = (home_imgbtn_led_flag + 1) % 5;
+        switch (home_imgbtn_led_flag)
+        {
+        case 0:
+          _pwm_init("PH8", 50000, 0.1);
+          break;
+        case 1:
+          _pwm_set_duty("PH8", 0.4);
+          break;
+        case 2:
+          _pwm_set_duty("PH8", 0.7);
+          break;
+        case 3:
+          _pwm_set_duty("PH8", 1.0);
+          break;
+        case 4:
+          _pwm_deinit("PH8");
+          break;
+        }
+        return;
+      }
       if (function_home_app.ui->home_imgbtn_cube == btn)
       {
         zm831_home_app_select(0x14);
@@ -1937,7 +1961,15 @@ extern "C"
       lv_obj_set_event_cb(self->ui->home_imgbtn_five_road, function_home_btn_event_app_cb);
       lv_obj_set_event_cb(self->ui->home_imgbtn_cube, function_home_btn_event_app_cb);
       lv_obj_set_event_cb(self->ui->home_imgbtn_number, function_home_btn_event_app_cb);
+      lv_obj_set_event_cb(self->ui->home_imgbtn_led, function_home_btn_event_app_cb);
       pthread_mutex_unlock(&zm831->ui_mutex);
+
+      extern int zm831_home_app_last;
+      // printf("zm831_home_app_last:%d\n", zm831_home_app_last);
+      if (zm831_home_app_last != 0) {
+        const int last_pos[] = { 0, 0, 1, 1, 2, 2, 0, 3, 1, 1, 0, 0, 3, 2, 3, 4, 4, 4, 4, 4, 3, 2,  };
+        lv_page_scroll_ver(self->ui->home_home, -lv_obj_get_height(self->ui->home_home) * last_pos[zm831_home_app_last]);
+      }
 
       self->init = true;
     }
@@ -1964,7 +1996,7 @@ extern "C"
     libmaix_image_t *ai_rgb = NULL;
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
-      // sleep(5);
+      // sleep(1);
       // zm831_home_app_select(1);
     }
     return 0;

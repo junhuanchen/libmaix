@@ -47,7 +47,7 @@ extern "C"
   extern zm831_home_app get_function_0x14_app();
   extern zm831_home_app get_function_0x15_app();
 
-  uint8_t zm831_home_app_index = 0; // current app index
+  uint8_t zm831_home_app_index = 0, zm831_home_app_last = 0; // current app index
   static _get_zm831_home_app_func_ zm831_home_app_lists[] = {
       get_function_home_app,
       get_function_0x01_app,
@@ -191,6 +191,8 @@ extern "C"
       LIBMAIX_INFO_PRINTF("zm831_home_app_select: id not found");
       return -1;
     }
+
+    zm831_home_app_last = zm831_home_app_index;
     zm831_home_app_reload(zm831_home_app_lists[id]());
     zm831_home_app_index = id;
 
