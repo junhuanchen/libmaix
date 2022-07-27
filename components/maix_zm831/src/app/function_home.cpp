@@ -1999,8 +1999,6 @@ extern "C"
     if (zm831->ai && LIBMAIX_ERR_NONE == zm831->ai->capture_image(zm831->ai, &ai_rgb))
     {
       zm831->sensor_time = zm831_get_ms();
-
-      sleep(2);
       // zm831_home_app_select(1);
     }
     return 0;
