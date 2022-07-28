@@ -211,7 +211,7 @@ extern "C"
     uint32_t ret = 0;
 
     ret = zm831_get_ms() - zm831->sensor_time;
-    if (ret > 8000) // soft-keep
+    if (ret > 10000) // soft-keep
     {
       zm831->exit = 1;
       exit(0);
