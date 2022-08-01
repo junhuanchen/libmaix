@@ -56,7 +56,9 @@ target:
 	python3 project.py build
 	@if [ -f "./adb_push_dist.py" ] ; then python3 ./adb_push_dist.py ; fi
 	# @if [ -f "./build_dist.sh" ] ; then ./build_dist.sh ; fi >> /dev/null
-	adb shell "cd /root/dist; ./start_app.sh \"$(adb)\" "
+	# adb shell "cd /root/dist; ./start_app.sh \"$(adb)\" "
+	adb shell "sync && reboot"
+
 
 clean:
 	$(RM) -r build/ dist
