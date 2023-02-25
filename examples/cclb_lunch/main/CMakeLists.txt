@@ -13,7 +13,7 @@ append_srcs_dir(ADD_SRCS "src")
 ###############################################
 
 ###### Add required/dependent components ######
-list(APPEND ADD_REQUIREMENTS third_party)
+# list(APPEND ADD_REQUIREMENTS third_party)
 ###############################################
 
 ############ Add static libs ##################
