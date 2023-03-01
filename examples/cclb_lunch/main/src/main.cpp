@@ -79,7 +79,8 @@ void start_program()
     if (access("/tmp/event", F_OK) == 0)
     {
         system("ps | grep -v grep | grep python | awk '{print $1}' | xargs kill -9");
-        system("python /tmp/event & echo $! > /tmp/event.pid && sync");
+        system("rm -rf /root/event.log && sync");
+        system("python /tmp/event > /root/event.log & echo $! > /tmp/event.pid && sync");
         is_menu_running = 0;
         debug_printf("start it\r\n");
     }
