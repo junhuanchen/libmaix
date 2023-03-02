@@ -80,7 +80,7 @@ void start_program()
     {
         system("ps | grep -v grep | grep python | awk '{print $1}' | xargs kill -9");
         system("rm -rf /root/event.log && sync");
-        system("python /tmp/event > /root/event.log & echo $! > /tmp/event.pid && sync");
+        system("python /tmp/event & echo $! > /tmp/event.pid && sync");
         is_menu_running = 0;
         debug_printf("start it\r\n");
     }
@@ -98,6 +98,12 @@ void close_program()
 
 int check_program(int ret)
 {
+    if (access("/tmp/disable", F_OK) == 0)
+    {
+        close_program();
+        return 0;
+    }
+
     static int state = 0, last = 0;
 
     time_t now = time(NULL);
