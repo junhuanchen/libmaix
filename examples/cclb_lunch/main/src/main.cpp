@@ -7,8 +7,8 @@
 #include <iostream>
 #include "gpio_lib.h"
 
-#define PH7 231
-#define debug_printf(fmt, ...) (fmt, ##__VA_ARGS__)
+#define PH14 238
+#define debug_printf(fmt, ...) // printf(fmt, ##__VA_ARGS__)
 
 // << string_format("%d", 202412);
 template <typename... Args>
@@ -33,10 +33,10 @@ std::string read_file_to_string(const std::string &path)
     return ss.str();
 }
 
-static void msleep(unsigned int ms)
-{
-    usleep(ms * 1000);
-}
+// static void msleep(unsigned int ms)
+// {
+//     usleep(ms * 1000);
+// }
 
 #define menu_program "/root/main.py"
 int is_menu_running = 0;
@@ -60,7 +60,7 @@ void return_menu()
         debug_printf("is_running %d\r\n", is_running);
         if (!is_running) {
             ready_process();
-            system(string_format("python %s & echo $! > /tmp/event.pid && sync", menu_program).c_str());
+            system(string_format("python %s > /root/event.log & echo $! > /tmp/event.pid && sync", menu_program).c_str());
             is_menu_running = 1;
             debug_printf("no exist return menu\r\n");
         }
@@ -68,7 +68,7 @@ void return_menu()
     else
     {
         ready_process();
-        system(string_format("python %s & echo $! > /tmp/event.pid && sync", menu_program).c_str());
+        system(string_format("python %s > /root/event.log & echo $! > /tmp/event.pid && sync", menu_program).c_str());
         is_menu_running = 1;
         debug_printf("exist & no running return menu\r\n");
     }
@@ -119,7 +119,7 @@ int check_program(int ret)
         case 1:
             if (ret)
             {
-                if (is_menu_running != 1 && now > last + 1)
+                if (is_menu_running != 1 && now > last)
                 {
                     state = 2;
                     debug_printf("kill it\r\n");
@@ -154,6 +154,7 @@ int check_program(int ret)
 
     return_menu();
 
+    return 0;
 }
 
 int main()
@@ -162,8 +163,8 @@ int main()
     sunxi_gpio_init();
     while (true)
     {
-        sunxi_gpio_set_cfgpin(PH7, INPUT); // PH7 INPUT
-        check_program(!sunxi_gpio_input(PH7));
+        sunxi_gpio_set_cfgpin(PH14, INPUT); // PH14 INPUT
+        check_program(!sunxi_gpio_input(PH14));
         // usleep(500 * 1000);
         sleep(1);
     }
