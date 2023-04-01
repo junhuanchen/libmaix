@@ -7,5 +7,6 @@ for i in range(10):
     hello_img.draw_string(10, 50, time.asctime(), scale = 1.0, color = (255, 255, 255), thickness = 1)
     display.show(hello_img)
     time.sleep(1)
+    print(hello_img)
 
 os.system("ln -s %s /tmp/event && touch /tmp/start" % "/root/xxxx.py")

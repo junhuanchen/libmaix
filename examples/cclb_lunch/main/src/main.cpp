@@ -43,7 +43,7 @@ int is_menu_running = 0;
 
 void ready_process()
 {
-    system("rm -rf /tmp/start /tmp/stop /tmp/event /tmp/event.pid && sync");
+    system("rm -rf /tmp/start /tmp/stop /tmp/event /tmp/event.pid /root/event.log && sync");
     debug_printf("ready process\r\n");
 }
 
@@ -60,7 +60,7 @@ void return_menu()
         debug_printf("is_running %d\r\n", is_running);
         if (!is_running) {
             ready_process();
-            system(string_format("python %s > /root/event.log & echo $! > /tmp/event.pid && sync", menu_program).c_str());
+            system(string_format("python -u %s %s & echo $! > /tmp/event.pid && sync", menu_program, (access("/tmp/logout", F_OK) == 0) ? "> /root/event.log" : "" ).c_str());
             is_menu_running = 1;
             debug_printf("no exist return menu\r\n");
         }
@@ -68,7 +68,7 @@ void return_menu()
     else
     {
         ready_process();
-        system(string_format("python %s > /root/event.log & echo $! > /tmp/event.pid && sync", menu_program).c_str());
+        system(string_format("python -u %s %s & echo $! > /tmp/event.pid && sync", menu_program, (access("/tmp/logout", F_OK) == 0) ? "> /root/event.log" : "" ).c_str());
         is_menu_running = 1;
         debug_printf("exist & no running return menu\r\n");
     }
@@ -80,7 +80,7 @@ void start_program()
     {
         system("ps | grep -v grep | grep python | awk '{print $1}' | xargs kill -9");
         system("rm -rf /root/event.log && sync");
-        system("python /tmp/event & echo $! > /tmp/event.pid && sync");
+        system(string_format("python -u %s %s & echo $! > /tmp/event.pid && sync", "/tmp/event", (access("/tmp/logout", F_OK) == 0) ? "> /root/event.log" : "" ).c_str());
         is_menu_running = 0;
         debug_printf("start it\r\n");
     }

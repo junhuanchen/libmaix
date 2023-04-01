@@ -5,3 +5,5 @@ for i in range(10):
     hello_img.draw_string(30, 115, time.asctime(), scale = 1.0, color = (255, 255, 255), thickness = 1)
     display.show(hello_img)
     time.sleep(1)
+    print(time.asctime())
+
