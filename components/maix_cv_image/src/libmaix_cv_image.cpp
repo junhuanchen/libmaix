@@ -3,12 +3,12 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/imgcodecs/legacy/constants_c.h>
+// #include <opencv2/imgcodecs/legacy/constants_c.h>
 #include "opencv2/core/types_c.h"
 #include <opencv2/core/core.hpp>
-#include <opencv2/freetype.hpp>
+// #include <opencv2/freetype.hpp>
 #include <opencv2/highgui.hpp>
-#include <opencv2/freetype.hpp>
+// #include <opencv2/freetype.hpp>
 
 void overlayImage(const cv::Mat &background, const cv::Mat &foreground, cv::Mat &output, cv::Point2i location, double opacity)
 {
@@ -147,17 +147,17 @@ bool mergeImage(cv::Mat &srcImage, cv::Mat mixImage, cv::Point startPoint)
   return LIBMAIX_ERR_NOT_IMPLEMENT;
 }
 
-class libmaix_font
-{
-public:
-  static cv::Ptr<cv::freetype::FreeType2> ft;
-  static bool is_load;
-  static int fontHeight;
-};
+// class libmaix_font
+// {
+// public:
+//   static cv::Ptr<cv::freetype::FreeType2> ft;
+//   static bool is_load;
+//   static int fontHeight;
+// };
 
-cv::Ptr<cv::freetype::FreeType2> libmaix_font::ft;
-bool libmaix_font::is_load = false;
-int libmaix_font::fontHeight = 14;
+// cv::Ptr<cv::freetype::FreeType2> libmaix_font::ft;
+// bool libmaix_font::is_load = false;
+// int libmaix_font::fontHeight = 14;
 
 extern "C"
 {
@@ -374,37 +374,37 @@ extern "C"
     return LIBMAIX_ERR_NOT_IMPLEMENT;
   }
 
-  libmaix_err_t libmaix_cv_image_load_freetype(const char *path, int fontHeight)
-  {
-    libmaix_font::ft = cv::freetype::createFreeType2(); // re-load clear it
-    libmaix_font::ft->loadFontData(cv::String(path), 0);
-    libmaix_font::is_load = true;
-    libmaix_font::fontHeight = fontHeight;
-    return LIBMAIX_ERR_NONE;
-  }
+  // libmaix_err_t libmaix_cv_image_load_freetype(const char *path, int fontHeight)
+  // {
+  //   libmaix_font::ft = cv::freetype::createFreeType2(); // re-load clear it
+  //   libmaix_font::ft->loadFontData(cv::String(path), 0);
+  //   libmaix_font::is_load = true;
+  //   libmaix_font::fontHeight = fontHeight;
+  //   return LIBMAIX_ERR_NONE;
+  // }
 
-  libmaix_err_t libmaix_cv_image_free_freetype()
-  {
-    libmaix_font::is_load = false;
-    return LIBMAIX_ERR_NONE;
-  }
+  // libmaix_err_t libmaix_cv_image_free_freetype()
+  // {
+  //   libmaix_font::is_load = false;
+  //   return LIBMAIX_ERR_NONE;
+  // }
 
   void libmaix_cv_image_get_string_size(int *width, int *height, const char *str, double scale, int thickness)
   {
     int baseline = 0;
     cv::String text(str);
-    if (!libmaix_font::is_load)
+    // if (!libmaix_font::is_load)
     {
       cv::Size textSize = cv::getTextSize(text, cv::FONT_HERSHEY_PLAIN, scale, thickness, &baseline);
       *width = textSize.width * scale, *height = textSize.height + baseline - (scale * thickness);
       // printf("old textSize w %d h %d b %d\r\n", textSize.width, textSize.height, baseline);
     }
-    else
-    {
-      cv::Size textSize = libmaix_font::ft->getTextSize(text, libmaix_font::fontHeight, thickness, &baseline);
-      *width = textSize.width * scale, *height = libmaix_font::fontHeight * scale + thickness;
-      // printf("new textSize w %d h %d b %d\r\n", textSize.width, textSize.height, baseline);
-    }
+    // else
+    // {
+    //   cv::Size textSize = libmaix_font::ft->getTextSize(text, libmaix_font::fontHeight, thickness, &baseline);
+    //   *width = textSize.width * scale, *height = libmaix_font::fontHeight * scale + thickness;
+    //   // printf("new textSize w %d h %d b %d\r\n", textSize.width, textSize.height, baseline);
+    // }
   }
 
   libmaix_err_t libmaix_cv_image_draw_string(libmaix_image_t *src, int x, int y, const char *str, double scale, libmaix_image_color_t color, int thickness)
@@ -430,20 +430,20 @@ extern "C"
     cv::Mat input(src->height, src->width, type, src->data);
     cv::String text(str);
     int baseline = 0;
-    if (!libmaix_font::is_load)
+    // if (!libmaix_font::is_load)
     {
       cv::Size textSize = cv::getTextSize(text, cv::FONT_HERSHEY_PLAIN, scale, thickness, &baseline);
       // printf("old textSize w %d h %d b %d\r\n", textSize.width, textSize.height, baseline);
       cv::putText(input, text, cv::Point(x, y + textSize.height + baseline - (scale * thickness)), cv::FONT_HERSHEY_PLAIN, scale,
                   cv::Scalar(color.rgb888.r, color.rgb888.g, color.rgb888.b, color.rgb888.a), thickness);
     }
-    else
-    {
-      // cv::Size textSize = libmaix_font::ft->getTextSize(text, libmaix_font::fontHeight, thickness, &baseline);
-      // printf("new textSize w %d h %d b %d\r\n", textSize.width, textSize.height, baseline);
-      libmaix_font::ft->putText(input, text, cv::Point(x, y), libmaix_font::fontHeight * scale,
-                                cv::Scalar(color.rgb888.r, color.rgb888.g, color.rgb888.b, color.rgb888.a), -1, 16, false);
-    }
+    // else
+    // {
+    //   // cv::Size textSize = libmaix_font::ft->getTextSize(text, libmaix_font::fontHeight, thickness, &baseline);
+    //   // printf("new textSize w %d h %d b %d\r\n", textSize.width, textSize.height, baseline);
+    //   libmaix_font::ft->putText(input, text, cv::Point(x, y), libmaix_font::fontHeight * scale,
+    //                             cv::Scalar(color.rgb888.r, color.rgb888.g, color.rgb888.b, color.rgb888.a), -1, 16, false);
+    // }
     return LIBMAIX_ERR_NONE;
   }
 
