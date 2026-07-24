@@ -687,6 +687,37 @@ LIBMAIX_IMAGE_MODE_BGR888 -> LIBMAIX_IMAGE_MODE_BGR888   :      2056
       }
       break;
     }
+    case (773): // RGB888 -> RGBA8888
+    {
+      if (src == *dst || src->width != (*dst)->width || src->height != (*dst)->height)
+        return LIBMAIX_ERR_PARAM;
+      uint8_t *rgb888 = (uint8_t *)src->data;
+      uint8_t *rgba = (uint8_t *)(*dst)->data;
+      for (uint8_t *end = rgb888 + src->width * src->height * 3; rgb888 < end; rgb888 += 3, rgba += 4)
+      {
+        rgba[0] = rgb888[0];
+        rgba[1] = rgb888[1];
+        rgba[2] = rgb888[2];
+        rgba[3] = 255;
+      }
+      (*dst)->mode = mode;
+      break;
+    }
+    case (1283): // RGBA8888 -> RGB888
+    {
+      if (src == *dst || src->width != (*dst)->width || src->height != (*dst)->height)
+        return LIBMAIX_ERR_PARAM;
+      uint8_t *rgba = (uint8_t *)src->data;
+      uint8_t *rgb888 = (uint8_t *)(*dst)->data;
+      for (uint8_t *end = rgba + src->width * src->height * 4; rgba < end; rgba += 4, rgb888 += 3)
+      {
+        rgb888[0] = rgba[0];
+        rgb888[1] = rgba[1];
+        rgb888[2] = rgba[2];
+      }
+      (*dst)->mode = mode;
+      break;
+    }
     default:
       LIBMAIX_IMAGE_ERROR(LIBMAIX_ERR_NOT_IMPLEMENT);
       break;
