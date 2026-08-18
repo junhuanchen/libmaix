@@ -309,7 +309,7 @@ extern "C"
     {
       return LIBMAIX_ERR_PARAM;
     }
-    if (src->mode == LIBMAIX_IMAGE_MODE_RGB888 && src->mode == dst->mode)
+    if ((src->mode == LIBMAIX_IMAGE_MODE_RGB888) && (src->mode == dst->mode))
     {
       cv::Mat back(src->height, src->width, CV_8UC3, src->data);
       cv::Mat fore(dst->height, dst->width, CV_8UC3, dst->data);
@@ -324,6 +324,33 @@ extern "C"
       // if (input.data != src->data) {
       //   memcpy(src->data, input.data, src->width * src->height * 3);
       // }
+      return LIBMAIX_ERR_NONE;
+    }
+    if ((src->mode == LIBMAIX_IMAGE_MODE_RGBA8888) && (src->mode == dst->mode))
+    {
+      cv::Mat back(src->height, src->width, CV_8UC4, src->data);
+      cv::Mat fore(dst->height, dst->width, CV_8UC4, dst->data);
+      // The common draw_image() path has no requested opacity.  Copying the
+      // clipped ROI is both the expected behaviour and much faster than
+      // blending every RGBA pixel in a scalar loop.
+      if (opacity < 0.)
+      {
+        const int dst_x = std::max(x, 0);
+        const int dst_y = std::max(y, 0);
+        const int src_x = std::max(-x, 0);
+        const int src_y = std::max(-y, 0);
+        const int width = std::min(back.cols - dst_x, fore.cols - src_x);
+        const int height = std::min(back.rows - dst_y, fore.rows - src_y);
+        if (width > 0 && height > 0)
+        {
+          fore(cv::Rect(src_x, src_y, width, height)).copyTo(
+              back(cv::Rect(dst_x, dst_y, width, height)));
+        }
+      }
+      else
+      {
+        overlayImage(back, fore, back, cv::Point(x, y), opacity);
+      }
       return LIBMAIX_ERR_NONE;
     }
     return LIBMAIX_ERR_NOT_IMPLEMENT;
@@ -368,7 +395,9 @@ extern "C"
     if (src->mode == LIBMAIX_IMAGE_MODE_RGBA8888)
     {
       cv::Mat input(src->height, src->width, CV_8UC4, const_cast<char *>((char *)src->data));
-      cv::imwrite(path, input);
+      cv::Mat save_img;
+      cv::cvtColor(input, save_img, cv::ColorConversionCodes::COLOR_RGBA2BGRA);
+      cv::imwrite(path, save_img);
       return LIBMAIX_ERR_NONE;
     }
     return LIBMAIX_ERR_NOT_IMPLEMENT;
