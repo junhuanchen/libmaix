@@ -6,7 +6,9 @@
 // #include <opencv2/imgcodecs/legacy/constants_c.h>
 #include "opencv2/core/types_c.h"
 #include <opencv2/core/core.hpp>
-// #include <opencv2/freetype.hpp>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <mutex>
 #include <opencv2/highgui.hpp>
 // #include <opencv2/freetype.hpp>
 
@@ -147,17 +149,73 @@ bool mergeImage(cv::Mat &srcImage, cv::Mat mixImage, cv::Point startPoint)
   return LIBMAIX_ERR_NOT_IMPLEMENT;
 }
 
-// class libmaix_font
-// {
-// public:
-//   static cv::Ptr<cv::freetype::FreeType2> ft;
-//   static bool is_load;
-//   static int fontHeight;
-// };
+namespace
+{
+FT_Library freetype_library = NULL;
+FT_Face freetype_face = NULL;
+int freetype_font_height = 14;
+std::mutex freetype_mutex;
 
-// cv::Ptr<cv::freetype::FreeType2> libmaix_font::ft;
-// bool libmaix_font::is_load = false;
-// int libmaix_font::fontHeight = 14;
+static const char *next_utf8(const char *text, uint32_t *codepoint)
+{
+  const unsigned char *s = reinterpret_cast<const unsigned char *>(text);
+  if (s[0] < 0x80)
+  {
+    *codepoint = s[0];
+    return text + (s[0] != 0);
+  }
+  int count = 0;
+  uint32_t value = 0;
+  if ((s[0] & 0xe0) == 0xc0) { count = 2; value = s[0] & 0x1f; }
+  else if ((s[0] & 0xf0) == 0xe0) { count = 3; value = s[0] & 0x0f; }
+  else if ((s[0] & 0xf8) == 0xf0) { count = 4; value = s[0] & 0x07; }
+  else { *codepoint = 0xfffd; return text + 1; }
+  for (int i = 1; i < count; ++i)
+  {
+    if (s[i] == 0) { *codepoint = 0xfffd; return text + i; }
+    if ((s[i] & 0xc0) != 0x80) { *codepoint = 0xfffd; return text + 1; }
+    value = (value << 6) | (s[i] & 0x3f);
+  }
+  *codepoint = value;
+  return text + count;
+}
+
+static unsigned char glyph_coverage(const FT_Bitmap &bitmap, int x, int y)
+{
+  const int row = bitmap.pitch >= 0 ? y : bitmap.rows - 1 - y;
+  const unsigned char *data = bitmap.buffer + row * (bitmap.pitch >= 0 ? bitmap.pitch : -bitmap.pitch);
+  if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
+    return (data[x >> 3] & (0x80 >> (x & 7))) ? 255 : 0;
+  return data[x];
+}
+
+static void blend_glyph(cv::Mat &image, const FT_Bitmap &bitmap, int x, int y, libmaix_image_color_t color)
+{
+  for (int row = 0; row < static_cast<int>(bitmap.rows); ++row)
+  {
+    const int dst_y = y + row;
+    if (dst_y < 0 || dst_y >= image.rows) continue;
+    for (int col = 0; col < static_cast<int>(bitmap.width); ++col)
+    {
+      const int dst_x = x + col;
+      if (dst_x < 0 || dst_x >= image.cols) continue;
+      const unsigned int alpha = glyph_coverage(bitmap, col, row);
+      if (alpha == 0) continue;
+      unsigned char *pixel = image.ptr<unsigned char>(dst_y) + dst_x * image.channels();
+      if (image.channels() == 1)
+      {
+        pixel[0] = static_cast<unsigned char>((pixel[0] * (255 - alpha) + color.rgb888.r * alpha + 127) / 255);
+      }
+      else
+      {
+        const unsigned char values[4] = {color.rgb888.r, color.rgb888.g, color.rgb888.b, color.rgb888.a};
+        for (int channel = 0; channel < image.channels(); ++channel)
+          pixel[channel] = static_cast<unsigned char>((pixel[channel] * (255 - alpha) + values[channel] * alpha + 127) / 255);
+      }
+    }
+  }
+}
+}
 
 extern "C"
 {
@@ -403,23 +461,47 @@ extern "C"
     return LIBMAIX_ERR_NOT_IMPLEMENT;
   }
 
-  // libmaix_err_t libmaix_cv_image_load_freetype(const char *path, int fontHeight)
-  // {
-  //   libmaix_font::ft = cv::freetype::createFreeType2(); // re-load clear it
-  //   libmaix_font::ft->loadFontData(cv::String(path), 0);
-  //   libmaix_font::is_load = true;
-  //   libmaix_font::fontHeight = fontHeight;
-  //   return LIBMAIX_ERR_NONE;
-  // }
+  libmaix_err_t libmaix_cv_image_load_freetype(const char *path, int fontHeight)
+  {
+    if (path == NULL || fontHeight <= 0) return LIBMAIX_ERR_PARAM;
+    std::lock_guard<std::mutex> lock(freetype_mutex);
+    if (freetype_face != NULL) { FT_Done_Face(freetype_face); freetype_face = NULL; }
+    if (freetype_library == NULL && FT_Init_FreeType(&freetype_library) != 0)
+      return LIBMAIX_ERR_NOT_READY;
+    if (FT_New_Face(freetype_library, path, 0, &freetype_face) != 0)
+      return LIBMAIX_ERR_NOT_EXEC;
+    freetype_font_height = fontHeight;
+    return LIBMAIX_ERR_NONE;
+  }
 
-  // libmaix_err_t libmaix_cv_image_free_freetype()
-  // {
-  //   libmaix_font::is_load = false;
-  //   return LIBMAIX_ERR_NONE;
-  // }
+  libmaix_err_t libmaix_cv_image_free_freetype()
+  {
+    std::lock_guard<std::mutex> lock(freetype_mutex);
+    if (freetype_face != NULL) { FT_Done_Face(freetype_face); freetype_face = NULL; }
+    if (freetype_library != NULL) { FT_Done_FreeType(freetype_library); freetype_library = NULL; }
+    return LIBMAIX_ERR_NONE;
+  }
 
   void libmaix_cv_image_get_string_size(int *width, int *height, const char *str, double scale, int thickness)
   {
+    std::lock_guard<std::mutex> lock(freetype_mutex);
+    if (freetype_face != NULL)
+    {
+      const int pixel_height = std::max(1, static_cast<int>(freetype_font_height * scale + 0.5));
+      if (FT_Set_Pixel_Sizes(freetype_face, 0, pixel_height) != 0) { *width = 0; *height = 0; return; }
+      int line_width = 0, max_width = 0, lines = 1;
+      for (const char *p = str; *p; )
+      {
+        uint32_t codepoint = 0;
+        p = next_utf8(p, &codepoint);
+        if (codepoint == '\n') { max_width = std::max(max_width, line_width); line_width = 0; ++lines; continue; }
+        if (FT_Load_Char(freetype_face, codepoint, FT_LOAD_DEFAULT) == 0)
+          line_width += static_cast<int>(freetype_face->glyph->advance.x >> 6);
+      }
+      *width = std::max(max_width, line_width);
+      *height = lines * static_cast<int>(freetype_face->size->metrics.height >> 6);
+      return;
+    }
     int baseline = 0;
     cv::String text(str);
     // if (!libmaix_font::is_load)
@@ -459,6 +541,26 @@ extern "C"
     cv::Mat input(src->height, src->width, type, src->data);
     cv::String text(str);
     int baseline = 0;
+    std::lock_guard<std::mutex> lock(freetype_mutex);
+    if (freetype_face != NULL)
+    {
+      const int pixel_height = std::max(1, static_cast<int>(freetype_font_height * scale + 0.5));
+      if (FT_Set_Pixel_Sizes(freetype_face, 0, pixel_height) != 0) return LIBMAIX_ERR_NOT_EXEC;
+      const int line_height = static_cast<int>(freetype_face->size->metrics.height >> 6);
+      const int ascender = static_cast<int>(freetype_face->size->metrics.ascender >> 6);
+      int pen_x = x, pen_y = y + ascender;
+      for (const char *p = str; *p; )
+      {
+        uint32_t codepoint = 0;
+        p = next_utf8(p, &codepoint);
+        if (codepoint == '\n') { pen_x = x; pen_y += line_height; continue; }
+        if (FT_Load_Char(freetype_face, codepoint, FT_LOAD_RENDER) != 0) continue;
+        FT_GlyphSlot glyph = freetype_face->glyph;
+        blend_glyph(input, glyph->bitmap, pen_x + glyph->bitmap_left, pen_y - glyph->bitmap_top, color);
+        pen_x += static_cast<int>(glyph->advance.x >> 6);
+      }
+      return LIBMAIX_ERR_NONE;
+    }
     // if (!libmaix_font::is_load)
     {
       cv::Size textSize = cv::getTextSize(text, cv::FONT_HERSHEY_PLAIN, scale, thickness, &baseline);
